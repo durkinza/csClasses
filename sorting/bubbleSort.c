@@ -17,9 +17,9 @@ int* bubbleSort (int* arr){
 	    int a = arr[i];		// grab the comparing element in the list
 	    int b = arr[i+1];		// grab the next element in the list
 	    if(a > b){			// if the numbers are out of order
-		arr[i+1] = a;			// switch the elements in the array
-		arr[i] = b;			//
-		change = true;			// say that something was changed
+		arr[i+1] = a;		//     switch the elements in the array
+		arr[i] = b;		//
+		change = true;		//     say that something was changed
 	    }// end if
     	}// end for
     }// end while
