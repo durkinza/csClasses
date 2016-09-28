@@ -1,4 +1,9 @@
+#include <iostream>
+using namespace std;
 
+bool getBool(){
+    return true;
+}
 
 int main(){
 
@@ -8,13 +13,16 @@ int main(){
     cout << add(x, y);
     x =8;
     y =7;
-    add(x, y);
-    add(x, y);
+    bool add = getBool();
+    if(add){
+	add(x, y);
+    }else{
+        cube(x, y);
+    }
 }
 
 
 int add (x, y){
-    int z;
     int z = x+y;
     return z;
 }
