@@ -1,6 +1,6 @@
 #include <iostream>
 using namespace std;
-
+//  http://codereview.stackexchange.com/questions/77782/quick-sort-implementation
 // define list size to sort
 #define SIZE 20
 // create testing list(s)
@@ -10,7 +10,12 @@ int list3[SIZE] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
 
 
 int* quickSort(int* arr){
-    int pivotI = 0;
+    int min = SIZE / 2;
+
+    int i = 0;
+    int j = SIZE;
+    int pivot = arr[min];
+    
     for(int j=0; j<SIZE; j++){
 	int pivot = arr[j];
         for(int i=0; i<SIZE; i++){

