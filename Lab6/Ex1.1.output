@@ -1,0 +1,55 @@
+/*
+ * Zane Durkin
+ * Lab6
+ * October 6 2016
+ */
+
+// a was declared on line 13 and was assigned the value of 1
+// b was declared on line 14 and was assigned the value of 5
+// x was declared on line 15 and was assigned the value of 0
+// g was declared on line 11 and was assigned the value of 5
+Main 1: a = 1 b = 5 g = 4 x = 0
+
+
+
+// a was re-declared on line 20 and was assigned the value of 7
+// b was declared on line 14 and was assigned the value of 5
+// x was declared on line 15 and was assigned the value of 0
+// g was declared on line 11 and was assigned the value of 10 on line 21
+Main 2: a = 7 b = 5 g = 10 x = 0
+
+
+
+// a was declared on line 37 and was assigned the value of x-y on line 38
+// x was declared as a parameter on line 36 and was assigned the given value (of a from main)
+// g was declared on line 11 and was assigned the value of x+y on line 39
+// y was declared as a parameter on line 36 and was assigned the given pointer value (of b from main)
+Function1: a = -4 x = 1 g = 6
+
+
+
+// a was declared on line 13 and was assigned the value of 1 on line 13
+// b was declared on line 14 and was assigned the value of 2 on line 40 
+// g was declared on line 11 and was assigned the value of 6 on line 39
+// x was declared on line 15 and was assigned the value of -4 on line 26
+Main 3: a = 1 b = 2 g = 6 x = -4
+
+
+
+// a was declared on line 37 and was assigned the value of 1 on line 38
+// x was declared as a parameter online 36 and was assigned the given value (of b from function2)
+// g was declared on line 11 and was assigned the value of 3 on line 39
+// y was declared as a parameter on line 36 and was assigned the given pointer value (of b x from function2)
+Function1: a = 1 x = 2 g = 3
+
+
+
+// a was declared on line 13 and was assigned the value of 1 on line 13
+// b was declared on line 14 and was assigned the value of 4 on line 40
+// g was declared on line 11 and was assigned the value of 4 on line 53
+// x was declared on line 15 and was assigned the value of 1 on line 30
+Main 4: a = 1 b = 4 g = 4 x = 1
+
+
+
+
