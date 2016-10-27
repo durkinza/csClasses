@@ -1,3 +1,8 @@
+/* Zane Durkin
+ * Lab 8
+ * October 21 2016
+ */
+
 #include <iostream> 
 #include <curses.h> // include the curses library
 using namespace std;

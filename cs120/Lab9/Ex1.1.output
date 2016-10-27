@@ -1,0 +1,29 @@
+The strlen() function returns the length of a string
+E.g. the length of the string: *Test String* is 11.
+
+
+The strcpy() function returns a copy of a string
+E.g. a copy of Test String is the string: *Test String*.
+
+
+The strcat() function returns a concatinated version of the two strings given to it 
+E.g. a concatted string of *Test* and *String*
+would be *TestString*.
+
+The strcmp() function returns the character value difference of the first different letter in the two given strings 
+E.g. The difference of the first different letter in *Test String* and in *Testing String*
+would be at l=-73
+where l>1 means that the first character that does not match is greater in string 1 and
+where l<1 means that the first character that does not match is greater in string 2
+
+The strstr() function returns a pointer to the location of a string within a larger string
+E.g. The pointer to *Test String* within *A Test String that is longer*
+would be 0x7ffe28053762
+
+
+
+The length of *Test String* is *11* 
+The comparison of *Test String* and *testing string* is *0* 
+The concatination of *Test * and *String* is *Test String*
+The copy of *Test String* is *Test String*
+
