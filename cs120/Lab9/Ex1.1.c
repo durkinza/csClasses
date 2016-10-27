@@ -65,7 +65,8 @@ void funcStrings(){
 	cout << "The comparison of *" << test_string1 << "* and *" << test_string2 << "* is *" << (test_string1 == test_string2) << "* " << endl;
 	cout << "The concatination of *" << short_string1 << "* and *" << short_string2 << "* is *" << (short_string1 + short_string2) << "*" << endl;
 	new_string = test_string1;
-	cout  << "The copy of *" << test_string1 << "* is *" << new_string << "*" << endl;
+	cout << "The copy of *" << test_string1 << "* is *" << new_string << "*" << endl;
+	cout << "You can find *" << short_string2 << "* in *" << test_string1 << "* starting at *" << test_string1.find(short_string2) << "*" ;
 }
 
 
