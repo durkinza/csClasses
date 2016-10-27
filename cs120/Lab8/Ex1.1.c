@@ -22,8 +22,8 @@ int main(){
 	clear(); // clears the window
 	refresh(); // reprints the window
 	Setup(room,x,y); // setup the room with the robot
-	find(room);
-//	print(room); // write this function!!
+//	print(room); // use this function for first exercise
+	find(room); // use this function for second exercise
 	refresh();
 	WaitForQuit();
 	endwin(); // frees the screen for normal use
