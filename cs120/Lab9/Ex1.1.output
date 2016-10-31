@@ -18,7 +18,7 @@ where l<1 means that the first character that does not match is greater in strin
 
 The strstr() function returns a pointer to the location of a string within a larger string
 E.g. The pointer to *Test String* within *A Test String that is longer*
-would be 0x7ffe28053762
+would be 0x7fffbc3037c2
 
 
 
@@ -26,4 +26,4 @@ The length of *Test String* is *11*
 The comparison of *Test String* and *testing string* is *0* 
 The concatination of *Test * and *String* is *Test String*
 The copy of *Test String* is *Test String*
-
+You can find *String* in *Test String* starting at *5*

@@ -22,7 +22,7 @@ int main(){
 	clear(); // clears the window
 	refresh(); // reprints the window
 	Setup(room,x,y); // setup the room with the robot
-//	print(room); // use this function for first exercise
+	print(room); // use this function for first exercise
 	find(room); // use this function for second exercise
 	refresh();
 	WaitForQuit();
