@@ -78,7 +78,14 @@ int main(){
 	DrawHeader(line);
 	DrawDNA(line);
 	// get prefix of line
-	string pre;
-	prefix(4, line, pre);
-	cout << "Prefix is: " << pre << endl;
+	string pre1;
+	string pre2;
+	prefix(7, line, pre1);
+	prefix(9, line, pre2);
+	cout << "Prefix 1 is: " << pre1 << endl;
+	DrawHeader(pre1);
+	DrawDNA(pre1);
+	cout << "Prefix 2 is: " << pre2 << endl;
+	DrawHeader(pre2);
+	DrawDNA(pre2);
 }
