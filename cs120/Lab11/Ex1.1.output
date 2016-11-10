@@ -1,0 +1,55 @@
+/* Zane Durkin
+ * Lab11
+ * 10 November 2016
+ */
+please enter the user's name
+test1
+Please enter the user's ID number
+1
+please enter the user's name
+test2
+Please enter the user's ID number
+2
+please enter the user's name
+test3
+Please enter the user's ID number
+3
+please enter the user's name
+test4
+Please enter the user's ID number
+4
+please enter the user's name
+test5
+Please enter the user's ID number
+5
+please enter the user's name
+test6
+Please enter the user's ID number
+6
+please enter the user's name
+test7
+Please enter the user's ID number
+7
+please enter the user's name
+test8
+Please enter the user's ID number
+8
+please enter the user's name
+test9
+Please enter the user's ID number
+9
+please enter the user's name
+test10
+Please enter the user's ID number
+10
+
+Username: test1 ID: 1
+Username: test2 ID: 2
+Username: test3 ID: 3
+Username: test4 ID: 4
+Username: test5 ID: 5
+Username: test6 ID: 6
+Username: test7 ID: 7
+Username: test8 ID: 8
+Username: test9 ID: 9
+Username: test10 ID: 10
