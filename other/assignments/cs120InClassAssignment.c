@@ -1,10 +1,11 @@
 
 #include <iostream>
 #include <cstring>
+#include <math.h>
 using namespace std;
 
 struct list{
-	double score;
+	int score;
 	string name;
 	string sid;
 	list * next;
@@ -22,8 +23,9 @@ class stack{
 		list * j = (new list);
 		j->next = top;
 		j->name=name;
-		j->score=score;
-		j->prev=top;
+		j->score=(int)ceil(score);
+		(j->next)->prev = j;
+		//j->prev=top;
 		j->sid=sid;
 		top = j;	
 	}
@@ -39,20 +41,34 @@ class stack{
 	}
 	void print(){ // better function for printing list
 		list * n = top;
+		cout << "+-------+-----------+-------+--------+" << endl;
+		cout << "| Grade | StudentId | Score |  Name  |" << endl;
+		cout << "+-------+-----------+-------+--------+" << endl;
 		while(n->next != NULL){
-			cout << n->name << ": " << n->score << endl;
+			switch(n->score){
+				case 91 ... 200: cout<<"   A   ";
+					break;
+				case 81 ... 90: cout<<"   B   ";
+					break;
+				case 71 ... 80: cout<<"   C   ";
+					break;
+				case 61 ... 70: cout<<"   D   ";
+					break;
+				default: cout<<"   F   ";
+			}
+			cout << "     " << n->sid << "       " << n->score << "      " << n->name << endl;
 			n = n->next;
 		}
 		//cout << n->name << ": " << n->score << endl;
 	}
 
-	void sort(){
+	int sort(){
 		list * n = top;
 		list * j;
 		list * k;
-		this->print();
 		bool moved = true;
 		while (moved){
+			n = top;
 			moved = false;
 			if(n->score < (n->next)->score){ // move first element if necessary. (this is different due to the lack of a prev
 				moved =true;
@@ -63,46 +79,22 @@ class stack{
 				// here k is only pointer left for n[2]
 				k->prev = NULL;
 				k->next = n;
+				top = k;
 			}
-			while( (n->next != NULL) && (n != NULL) ){
+			while( (n->next)->next != NULL ){
 				if(n->score < (n->next)->score){ // if the next element has a larger score, switch them
 					moved = true;
-					//"1->2   ;   1<-2->3   : 2<-3->4  ; 3<-4; n=2"
 					(n->prev)->next=n->next;
-					//"1->3   ;   1<-2->3   : 2<-3->4  ; 3<-4; n=2"
-
 					j = (n->next)->next;
-					//"1->3   ;   1<-2->3   : 2<-3->4  ; 3<-4; n=2; j=4"
-
 					(n->next)->prev=n->prev;
-					//"1->3   ;   1<-2->3   : 1<-3->4  ; 3<-4; n=2; j=4"
-
 					n->prev=n->next;
-					//"1->3   ;   3<-2->3   : 1<-3->4  ; 3<-4; n=2; j=4"
-
 					(n->next)->next=n;
-					//"1->3   ;   3<-2->3   : 1<-3->2  ; 3<-4; n=2; j=4"
-
 					n->next=j;
-					//"1->3   ;   3<-2->j   : 1<-3->2  ; 3<-4; n=2; j=4"
-
-					((n->next)->next)->prev=n;
-					//"1->3   ;   3<-2->j   : 1<-3->2  ; 2<-4; n=2; j=4"
-					
-					n=n->next;
-					//"1->3   ;   3<-2->j   : 1<-3->2  ; 2<-4; n=j; j=4"
-
-					//"1->3   ;   1<-3->2   : 3<-2->4  ; 2<-4; n=j; j=4"
-					/*
-					list * k = n;
-					list * l = n->next;
-					n = n->next;
-					cout << n-> score << "<" << (n->next)->score << endl;
-					n->next = k; 
-					k->next = l;	
-					*/
+					(n->next)->prev=n;
 				}else{ // if they are equal or the current has a higher score, continue down the line
-					n = n->next;
+					if (n->next != NULL){
+						n = n->next;
+					}
 				}
 			}
 		}
@@ -111,11 +103,20 @@ class stack{
 
 int main(){
 	stack stk;
-	stk.push("jhon", 76.8, "Ac1");
-	stk.push("Max", 55.7, "Sd20");
-	//stk.push("Sue", 90.6, "Dd39");
-	//stk.push("Max", 94.4, "Sr28");
-	stk.print();
+	stk.push("jhon",     76.8, "Ac21" );
+	stk.push("Max1",     55.7, "Sd20");
+	stk.push("Sue",      90.6, "Dd39");
+	stk.push("Max2",     94.4, "Sr28");
+	stk.push("Max3",     86.8, "Td44");
+	stk.push("John",     98.0, "Rf31");
+	stk.push("Max",      93.5, "Fd22");
+	stk.push("Alan",     79.8, "Tg34");
+	stk.push("Derby",    68.0, "Er42");
+	stk.push("Steve",    55.7, "Yh29");
+	stk.push("Jonathan", 81.3, "Rf52");
+	stk.push("Shawn",    84.9, "Rg73");
+	stk.push("Dercy",    75.4, "Hy38");
+
 	stk.sort();
 	stk.print();
 
