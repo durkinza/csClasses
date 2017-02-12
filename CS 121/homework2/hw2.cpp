@@ -25,7 +25,7 @@ int main(){
 	getline(file, line);
 	
 	// generate starting stack
-	//  get the first line and break it up by word
+	//  break the first line up by word
 	istringstream iss(line);
 	//  for each word(animal) add it to the stack
 	while(iss >> word){
