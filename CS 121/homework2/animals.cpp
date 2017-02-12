@@ -73,7 +73,7 @@ void Animals::delAnimal(std::string anml){
 		}
 	}else{
 		// if the stack is empty let the user know
-		std::cout << "Empty Stack";
+		std::cout << "Empty Stack" << std::endl;
 	}
 }
 
