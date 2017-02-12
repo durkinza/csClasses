@@ -1,0 +1,26 @@
+##### Animals Design #####
+
+overview:
+	This Program will build and manage a stack of animals. The program will allow a file to be imported which will present a current list of animals and the commands for eiting the stack of animals. A user will be prompted to choose the dat file he/she wishes to use. The first line in this file will be used to create the starting stack. The following lines will be used to add and remove animals from the stack based on the key word that the line is pre-fixed with. The word following the key word will be used as the name of the animal. 
+
+
+Internal Data Structure:
+	This program will require three files to run and one input file to work with. The three required files are:
+
+	hw2.cpp - This file will hold the main function. It will import the animals object and header files. This file will read in the inputed dat file and use the first line to build the starting stack. Then the program will read the following lines for adding and deleting animals from the stack. The first word of the lines  will be used to determine if the action should be adding or deleting an element. The following word will be used as the name of the animal to be added.  
+
+	animals.h - This file will hold the interface for the animal object and the prototypes for the methods of the objects. This file will also hold the struct definition for the animal stuct.
+
+	animals.cpp - This file will hold the implementation of the animal object.
+
+	animals.dat - This will be the data file that the user imports to the program. This file will hold the starting stack and the commands for adding and deleting animals from the stack
+
+Funtions:
+	The the animals object will have three major functions:
+		addAnimal - void - This function will add animals to the top of the stack
+		delAnimal - void - This function will search for the first occurace of an animal in the stack and remove that node. If no matching animals are found then the function will quit normally 
+		printAnimals - void - This function will print out the entire stack
+
+time/order of development;
+	For this development I estimate the project will take about 5 hours to complete.
+	The development will start with the design file (this). I will then move on to writing the animals.h header file. This will help with outlining what functions will need to be made for the animals object. I will then test the compiling of the header file. Next I will write the animals.cpp file with the complete functions. This will then be tested again to ensure that compiling works, And then tests to make sure the functions work correctly. Next the main function will be written to read and implement the data files. Once the main function is written more tests could be ran using the available data files. 

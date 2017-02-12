@@ -1,0 +1,11 @@
+aardvark bird cat dog hamster cat rabbit zebra
+delete zebra
+add dog
+add hamster
+delete rabbit
+delete dog
+delete cat
+delete bird
+delete bird
+delete aardvark
+add hamster

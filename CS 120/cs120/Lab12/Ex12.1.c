@@ -42,21 +42,32 @@ class stack{
 		}
 		cout << n->letter << endl;
 	}
+	void sort(){
+		list * head = top;
+		list * curr = top;
+		list * x;
+		bool moved = true;
+
+		while(moved){
+			moved = false;
+			if(curr->letter > curr->next->letter){ // if the letters are out of order
+				x = curr;
+				curr = curr->next;
+				curr->next = x;
+				delete x;
+			}
+		}
+			
+	}
 };
 
 int main(){
 	stack stk;
-	stk.push('t');
-	stk.push('e');
-	stk.push('s');
-	stk.push('t');
-	stk.push('a');
-	stk.push('n');
+	stk.push('b');
+	stk.push('v');
+	stk.push('d');
 	stk.push('g');
-	stk.pop();
-	stk.pop();
-	stk.pop();
-	stk.push('i');
+	stk.push('r');
 	stk.push('n');
 	stk.push('g');
 	
