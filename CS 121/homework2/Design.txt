@@ -20,6 +20,7 @@ Funtions:
 		addAnimal - void - This function will add animals to the top of the stack
 		delAnimal - void - This function will search for the first occurace of an animal in the stack and remove that node. If no matching animals are found then the function will quit normally 
 		printAnimals - void - This function will print out the entire stack
+		countAnimals - void - This function will print out the number of each type of animal in the stack
 
 time/order of development;
 	For this development I estimate the project will take about 5 hours to complete.

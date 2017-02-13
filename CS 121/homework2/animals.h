@@ -11,6 +11,7 @@ class Animals{
 		void addAnimal(std::string anml);
 		void delAnimal(std::string anml);
 		void printAnimals();
+		void countAnimals();
 	private:
 		struct animal{
 			animal *next;

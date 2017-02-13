@@ -36,7 +36,11 @@ int main(){
 	
 	// print out the starting stack of animals
 	animal.printAnimals();
-	// give some more padding 
+	// more padding
+	cout << endl << endl;
+	// print the number of each type of animal to start with
+	animal.countAnimals();
+	// even more padding 
 	cout << endl << endl;
 
 	// now follow the rest of the file for commands
@@ -66,11 +70,13 @@ int main(){
 				cout << "unknown command: " << word;
 			}
 			// after every command, print the new stack
-			cout << endl << endl;
+			cout << endl;
 			animal.printAnimals();
-			cout << endl << endl;
+			cout << endl;
 		}
 	}
+	// output the final number of animals in the stack
+	animal.countAnimals();
 	// close the file when finished;
 	file.close();
 }
