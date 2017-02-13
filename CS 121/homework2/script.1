@@ -1,0 +1,732 @@
+Script started on Mon Feb 13 09:40:44 2017
+>cat animals.h
+// Zane Durkin      Homework #2     Bruce Bolden
+// File: animals.h
+// Date: 11/02/17
+
+#include <string>
+class Animals{
+	public:
+		Animals();
+		Animals(std::string anml);
+		~Animals();
+		void addAnimal(std::string anml);
+		void delAnimal(std::string anml);
+		void printAnimals();
+		void countAnimals();
+	private:
+		struct animal{
+			animal *next;
+			std::string type;
+		};
+		animal *head;
+};
+>cat animals.cpp
+// Zane Durkin      Homework #2     Bruce Bolden
+// File: animals.cpp
+// Date: 11/02/17
+
+#include "animals.h"
+#include <iostream>
+#include <string>
+#include <sstream>
+
+
+Animals::Animals(){
+	// for a basic constructor, just make the head pointer
+	head = NULL;
+}
+
+Animals::Animals(std::string anml){
+	// if there is an animal given with construction, add it the stack
+	animal *a = new animal();
+	a->type = anml;
+	a->next = NULL;
+	head = a;
+}
+
+Animals::~Animals(){
+	// delete all nodes upon deconstruction
+	animal *n;
+	animal *p = head;
+	while (p != NULL){
+		n = p;
+		p = p->next;
+		delete n;
+	}
+}
+
+void Animals::addAnimal(std::string anml){
+	// to add a new animal, first make a new node
+	animal *a = new animal();
+	// fill in the node's fields
+	a->type = anml;
+	a->next = head;
+	// move head to start at new node
+	head = a;
+}
+
+void Animals::delAnimal(std::string anml){
+	// to delete an animal, first check that the stack isin't empty
+	if(head != NULL){
+		// create variables to use for searching
+		animal *c = head;
+		animal *p;
+		// if the animal is found at the start of the stack, 
+		//	just move the header down
+		if(c->type == anml){
+			head = c->next;
+			delete c;
+		}else{
+			// if the animal is found further down the stack, 
+			//	loop through the stack until the animal is found or
+			//	you've reached the end of the stack
+			while( c->next != NULL ){
+				p = c;
+				c = c->next;
+				// if the animal is found
+				if(c->type == anml){
+					// remove the node from the stack
+					p->next = c->next;
+					// disconect the rest of the stack from the node
+					c->next = NULL;
+					// release the memory
+					delete c;
+					// break out of the loop and stop searching
+					break;
+				}
+			}
+		}
+	}else{
+		// if the stack is empty let the user know
+		std::cout << "Empty Stack" << std::endl;
+	}
+}
+
+void Animals::printAnimals(){
+	// to print out animals, first make a pointer to transverse the stack	
+	animal *c;
+	c = head;
+	// make sure the stack is not empty
+	if(head != NULL){
+		// go down the stack and output the animals;
+		while(c != NULL){
+			std::cout << c->type << std::endl;
+			c = c->next;
+		}
+	}else{
+		// if the stack is empty, tell the user
+		std::cout << "Empty Stack" << std::endl;
+	}
+}
+
+void Animals::countAnimals(){
+	// create first pointer to transverse the stack with
+	animal * a = head;
+	// create a second pointer to transverse the stack with
+	animal * c;
+	// create a counter to use for counting, to be used when counting the stuff that needs to be counted with a counter
+	int counter;
+	// create a string to hold the already counted animal types
+	std::string used = "";
+	// first check that the stack isint empty
+	if(a != NULL){
+		// for every node in the stack, try to count
+		while(a != NULL){
+			// start the counting at the current node in the stack
+			c = a;
+			// check if the string already holds this animal ( if it has already been counted)
+			if(used.find(a->type) == std::string::npos){
+				// if the animal hasn't been counted, add it to the string
+				used += a->type;
+				// reset the counter
+				counter = 0;
+				// loop through the stack to find all other animals of the same type
+				while(c != NULL){
+					// if another of the same animal is found, increment the counter
+					if(c->type == a->type){
+						counter++;
+					}
+					// transverse throught the stack
+					c = c->next;
+				}
+				// after looking, output how many animals of type a->type where found
+				std::cout << "There are " << counter << " " << a->type << "(s)" << std::endl;
+			}
+			// transverse to the next animal in the stack
+			a = a->next;
+		}// end while
+	}else{
+		// if the stack is empty, let the user know
+		std::cout << "Empty stack" << std::endl;
+	}
+}
+>cat Design.txt
+##### Animals Design #####
+
+overview:
+	This Program will build and manage a stack of animals. The program will allow a file to be imported which will present a current list of animals and the commands for eiting the stack of animals. A user will be prompted to choose the dat file he/she wishes to use. The first line in this file will be used to create the starting stack. The following lines will be used to add and remove animals from the stack based on the key word that the line is pre-fixed with. The word following the key word will be used as the name of the animal. 
+
+
+Internal Data Structure:
+	This program will require three files to run and one input file to work with. The three required files are:
+
+	hw2.cpp - This file will hold the main function. It will import the animals object and header files. This file will read in the inputed dat file and use the first line to build the starting stack. Then the program will read the following lines for adding and deleting animals from the stack. The first word of the lines  will be used to determine if the action should be adding or deleting an element. The following word will be used as the name of the animal to be added.  
+
+	animals.h - This file will hold the interface for the animal object and the prototypes for the methods of the objects. This file will also hold the struct definition for the animal stuct.
+
+	animals.cpp - This file will hold the implementation of the animal object.
+
+	animals.dat - This will be the data file that the user imports to the program. This file will hold the starting stack and the commands for adding and deleting animals from the stack
+
+Funtions:
+	The the animals object will have three major functions:
+		addAnimal - void - This function will add animals to the top of the stack
+		delAnimal - void - This function will search for the first occurace of an animal in the stack and remove that node. If no matching animals are found then the function will quit normally 
+		printAnimals - void - This function will print out the entire stack
+		countAnimals - void - This function will print out the number of each type of animal in the stack
+
+time/order of development;
+	For this development I estimate the project will take about 5 hours to complete.
+	The development will start with the design file (this). I will then move on to writing the animals.h header file. This will help with outlining what functions will need to be made for the animals object. I will then test the compiling of the header file. Next I will write the animals.cpp file with the complete functions. This will then be tested again to ensure that compiling works, And then tests to make sure the functions work correctly. Next the main function will be written to read and implement the data files. Once the main function is written more tests could be ran using the available data files. 
+>cat hw2.cpp
+//Zane Durkin      Homework 2     Bruce Bolden
+// File: hw2.cpp
+// Date: 11/02/17
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include "animals.h"
+using namespace std;
+
+int main(){
+	// make animal object
+	Animals animal;
+	// make other variable
+	ifstream file;
+	string word; 
+	string line;
+	// load file
+	cout << "Please enter the file you would like to read" << endl;
+	cin >> line;
+	file.open(line);
+
+	// read first line of file to build stack
+	getline(file, line);
+	
+	// generate starting stack
+	//  break the first line up by word
+	istringstream iss(line);
+	//  for each word(animal) add it to the stack
+	while(iss >> word){
+		animal.addAnimal(word);
+	}
+	// give some padding between chooseing file and output
+	cout << endl << endl;
+	
+	// print out the starting stack of animals
+	animal.printAnimals();
+	// more padding
+	cout << endl << endl;
+	// print the number of each type of animal to start with
+	animal.countAnimals();
+	// even more padding 
+	cout << endl << endl;
+
+	// now follow the rest of the file for commands
+	while(getline(file, line)){
+		// for everyline left in the file
+		// break the line up by words
+		istringstream iss(line);
+		// if the line has words - continue
+		if(iss >> word){
+			// if the first word is delete or add
+			if(word == "delete"){
+				// get the second word in the line
+				iss >> word;
+				// tell the user the action being done
+				cout << "deleting: " << word << endl;
+				// delete the animal from the list
+				animal.delAnimal(word);
+			}else if(word == "add"){
+				// get the second word in the line
+				iss >> word;
+				// tell the user the action being done
+				cout << "adding: " << word  << endl;
+				// add the animal to the list
+				animal.addAnimal(word);
+			}else{
+				// if the given command is not know, then tell the user
+				cout << "unknown command: " << word;
+			}
+			// after every command, print the new stack
+			cout << endl;
+			animal.printAnimals();
+			cout << endl;
+		}
+	}
+	// output the final number of animals in the stack
+	animal.countAnimals();
+	// close the file when finished;
+	file.close();
+}
+>cat animals1.dat
+aardvark bird cat dog hamster cat rabbit zebra
+delete zebra
+add dog
+add hamster
+delete rabbit
+delete dog
+delete cat
+delete bird
+delete bird
+delete aardvark
+add hamster
+>cat animals2.dat
+zebra lizard cat dog hamster bird frog snake rabbit horse dolphin
+add dolphin
+delete rabbit
+add hamster
+delete dog
+delete lizard
+add zebra
+add mouse
+delete dog
+delete bird
+add cat
+delete rabbit
+remove snake
+delete horse
+>cat hw2.cpp
+//Zane Durkin      Homework 2     Bruce Bolden
+// File: hw2.cpp
+// Date: 11/02/17
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include "animals.h"
+using namespace std;
+
+int main(){
+	// make animal object
+	Animals animal;
+	// make other variable
+	ifstream file;
+	string word; 
+	string line;
+	// load file
+	cout << "Please enter the file you would like to read" << endl;
+	cin >> line;
+	file.open(line);
+
+	// read first line of file to build stack
+	getline(file, line);
+	
+	// generate starting stack
+	//  break the first line up by word
+	istringstream iss(line);
+	//  for each word(animal) add it to the stack
+	while(iss >> word){
+		animal.addAnimal(word);
+	}
+	// give some padding between chooseing file and output
+	cout << endl << endl;
+	
+	// print out the starting stack of animals
+	animal.printAnimals();
+	// more padding
+	cout << endl << endl;
+	// print the number of each type of animal to start with
+	animal.countAnimals();
+	// even more padding 
+	cout << endl << endl;
+
+	// now follow the rest of the file for commands
+	while(getline(file, line)){
+		// for everyline left in the file
+		// break the line up by words
+		istringstream iss(line);
+		// if the line has words - continue
+		if(iss >> word){
+			// if the first word is delete or add
+			if(word == "delete"){
+				// get the second word in the line
+				iss >> word;
+				// tell the user the action being done
+				cout << "deleting: " << word << endl;
+				// delete the animal from the list
+				animal.delAnimal(word);
+			}else if(word == "add"){
+				// get the second word in the line
+				iss >> word;
+				// tell the user the action being done
+				cout << "adding: " << word  << endl;
+				// add the animal to the list
+				animal.addAnimal(word);
+			}else{
+				// if the given command is not know, then tell the user
+				cout << "unknown command: " << word;
+			}
+			// after every command, print the new stack
+			cout << endl;
+			animal.printAnimals();
+			cout << endl;
+		}
+	}
+	// output the final number of animals in the stack
+	animal.countAnimals();
+	// close the file when finished;
+	file.close();
+}
+>./a.out
+Please enter the file you would like to read
+animals1.dat
+
+
+zebra
+rabbit
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+
+There are 1 zebra(s)
+There are 1 rabbit(s)
+There are 2 cat(s)
+There are 1 hamster(s)
+There are 1 dog(s)
+There are 1 bird(s)
+There are 1 aardvark(s)
+
+
+deleting: zebra
+
+rabbit
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+adding: dog
+
+dog
+rabbit
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+adding: hamster
+
+hamster
+dog
+rabbit
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+deleting: rabbit
+
+hamster
+dog
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+deleting: dog
+
+hamster
+cat
+hamster
+dog
+cat
+bird
+aardvark
+
+deleting: cat
+
+hamster
+hamster
+dog
+cat
+bird
+aardvark
+
+deleting: bird
+
+hamster
+hamster
+dog
+cat
+aardvark
+
+deleting: bird
+
+hamster
+hamster
+dog
+cat
+aardvark
+
+deleting: aardvark
+
+hamster
+hamster
+dog
+cat
+
+adding: hamster
+
+hamster
+hamster
+hamster
+dog
+cat
+
+There are 3 hamster(s)
+There are 1 dog(s)
+There are 1 cat(s)
+>./a.out
+Please enter the file you would like to read
+animals2.dat
+
+
+dolphin
+horse
+rabbit
+snake
+frog
+bird
+hamster
+dog
+cat
+lizard
+zebra
+
+
+There are 1 dolphin(s)
+There are 1 horse(s)
+There are 1 rabbit(s)
+There are 1 snake(s)
+There are 1 frog(s)
+There are 1 bird(s)
+There are 1 hamster(s)
+There are 1 dog(s)
+There are 1 cat(s)
+There are 1 lizard(s)
+There are 1 zebra(s)
+
+
+adding: dolphin
+
+dolphin
+dolphin
+horse
+rabbit
+snake
+frog
+bird
+hamster
+dog
+cat
+lizard
+zebra
+
+deleting: rabbit
+
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+dog
+cat
+lizard
+zebra
+
+adding: hamster
+
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+dog
+cat
+lizard
+zebra
+
+deleting: dog
+
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+cat
+lizard
+zebra
+
+deleting: lizard
+
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+cat
+zebra
+
+adding: zebra
+
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+cat
+zebra
+
+adding: mouse
+
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+cat
+zebra
+
+deleting: dog
+
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+bird
+hamster
+cat
+zebra
+
+deleting: bird
+
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+hamster
+cat
+zebra
+
+adding: cat
+
+cat
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+hamster
+cat
+zebra
+
+deleting: rabbit
+
+cat
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+hamster
+cat
+zebra
+
+unknown command: remove
+cat
+mouse
+zebra
+hamster
+dolphin
+dolphin
+horse
+snake
+frog
+hamster
+cat
+zebra
+
+deleting: horse
+
+cat
+mouse
+zebra
+hamster
+dolphin
+dolphin
+snake
+frog
+hamster
+cat
+zebra
+
+There are 2 cat(s)
+There are 1 mouse(s)
+There are 2 zebra(s)
+There are 2 hamster(s)
+There are 2 dolphin(s)
+There are 1 snake(s)
+There are 1 frog(s)
+>exit
+Script done on Mon Feb 13 09:41:42 2017
