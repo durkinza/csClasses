@@ -1,0 +1,11 @@
+ 1 Art    C  2
+ 2 Steve  R  4
+ 2 Laura  D  3
+ 4 Bob    D  4
+ 9 Allan  N  4
+12 Mark   D  2
+12 John   C  3
+13 Bob    R  5
+14 Susan  C  2
+15 Marv   D  4
+15 Elvis  R  5

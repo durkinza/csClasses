@@ -1,0 +1,34 @@
+## Bank Line Design ##
+
+overview:
+	This Program will simulate the organization of customer's at a bank. A data file will be read to introduce customers into the simulation. The virtual clock cycle will start at 1, when the first customer is said to enter, and then the program will continue until there are no customers left in line and there are no more lines left to proccess in the data file. Customers will by default enter into the line with the least number of customers currently in the line. At the end of a clock cycle, if a line becomes empty, a customer that is in the back of another line may switch to the empty line. The express line will only allow customers with check and cash depositing only. Each transaction in a normal line will take four clock cycles, while transactions in an express line will take only two clock cycles. The clock time will be incremented at the end of every transaction period. Customers that have finished their transactions will leave the front of the line. finally after every cycle where a change has happened, the current look of lines will be displayed. 
+
+Internal Data Structure:
+	This program will common class to support all lines, since all lines will have the same functionalities, there will be no need to create multple classes. The main function will handle the clock cycles and when transactions should be handled.
+	hw3.cpp - This file will hold the main function, along with a few other functions such as, line switching, counting clock cycles, and displaying the current line setup. 
+
+	Line.h - This file will hold the interfaces for the Line object and the prototypes for the methods of the object. 
+
+	Line.cpp - This file will hold the implementation of the Line object. And will handle the removal of customers from both the front and back of the line.
+
+	Customers.dat - This file will be the data file used for simulating new customers. Customers will introduced when the clock cycle matches their 
+
+Functions:
+	The Line object will have multple functions for handling the lines.
+	The hw3.cpp will also hold a few functions for the transfering of customers and the handling of the clock cycles and transactions. 
+	addCust - void - This function will be overloaded with the ability to add new customers by either their new information, or as a customer variable. which will make the transfering of customers between lines much easier
+	
+	nextTrans() - void - This function will be called when the line has finished a transaction, This function will decrement the remaining transactions left by a customer and when no transactions are left, this function will call delCust for the removal of the customer from the front of the line.
+	
+	delCust - void - This function will remove a customer from the front of the line.
+	
+	popLine() - Line::customer - This function will remove a customer from the end of a line, and will return that customer back the calling function. This will be used for transfering customers from one line to the next.
+	
+	printLine(); - void - This function will be used to print out the current standing of the line and how many transactions are left for each customer. 
+
+	countLine() - int - This function will count how many customers are currently in the line. It will then return the number of customers in that line.
+
+	addToShortest(); - void - This function will determine the line with the lowest number of people and add the given customer to that list
+
+time/order of development:
+	For this development I estimate the project will take about 7-10 hours to complete.
