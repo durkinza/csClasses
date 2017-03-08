@@ -30,5 +30,9 @@ Functions:
 
 	addToShortest(); - void - This function will determine the line with the lowest number of people and add the given customer to that list
 
+	switchLines() - void - This function will move a given customer from one line to another, and will check to see if they have the correct activity to use the express line which tring to switch to the express line
+	
+	checkLines() - void - This funtion will check the lines to see if they are empty. when they are empty this function will check other lines to see if they have extra people to move over.
+
 time/order of development:
 	For this development I estimate the project will take about 7-10 hours to complete.

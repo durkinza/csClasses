@@ -100,14 +100,14 @@ void Line::printLine(){
 	// make sure the stack is not empty
 	if(head != NULL){
 		// go down the stack and output the lines;
-		std::cout << std::endl;
+		std::cout << std::endl << " " << countLine() << " ";
 		while(c != NULL){
 			std::cout << "| " << c->name << ":" << c->transactions << ":" << c->activity << " ";
 			c = c->next;
 		} 
 	}else{
 		// if the stack is empty, tell the user
-		std::cout << std::endl << "| Empty Line";
+		std::cout << std::endl << " " << countLine() << " | Empty Line";
 	}
 }
 
