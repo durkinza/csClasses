@@ -28,7 +28,7 @@ int main(){
 	string url;
 	int j = 0;
 	while(!file.eof()){
-		cout << "getting movie" << endl;
+		//cout << "getting movie" << endl;
 		getline(file, title);
 		// check that the next line has info before continuing
 		while(title==""){
@@ -52,6 +52,7 @@ int main(){
 		}while( (line != "") && (numOfActors<20) );
 		BTree.addNode(title, genre, url, actor, numOfActors);
 	}
-	BTree.printTitles();
-	BTree.printActorsOfShow("M*A*S*H");
+//	BTree.printTitles();
+//	BTree.printActorsOfShow("M*A*S*H");
+	BTree.printShowsOfActor("Nancy Cartwright");
 }

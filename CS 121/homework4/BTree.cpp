@@ -6,6 +6,7 @@
 #include "BTree.h"
 #include <iostream>
 #include <string>
+#include <sstream>
 
 BinaryTree::BinaryTree(){
 	head = NULL;
@@ -26,7 +27,7 @@ void BinaryTree::_DeleteTree(btree *tree){
 }
 
 void BinaryTree::printTitles(){
-	std::cout << "starting print" << std::endl;
+	// use a different function so that function can be recursive
 	_printTitles(head, 0);
 }
 void BinaryTree::_printTitles(btree *tree, int spaces){
@@ -36,12 +37,13 @@ void BinaryTree::_printTitles(btree *tree, int spaces){
 		for(int i = 0; i<spaces; i++){
 			space = space+" ";
 		}
+		// use spaces to keep the tree formated correctly, and give curent height in tree
 		std::cout << space << (spaces/4) << ": " << tree->title << std::endl<<std::endl;
 		_printTitles(tree->right, spaces+4);
 	}
 }
 void BinaryTree::printActorsOfShow(std::string show){
-	std::cout << "starting print" << std::endl;
+	// using seperate function 
 	_printActorsOfShow(head, show);
 }
 void BinaryTree::_printActorsOfShow(btree *tree, std::string show){
@@ -53,9 +55,34 @@ void BinaryTree::_printActorsOfShow(btree *tree, std::string show){
 				std::cout << tree->actors[i] << std::endl;
 			}
 		}else{
+			// printing in pre-order is ok, because only one show will be printed
 			_printActorsOfShow(tree->left, show);	
 			_printActorsOfShow(tree->right, show);
 		}
+	}
+}
+
+void BinaryTree::printShowsOfActor(std::string actor){
+	// use a seperate function that can use recursion
+	_printShowsOfActor(head, actor);
+}
+
+void BinaryTree::_printShowsOfActor(btree *tree, std::string actor){
+	if(tree!=NULL){
+		// print shows in pre-order form, this will keep the list alphabetical
+		_printShowsOfActor(tree->left, actor);	
+		// if the given title is in or matches the current node
+		bool found = false;
+		for(int i=0; i<tree->numOfActors; i++){
+			if(tree->actors[i].find(actor) != std::string::npos){
+				found = true;
+			}
+		}
+		if(found){
+			// print out all of the actors
+			std::cout << tree->title << std::endl;
+		}
+		_printShowsOfActor(tree->right, actor);
 	}
 }
 
@@ -64,6 +91,7 @@ void BinaryTree::addNode(std::string title, std::string genre, std::string url, 
 	btree * newleaf = new btree;
 	
 	newleaf->title = title;
+	newleaf->releaseYear = std::stoi(title.substr(title.find("(")+1, 4));
 	newleaf->genre = genre;
 	newleaf->url = url;
 	newleaf->right = NULL;
@@ -74,7 +102,6 @@ void BinaryTree::addNode(std::string title, std::string genre, std::string url, 
 	newleaf->numOfActors = numOfActors;
 	if(head == NULL){
 		head = newleaf;
-		std::cout << "head is: " << head->title << std::endl;
 	}else{
 		btree * parentptr = head;
 		btree * targetptr = parentptr;
@@ -82,44 +109,29 @@ void BinaryTree::addNode(std::string title, std::string genre, std::string url, 
 		while(targetptr != NULL){
 			// see if the new title is lower in the alphabet that then current parent
 			if(newleaf->title < targetptr->title){
-				std::cout << "    going left" << std::endl;
 				parentptr = targetptr;
 				targetptr = targetptr->left;
-				std::cout << "        parentptr is now: " << parentptr->title << std::endl;
 			}else{
 				// if the current title is higher thatn the current parent
 				parentptr = targetptr;
 				targetptr = targetptr->right;
-				std::cout << "    going right" << std::endl;
-				std::cout << "        parentptr is now: " << parentptr->title << std::endl;
 			}
 		}
-		//
-		//targetptr = newleaf;
+		// see if node should be added to the left or the right
 		if(newleaf->title < parentptr->title){
 			parentptr->left = newleaf;
-			std::cout << "left child is" << parentptr->left->title << std::endl;
 		}else{
 			parentptr->right = newleaf;
-			std::cout << "right child is" << parentptr->right->title << std::endl;
 		}
 	}
-/*
-	if(head == NULL){
-		head = newleaf;
-	}else{
-	_addNode(head, newleaf);
-	}*/
 }
+
 void BinaryTree::_addNode(btree * tree, btree *data){
 	if(tree == NULL){
-		std::cout << "addding node" << std::endl;
 		tree = data;
 	}else if(data->title < tree->title){
-		std::cout << "    going left" << std::endl;
 		_addNode(tree->left, data);
 	}else{		
-		std::cout << "    going right" << std::endl;
 		_addNode(tree->right, data);
 	}
 }
