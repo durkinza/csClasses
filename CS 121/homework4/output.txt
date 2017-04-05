@@ -1,0 +1,348 @@
+Script started on Tue Apr  4 20:43:55 2017
+>./a.out
+Please enter the data file you would like to use
+hw4.dat
+            3: 3rd Rock from the Sun (1996-2001)
+
+        2: Alfred Hitchcock Presents (1955-1962)
+
+                        6: All in the Family (1971-1979)
+
+                            7: American Dad! (2005-2014)
+
+                    5: Animaniacs (1993-1998)
+
+                        6: Babylon 5 (1994-1998)
+
+                4: Banacek (1972-1974)
+
+                            7: Batman (1966-1968)
+
+                        6: Battlestar Galactica (1978-1979)
+
+                            7: Benson (1979-1986)
+
+                    5: Bewitched (1964-1972)
+
+                                8: Burke's Law (1963-1966)
+
+                            7: CHiPs (1977-1983)
+
+                                8: Charlie's Angels (1976-1981)
+
+                        6: Coach (1989-1997)
+
+            3: Dexter's Laboratory (1996-2003)
+
+                4: ER (1994-2009)
+
+    1: Evening Shade (1990-1994)
+
+                    5: F Troop (1965-1967)
+
+                        6: Family Ties (1982-1989)
+
+                4: Futurama (1999-2014)
+
+                    5: Gidget (1965-1966)
+
+            3: Gilligan's Island (1964-1967)
+
+                            7: Gomer Pyle: USMC (1964-1969)
+
+                                    9: Happy Days (1974-1984)
+
+                                8: Herman's Head (1991-1994)
+
+                        6: Hogan's Heroes (1965-1971)
+
+                    5: I Dream of Jeannie (1965-1970)
+
+                4: I Love Lucy (1951-1957)
+
+                    5: Ironside (1967-1975)
+
+        2: JAG (1995-2005)
+
+0: Jake and the Fatman (1987-1992)
+
+        2: Kojak (1973-1978)
+
+    1: Kung Fu: The Legend Continues (1993-1997)
+
+                            7: Lassie (1954-1964)
+
+                        6: Law & Order (1990-2010)
+
+                    5: Leave It to Beaver (1957-1963)
+
+                        6: Little House on the Prairie  (1974-1983)
+
+                            7: Lost (2004-2010)
+
+                                8: Lost in Space (1965-1968)
+
+                4: M*A*S*H (1972-1983)
+
+            3: MacGyver (1985-1992)
+
+                4: Mannix (1967-1975)
+
+                        6: Married with Children (1987-1997)
+
+                    5: Mary Tyler Moore (1970-1977)
+
+        2: Matlock (1986-1995)
+
+                    5: McCloud (1970-1977)
+
+                            7: McHale's Navy (1962-1966)
+
+                                        10: Mister Ed (1958-1966)
+
+                                    9: Mod Squad (1968-1973) 
+
+                                8: Mork & Mindy (1978-1982)
+
+                                        10: Mr. Lucky (1959-1960)
+
+                                    9: Murder, She Wrote (1984-1996)
+
+                        6: My Three Sons (1960-1972)
+
+                            7: NCIS (2003-2014)
+
+                4: Newhart (1982-1990)
+
+                    5: Night Court (1984-1992)
+
+            3: Northern Exposure (1990-1995)
+
+                            7: Quantum Leap (1989-1993)
+
+                        6: Rawhide (1959-1965)
+
+                                        10: Riptide (1984-1986)
+
+                                    9: Room 222 (1969-1974)
+
+                                8: Scarecrow and Mrs. King (1983-1987)
+
+                                    9: Seinfeld (1989-1998)
+
+                            7: Star Trek (1966-1969)
+
+                                    9: Star Trek: Deep Space Nine (1993-1999)
+
+                                8: Star Trek: The Next Generation (1987-1994)
+
+                                    9: Taxi (1978-1983)
+
+                    5: The A-Team (1983-1987)
+
+                                8: The Adventures of Ozzie & Harriet (1952-1966)
+
+                            7: The Andy Griffith Show (1960-1968)
+
+                        6: The Beverly Hillbillies (1962-1971)
+
+                                    9: The Big Valley (1965-1969)
+
+                                8: The Bob Newhart Show (1972-1978)
+
+                            7: The Bullwinkle Show (1961-1964)
+
+                                8: The Carol Burnett Show (1967-1978)
+
+                                        10: The Cosby Show (1984-1992)
+
+                                    9: The Fall Guy (1981-1986)
+
+                4: The Flying Nun (1967-1970)
+
+                            7: The Fugitive (1963-1967)
+
+                                8: The Honeymooners (1955-1956)
+
+                        6: The Invaders (1967-1968)
+
+                                            11: The Jack Benny Program (1950-1965)
+
+                                        10: The Jeffersons (1975-1985)
+
+                                            11: The Lucy Show (1962-1968)
+
+                                    9: The Man from U.N.C.L.E. (1964-1968)
+
+                                8: The Many Loves of Dobie Gillis (1959-1963)
+
+                            7: The Phil Silvers Show (1955-1959)
+
+                    5: The Saint (1962-1969)
+
+                                8: The Simpsons (1989-2014)
+
+                            7: The Six Million Dollar Man (1974-1978)
+
+                                    9: The Streets of San Francisco (1972-1977)
+
+                                        10: The Twilight Zone (1959-1964)
+
+                                                12: The Wild Wild West (1965-1969)
+
+                                                    13: The X-Files (1993-2002)
+
+                                            11: Topper (1953-1955)
+
+                                8: Voyage to the Bottom of the Sea (1964-1968)
+
+                                    9: WKRP in Cincinnati (1978-1982)
+
+                        6: Walker, Texas Ranger (1993-2001)
+
+                            7: Wonder Woman (1975-1979)
+
+
+
+The actors of "The Saint"
+Roger Moore
+Ivor Dean
+Leslie Crawford
+Justine Lord
+
+The actors of "Benson"
+Robert Guillaume
+James Noble	
+Inga Swenson
+Missy Gold
+Rene Auberjonois
+Ethan Phillips
+Didi Conn
+
+The actors of "Dexter's Laboratory"
+Alan Alda
+Loretta Swit
+Jamie Farr
+William Christopher	
+Harry Morgan
+Mike Farrell
+Kellye Nakahara
+Gary Burghoff
+David Ogden Stiers
+Larry Linville
+
+The actors of "M*A*S*H"
+Henry Winkler
+Marion Ross
+Tom Bosley
+Erin Moran
+Anson Williams
+Ron Howard
+Don Most
+Al Molinaro
+Scott Baio
+
+The actors of "Happy Days"
+Kath Soucie
+Jeff Bennett
+Christine Cavanaugh
+Frank Welker
+Tom Kenny
+Allison Moore
+Kathryn Cressida
+Rob Paulsen
+
+
+Shows that Nancy Cartwright was an actress in:
+Animaniacs (1993-1998)
+The Simpsons (1989-2014)
+
+
+Shows that Marcia Wallace was an actresss in:
+The Bob Newhart Show (1972-1978)
+The Simpsons (1989-2014)
+
+
+Shows that Bill Daily was an actor in:
+I Dream of Jeannie (1965-1970)
+The Bob Newhart Show (1972-1978)
+
+
+Shows that Joe Penney was an actor in:
+Jake and the Fatman (1987-1992)
+Riptide (1984-1986)
+
+
+Shows that Leonard Nimoy was an actor in:
+Star Trek (1966-1969)
+
+
+Shows that Richard Dean Anderson was an actor in:
+MacGyver (1985-1992)
+
+
+All shows between 1965 and 1975:
+All in the Family (1971-1979)
+Banacek (1972-1974)
+Batman (1966-1968)
+F Troop (1965-1967)
+Gidget (1965-1966)
+Happy Days (1974-1984)
+Hogan's Heroes (1965-1971)
+I Dream of Jeannie (1965-1970)
+Ironside (1967-1975)
+Kojak (1973-1978)
+Little House on the Prairie  (1974-1983)
+Lost in Space (1965-1968)
+M*A*S*H (1972-1983)
+Mannix (1967-1975)
+Mary Tyler Moore (1970-1977)
+McCloud (1970-1977)
+Mod Squad (1968-1973) 
+Room 222 (1969-1974)
+Star Trek (1966-1969)
+The Big Valley (1965-1969)
+The Bob Newhart Show (1972-1978)
+The Carol Burnett Show (1967-1978)
+The Flying Nun (1967-1970)
+The Invaders (1967-1968)
+The Jeffersons (1975-1985)
+The Six Million Dollar Man (1974-1978)
+The Streets of San Francisco (1972-1977)
+The Wild Wild West (1965-1969)
+Wonder Woman (1975-1979)
+
+
+All shows between 1955 and 1965:
+Alfred Hitchcock Presents (1955-1962)
+Bewitched (1964-1972)
+Burke's Law (1963-1966)
+F Troop (1965-1967)
+Gidget (1965-1966)
+Gilligan's Island (1964-1967)
+Gomer Pyle: USMC (1964-1969)
+Hogan's Heroes (1965-1971)
+I Dream of Jeannie (1965-1970)
+Leave It to Beaver (1957-1963)
+Lost in Space (1965-1968)
+McHale's Navy (1962-1966)
+Mister Ed (1958-1966)
+Mr. Lucky (1959-1960)
+My Three Sons (1960-1972)
+Rawhide (1959-1965)
+The Andy Griffith Show (1960-1968)
+The Beverly Hillbillies (1962-1971)
+The Big Valley (1965-1969)
+The Bullwinkle Show (1961-1964)
+The Fugitive (1963-1967)
+The Honeymooners (1955-1956)
+The Lucy Show (1962-1968)
+The Man from U.N.C.L.E. (1964-1968)
+The Many Loves of Dobie Gillis (1959-1963)
+The Phil Silvers Show (1955-1959)
+The Saint (1962-1969)
+The Twilight Zone (1959-1964)
+The Wild Wild West (1965-1969)
+Voyage to the Bottom of the Sea (1964-1968)
+>exit
+Script done on Tue Apr  4 20:44:04 2017

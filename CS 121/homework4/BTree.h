@@ -11,7 +11,6 @@ class BinaryTree{
 		void printActorsOfShow(std::string show);
 		void printShowsOfActor(std::string actor);
 		void printShowsOfYears(int startYear, int endYear); 
-		void printTree();
 		void addNode(std::string title, std::string genre, std::string url, std::string actors[], int numOfActors);
 	private:
 		typedef struct btree{

@@ -1,0 +1,39 @@
+## Binary Search Tree Design ##
+Zane Durkin
+Bruce Bolden
+Homework #4
+April 2017
+
+overview:
+	This Program will build and organize a binary tree of tv shows. A data file will be read to build the tree of tv shows. To order the tree while building it, the code will sort the shows alphabetically, shows that have a lower alphbetical order will be placed on the left side of their parent, show that have a higher alphabetical order will be placed on the right side of their parent, and shows that are already in the list will be ignored.
+
+Internal Data Structure:
+	This program will utalize a binary tree class to support the creation, printing, and searching of the list of movies. 
+	hw4.cpp  This file will hold the main function and will read the data file for show names. 
+
+	BTree.h - This file will hold the interfaces for the binary tree object including the prototypes and the methods of the object.
+	
+	BTree.cpp - This file will hold the implementation of the Binary tree object. This file will handle all of the functions that deal with the object
+
+	hw4.dat - This file will be the data file used to populate the Binary tree. 
+
+Functions:
+	
+	printTitles() - void - This function will call the private function _printTitles() and will pass in the head of the tree. 
+	
+	_printTitles(btree *tree) - void - this function will loop throught the tree recursivly and will print out the tree in a pre-order fashion. This printing will be in alphabetical due to the organization of the tree.
+
+	printActorsOfShow(std::string show) - void - This function will call the private function _printActorsOfShow, passing in the head of the tree and the given show name in doing so.
+
+	_printActorsOfShow(btree *tree, std::string show) - void - This function will recursively search through the binary tree. When a show with a matching name is found, all of the actors of that show will be written out.
+
+	printShowsOfActor(std::string actor) - void - This function will call the private function _printShowsOfActor, passing in the head of the tree and the given actor name in doing so;
+
+	_printShowsOfActor(btree *tree, std::string actor) - void - This function will recursively search through the binary tree. When a show is found to have the given actor in the list of actors, that show will be written out.
+
+	printShowsOfYears(int startYear, int endYear) - void - This function will call the private function _prinShowsOfYears, passing the head of the tree and the given years when doing so;
+	 
+	_printShowsOfYears(btree *tree, int startYear, int endYear) - void - This function will recursively search through the binary tree for shows that where released during the given years. When a show is found with a release date during or inbetween the given years, the name will be written out
+
+	addNode(std::string title, std::string genre, std::string url, std::string actors[], int numOfActors) - void -
+		This function will create a new leaf with the given information. This leaf will be sorted into the tree based upon the title of the show. 
