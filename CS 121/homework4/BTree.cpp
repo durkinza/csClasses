@@ -111,27 +111,38 @@ void BinaryTree::addNode(std::string title, std::string genre, std::string url, 
 			if(newleaf->title < targetptr->title){
 				parentptr = targetptr;
 				targetptr = targetptr->left;
-			}else{
+			}else if(newleaf->title > targetptr->title){
 				// if the current title is higher thatn the current parent
 				parentptr = targetptr;
 				targetptr = targetptr->right;
+			}else{
+				// if they are equal, stop transversing and break out
+				parentptr = targetptr;
+				break;
 			}
 		}
 		// see if node should be added to the left or the right
 		if(newleaf->title < parentptr->title){
 			parentptr->left = newleaf;
-		}else{
+		}else if(newleaf->title > parentptr->title){
 			parentptr->right = newleaf;
-		}
+		}// if the newleaf already exists, it will be ignored
 	}
 }
 
-void BinaryTree::_addNode(btree * tree, btree *data){
-	if(tree == NULL){
-		tree = data;
-	}else if(data->title < tree->title){
-		_addNode(tree->left, data);
-	}else{		
-		_addNode(tree->right, data);
+void BinaryTree::printShowsOfYears(int startYear, int endYear){
+	_printShowsOfYears(head, startYear, endYear);
+}
+void BinaryTree::_printShowsOfYears(btree *tree, int startYear, int endYear){
+	// use a seperate function that can use recursion
+	if(tree!=NULL){
+		// print shows in pre-order form, this will keep the list alphabetical
+		_printShowsOfYears(tree->left, startYear, endYear);	
+		// if the given title is in or matches the current node
+		if(tree->releaseYear >= startYear && tree->releaseYear <= endYear){
+			// print out all of the actors
+			std::cout << tree->title << std::endl;
+		}
+		_printShowsOfYears(tree->right, startYear, endYear);
 	}
 }

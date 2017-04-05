@@ -10,6 +10,7 @@ class BinaryTree{
 		void printTitles();
 		void printActorsOfShow(std::string show);
 		void printShowsOfActor(std::string actor);
+		void printShowsOfYears(int startYear, int endYear); 
 		void printTree();
 		void addNode(std::string title, std::string genre, std::string url, std::string actors[], int numOfActors);
 	private:
@@ -28,7 +29,7 @@ class BinaryTree{
 		void _printTitles(btree *tree, int spaces);
 		void _printShowsOfActor(btree *tree, std::string actor);
 		void _printActorsOfShow(btree *tree, std::string show);
-		void _addNode(btree *tree, btree * data);
+		void _printShowsOfYears(btree *tree, int startYear, int endYear);
 
 		
 };

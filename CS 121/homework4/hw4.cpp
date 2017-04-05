@@ -52,7 +52,28 @@ int main(){
 		}while( (line != "") && (numOfActors<20) );
 		BTree.addNode(title, genre, url, actor, numOfActors);
 	}
-//	BTree.printTitles();
-//	BTree.printActorsOfShow("M*A*S*H");
-	BTree.printShowsOfActor("Nancy Cartwright");
+BTree.printTitles();
+cout << endl << endl;
+cout << "The actors of \"The Saint\"" << endl;
+BTree.printActorsOfShow("The Saint");
+cout << endl << "The actors of \"Benson\"" << endl;
+BTree.printActorsOfShow("Benson");
+cout << endl << "The actors of \"Dexter's Laboratory\"" << endl;
+BTree.printActorsOfShow("Dexter's Laboratory");
+cout << endl << endl << "Shows that Nancy Cartwright was an actress in:" << endl;
+BTree.printShowsOfActor("Nancy Cartwright");
+cout << endl << endl << "Shows that Marcia Wallace was an actresss in:" << endl;
+BTree.printShowsOfActor("Marcia Wallace");
+cout << endl << endl << "Shows that Bill Daily was an actor in:" << endl;
+BTree.printShowsOfActor("Bill Daily");
+cout << endl << endl << "Shows that Joe Penney was an actor in:" << endl;
+BTree.printShowsOfActor("Joe Penny");
+cout << endl << endl << "Shows that Leonard Nimoy was an actor in:" << endl;
+BTree.printShowsOfActor("Leonard Nimoy");
+cout << endl << endl << "Shows that Richard Dean Anderson was an actor in:" << endl;
+BTree.printShowsOfActor("Richard Dean Anderson");
+cout << endl << endl << "All shows between 1965 and 1975:" << endl;
+  BTree.printShowsOfYears(1965, 1975);
+cout << endl << endl << "All shows between 1955 and 1965:" << endl;
+  BTree.printShowsOfYears(1955, 1965);
 }
