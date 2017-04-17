@@ -1,14 +1,9 @@
 ; Zane Durkin (durk7832)  CS150 Michael Wilder
 ; Homework 6
 ; April 16, 2017
-;.device atmega328p
+
 rjmp entry
-
 .org 0x60
-
-
-; portB = 0x20
-; pin 13 = pin 5 on port B.
 
 entry:
     LDI r16, 0xFF
@@ -20,7 +15,7 @@ entry:
     rcall three
     rcall two   
 
-    rcall delay 
+    rcall delay ; wait seven units before starting again 
     rcall delay 
     rcall delay 
     rcall delay 
@@ -86,14 +81,14 @@ delay:
     LDI r20, 255
     LDI r21, 10
     BR:
-	ADD r19, r18
-	BRBC 1, BR
-	ADD r20, r18
-	NOP
-	BRBC 1, BR
-	ADD r21, r18
-	NOP
-	BRBC 1, BR
+		ADD r19, r18
+		BRBC 1, BR
+		ADD r20, r18
+		NOP
+		BRBC 1, BR
+		ADD r21, r18
+		NOP
+		BRBC 1, BR
 	RET
 
 dot:
