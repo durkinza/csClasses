@@ -8,12 +8,13 @@ rjmp entry
 entry:
     LDI r16, 0xFF
     LDI r17, 0x00
+    LDI r18, -1
     OUT 0x04, r16 ; enable writing for output 0x05
 
-    rcall seven
-    rcall eight
-    rcall three
-    rcall two   
+    rcall seven ; - - . . .
+    rcall eight ; - - - . .
+    rcall three ; . . . - -
+    rcall two   ; . . - - -
 
     rcall delay ; wait seven units before starting again 
     rcall delay 
@@ -79,7 +80,7 @@ two:	          ; . . - - -
 delay:
     LDI r19, 255
     LDI r20, 255
-    LDI r21, 10
+    LDI r21, 50
     BR:
 		ADD r19, r18
 		BRBC 1, BR
@@ -107,9 +108,9 @@ dash:
     RET		    ; return
 
 led_on:
-    OUT 0x05, r16 ; set output to FF (on)
+    OUT 5, r16 ; set output to FF (on)
     RET
 
 led_off:
-    OUT 0x05, r17 ; set output to 00 (off)
+    OUT 5, r17 ; set output to 00 (off)
     RET
