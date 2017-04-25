@@ -3,29 +3,32 @@
  */
 
 #include <iostream>
-#include <cstdlib>
-
+#include <string>
+#include <fstream>
+#include <sstream>
+#include "hash.h"
 using namespace std;
 
-#include "hash.h"
 
 
 int main(){  
       //  Put a few values in the table...
-   (void)Insert( "One",  "1" );
-   (void)Insert( "One",  "11" );
-   (void)Insert( "Two",  "2" );
-   (void)Insert( "Four", "4" );
-   (void)Insert( "Five", "5" );
-   (void)Insert( "Six",  "6" );
-   (void)Insert( "Nine", "9" );
-   
-   (void)Insert( "Yes", "1" );
-   (void)Insert( "YES", "1" );
-   (void)Insert( "No",  "0" );
-   (void)Insert( "NO",  "0" );
+	ifstream file;
+	string line;
+	char * cLine;
+	cout << "Please enter the data file you would like to use" << endl;
+	cin >> line;
+	file.open(line);
+	
+	while(!file.eof()){
+		getline(file, line);
+		cout << line << endl;
+		//cLine = line.c_str();
+		cLine = (char *)malloc(line.size() + 1);
+		memcpy(cLine, line.c_str(), line.size() + 1);
+		(void)Insert(cLine, cLine);
+	} 
    
    PrintHashTable();
          
-   return EXIT_SUCCESS;
 } 
