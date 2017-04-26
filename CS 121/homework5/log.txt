@@ -1,0 +1,18 @@
+Zane Durkin
+Bruce Bolden
+CS 121
+Homework 5
+
++===========+===================+
+|    Date   |      time(s)      |
++===========+===================+
+|  04/24/17 | 07:30PM - 12:00AM |
++-----------+-------------------+
+|  04/25/17 | 06:15PM - 08:45PM |
++-----------+-------------------+
+
+
+04/24/17 - Modified code to read from external dictionary file.
+
+04/25/17 - Added min max bucket counting, search function, and showing where an element is in the bucket. Added new function search, which utalizes Lookup function to find elements and output whether they were found. Recorded scripts for all dictionaries in all different sizes. 
+	 

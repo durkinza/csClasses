@@ -10,7 +10,6 @@
 using namespace std;
 
 
-
 int main(){  
       //  Put a few values in the table...
 	ifstream file;
@@ -20,15 +19,28 @@ int main(){
 	cin >> line;
 	file.open(line);
 	
+	
 	while(!file.eof()){
 		getline(file, line);
-		cout << line << endl;
-		//cLine = line.c_str();
+		//cout << line << endl;
 		cLine = (char *)malloc(line.size() + 1);
 		memcpy(cLine, line.c_str(), line.size() + 1);
 		(void)Insert(cLine, cLine);
 	} 
    
    PrintHashTable();
-         
+	    
+	search( "zymotechnics" );
+	search( "superdiabolically" );
+	search( "blepharosphincterectomy" );
+	search( "unmisinterpretable" );
+	search( "tennis" );
+	search( "classy");
+	search( "machinotechnique");
+	search( "breakfast");
+	search( "cucumber");
+	search( "fishy");
+	search( "coffeetime");
+
+	return EXIT_SUCCESS;
 } 

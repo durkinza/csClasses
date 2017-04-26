@@ -14,9 +14,10 @@ struct nList     /*  table entry:  */
 typedef struct nList *NListPtr;
 
 unsigned Hash( char *s );
-NListPtr Lookup( char *s );
+NListPtr Lookup( char *s , int &x);
 NListPtr Insert( char *name, char *defn );
 
+void search( char *s );
 void PrintHashTable();
 
 #endif  /*  HASH_H  */

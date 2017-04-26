@@ -14,8 +14,7 @@ using namespace std;
 
 #include "hash.h"
 
-
-const int HASH_TABLE_SIZE = 101;
+const int HASH_TABLE_SIZE = 49957;
 static NListPtr hashTable[HASH_TABLE_SIZE];
 
     //  Prototypes
@@ -42,18 +41,34 @@ unsigned Hash( char *s )
  *  Look for s in hashTable
  */
 
-NListPtr Lookup( char *s )
+NListPtr Lookup( char *s , int &x)
 {
     NListPtr np;
-    
+	x=0;
     for( np = hashTable[Hash(s)] ; np != NULL ; np = np->next )
     {
+		x++;
         if( strcmp(s, np->name) == 0 )
             return np;    //  found
     }
     
     return NULL;          //  not found
 }
+
+/* search
+ * look for (word) in hash table
+ */
+
+void search( char *w ){
+	int x = 0;
+	NListPtr np = Lookup(w, x);
+	if(np != NULL){
+		cout << np->name << " Found in " << x << " probe(s)" << endl;
+	}else{
+		cout << w << " could not be found" << endl;
+	}
+}
+
 
 /*  Insert
  *  Put (name, defn) in hash table
@@ -63,8 +78,8 @@ NListPtr Insert( char *name, char *defn )
 {
     unsigned hashVal;
     NListPtr np;
-    
-    if( (np = Lookup(name)) == NULL )  // not found
+	int temp; 
+    if( (np = Lookup(name, temp)) == NULL )  // not found
     {
         np = (NListPtr) malloc(sizeof(*np));
         if( np == NULL || (np->name = Strdup(name)) == NULL )
@@ -96,17 +111,39 @@ void PrintHashTable()
     cout << "Hash table contents:" << endl;
     cout << "--------------------\n" << endl;
 
-    for( int i = 0 ; i < HASH_TABLE_SIZE ; i++ )
-    {
+	int max = 0;
+	int max_index = 0;
+	int min = -1; 
+	int min_index = 0;
+	int many_empty = 0;
+	
+    for( int i = 0 ; i < HASH_TABLE_SIZE ; i++ ){
         np = hashTable[i];
-        while( np != NULL )
-        {
-             cout << setw(3) << i << ":    ";
-             cout << np->name << ", " << np->defn;
-             cout << endl;
+		int j=0;
+        while( np != NULL ){
+			 j++;
+             //cout << setw(3) << i << "-" << j << ":    ";
+             //cout << np->name << ", " << np->defn;
+             //cout << endl;
              np = np->next;
         }
+		cout << "b[" << i << "] has " << j << " word(s) | ";
+		if(j < min || min == -1){
+			min = j;
+			min_index = i;
+		}
+		if(j == 0){
+			many_empty++;
+		}
+		if(j > max){
+			max = j;
+			max_index = i;
+		}
     }
+    cout << "\n--------------------\n" << endl;
+	cout << "Max bucket size: " << max << " on bucket "<< max_index << endl; 
+	cout << "Min bucket size: " << min << " on bucket " << min_index << endl;
+	cout << many_empty << " buckets are empty "<< endl << endl;
 }
 
 
