@@ -1,0 +1,109 @@
+; 0x0000 ;entry:
+1110 0111 0000 1111    ;LDI r16, 0xFF
+1110 0000 0001 0000    ;LDI r17, 0x00
+1110 1111 0010 1111    ;LDI r18, -1
+1011 1001 0000 0100    OUT 0x04, r16 ; enable writing for output 0x05
+
+    rcall seven ; - - . . .
+    rcall eight ; - - - . .
+    rcall three ; . . . - -
+    rcall two   ; . . - - -
+
+    rcall delay ; wait seven units before starting again 
+    rcall delay 
+    rcall delay 
+    rcall delay 
+    rcall delay 
+    rcall delay 
+
+1100 1111 1111 0010; jump back 14;    RJMP entry     ; start the loop over again
+
+;0x0015 ;seven:            ; - - . . .
+    RCALL dash
+    RCALL dash
+    RCALL dot
+    RCALL dot
+    RCALL dot
+
+    RCALL delay
+    RCALL delay
+    RCALL delay
+
+    RET
+
+eight:            ; - - - . .
+    RCALL dash
+    RCALL dash
+    RCALL dash
+    RCALL dot
+    RCALL dot
+
+    RCALL delay
+    RCALL delay
+    RCALL delay
+
+    ret
+
+three:            ; . . . - -
+    RCALL dot
+    RCALL dot
+    RCALL dot
+    RCALL dash
+    RCALL dash
+
+    RCALL delay
+    RCALL delay
+    RCALL delay
+
+    ret
+
+two:	          ; . . - - -
+    RCALL dot
+    RCALL dot
+    RCALL dash
+    RCALL dash
+    RCALL dash
+
+    RCALL delay
+    RCALL delay
+    RCALL delay
+
+    ret
+
+delay:
+1110 0111 0011 1111;    LDI r19, 255
+1110 0111 0100 1111;    LDI r20, 255
+1110 0011 0101 0010;    LDI r21, 50
+    BR:
+0000 1111 0011 0010;		ADD r19, r18
+1111 0111 1110 0001; 		BRBC 1, BR
+0000 1111 0100 0010;		ADD r20, r18
+0000 0000 0000 0000;		NOP
+1111 0111 1011 0001;		BRBC 1, BR
+		ADD r21, r18
+		NOP
+		BRBC 1, BR
+	RET
+
+dot:
+    RCALL led_on    ; turn on led
+    RCALL delay	    ; wait one count
+    RCALL led_off   ; turn off led
+    RCALL delay	    ; wait one count
+    RET		    ; return
+
+dash:
+    RCALL led_on    ; turn on led
+    RCALL delay	    ; wait two counts
+    RCALL delay
+    RCALL led_off   ; turn off led
+    RCALL delay	    ; wait one count
+    RET		    ; return
+
+led_on:
+    OUT 5, r16 ; set output to FF (on)
+    RET
+
+led_off:
+    OUT 5, r17 ; set output to 00 (off)
+    RET
