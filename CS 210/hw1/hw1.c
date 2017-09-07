@@ -17,11 +17,11 @@ int main(int argc, char *argv[]){
 		printf("ERROR: File %s could not be accessed\n", argv[1]);
 		return 1;
 	}
-	printf("Reading from %s\n", argv[1]);
+	//printf("Reading from %s\n", argv[1]);
 	
 	int status = 0;						// tells if machine is in a state or not
 	int statusT = 0;					// holds the current state of the machine
-	char l,k;							// l holds current character in file, k holds 1 character look ahead
+	char l =' ',k;							// l holds current character in file, k holds 1 character look ahead
 	char output[256] = "";				// holds the output for each term;
 	while( (l = fgetc(fp)) ){
 		if(l == EOF){
@@ -123,50 +123,17 @@ int main(int argc, char *argv[]){
 							if( strstr("accessor and array begin bool case character constant else elsif end exit function if in integer interface is loop module mutator natural null of or others out positive procedure range return struct subtype then type when while", output) != NULL){
 								statusT = 6;
 							}
-							/*switch(output){
-								case "accessor":
-								case "and":
-								case "array":
-								case "begin":
-								case "bool":
-								case "case":
-								case "character":
-								case "constant":
-								case "else":
-								case "elsif": 
-								case "end": 
-								case "exit": 
-								case "function":
-								case "if":
-								case "in":
-								case "integer":
-								case "interface":
-								case "is":
-								case "loop":
-								case "module":
-								case "mutator":
-								case "natural":
-								case "null":
-								case "of":
-								case "or":
-								case "others":
-								case "out":
-								case "positive":
-								case "procedure":
-								case "range":
-								case "return":
-								case "struct":
-								case "subtype":
-								case "then":
-								case "type":
-								case "when":
-								case "while":
-									statusT = 6; // set status to identifier
-									break;
-							}*/
 					}
 					break;
-
+				
+				case 7:					// if character literal
+					output[strlen(output)] = l;
+					if( l == '\'' ){
+						l = fgetc(fp);
+						status=0;
+					}
+					break;
+				
 				case 99:
 				default:
 					printf("\nstatus unkown\n");
@@ -195,6 +162,9 @@ int main(int argc, char *argv[]){
 					break;
 				case 6:
 					printf(" (keyword)\n");
+					break;
+				case 7:
+					printf(" (character literal)\n");
 					break;
 			}
 										// clear string
@@ -227,6 +197,14 @@ int main(int argc, char *argv[]){
 					statusT = 1;		// set status type to string
 					break;
 				/*
+				 * char literal
+				 */
+				case '\'':				// ' is the only starting character for character literals
+					// if starts with '
+					status = 1;
+					statusT = 7;
+					break;
+				/*
 				 *  Comments / Operators
 				 */
 				case '/':
@@ -246,56 +224,80 @@ int main(int argc, char *argv[]){
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='=' || k=='<' || k=='>' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case '>':
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='=' || k=='<' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case '=':
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='>' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case ':':
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='=' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case '.':
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='.' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case '*': // this is still an option since the case of /* has already been tested fo
 					// check if double character operator
 					k = fgetc(fp);	// look ahead at the next character
 					if( k=='*' ){
-						break;		// stop looking for status
+						//break;		// stop looking for status
 					}else{
 						ungetc(k, fp); // move the pointer back
 						k='\0'; // forget k
 					}
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
+					break;
 				case '+':
 				case '-':
 				case '(':
@@ -313,13 +315,13 @@ int main(int argc, char *argv[]){
 				case '!': // ! is a special case, since it cannot be alone as an operator
 					k = fgetc(fp);
 					if( k=='=' ){
+						status = 1;
+						statusT = 4;
 						break;
 					}else{
-						ungetc(k, fp);
-						k='\0';
+						printf("%c (UNK)", l);	// unknown status, ! is not a legal expression
+						return 1;
 					}
-					status = 0; // unknown status, ! is not a legal expression
-					statusT = 0;
 					break;
 				/*
 				 * Variable Names - reserved words
@@ -360,11 +362,15 @@ int main(int argc, char *argv[]){
 					break;
 				case ' ':
 				case '\n':
-				default:
+				case '\r':
 					l='\0';
 					k='\0';
 					status = 0;
 					statusT = 0;
+					break;
+				default:
+					printf("%c (UNK)", l);
+					return 1;
 			}
 			
 			output[strlen(output)] = l;
