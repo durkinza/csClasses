@@ -72,12 +72,15 @@ int main(int argc, char *argv[]){
 						status = 0;
 						if( strlen(output) > 1){
 							int count = strlen(output);
-							char keytest[258];
+							char keytest[count+3];
+							memset(keytest, 0, strlen(keytest));
 							for (int i = count - 1; i >=0; i--){
 								keytest[i+1] = output[i];
 							}
 							keytest[0] = ' '; // add space to front of string
 							keytest[count+1] = ' '; // add space to end of string
+							keytest[count+2] = '\0'; // end string
+							//printf("keytest :%s\n", keytest);
 							if( strstr(" accessor and array begin bool case character constant else elsif end exit function if in integer interface is loop module mutator natural null of or others out positive procedure range return struct subtype then type when while ", keytest) != NULL){
 								statusT = 6;
 							}
