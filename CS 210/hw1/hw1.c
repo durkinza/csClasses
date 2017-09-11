@@ -4,7 +4,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 
 FILE *fp;
 
@@ -72,17 +72,17 @@ int main(int argc, char *argv[]){
 						status = 0;
 						if( strlen(output) > 1){
 							int count = strlen(output);
-							char keytest[count+3];
-							memset(keytest, 0, strlen(keytest));
-							for (int i = count - 1; i >=0; i--){
-								keytest[i+1] = output[i];
+							char keytest[count+3];					// make a variable to hold a copy of the output
+							memset(keytest, 0, strlen(keytest));	// clear the memory of the new variable
+							int i;
+							for (i = count - 1; i >=0; i--){
+								keytest[i+1] = output[i];			// copy the character array over
 							}
-							keytest[0] = ' '; // add space to front of string
-							keytest[count+1] = ' '; // add space to end of string
-							keytest[count+2] = '\0'; // end string
-							//printf("keytest :%s\n", keytest);
+							keytest[0] = ' ';						// add space to front of string (to test for full words instead of partial)
+							keytest[count+1] = ' ';					// add space to end of string
+							keytest[count+2] = '\0';				// end string
 							if( strstr(" accessor and array begin bool case character constant else elsif end exit function if in integer interface is loop module mutator natural null of or others out positive procedure range return struct subtype then type when while ", keytest) != NULL){
-								statusT = 6;
+								statusT = 6;						// if the word is a keyword, change the status to reflect
 							}
 						}	
 					}
@@ -91,8 +91,8 @@ int main(int argc, char *argv[]){
 				case 7:						// if character literal
 					output[strlen(output)] = l;
 					if( l == '\'' ){
-						l = fgetc(fp);
-						status=0;
+						l = fgetc(fp);		// set 
+						status=0;			// set status to done
 					}
 					break;
 				
