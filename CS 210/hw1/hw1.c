@@ -8,6 +8,11 @@
 
 FILE *fp;
 
+int isletter(char x);
+int ishex(char x);
+int isnumber(char x);
+int isoperator(char x);
+
 int main(int argc, char *argv[]){
 	if(argc < 2){
 		printf("Missing input file");
@@ -17,50 +22,34 @@ int main(int argc, char *argv[]){
 		printf("ERROR: File %s could not be accessed\n", argv[1]);
 		return 1;
 	}
-	//printf("Reading from %s\n", argv[1]);
 	
-	int status = 0;						// tells if machine is in a state or not
-	int statusT = 0;					// holds the current state of the machine
+	int status = 0;							// tells if machine is in a state or not
+	int statusT = 0;						// holds the current state of the machine
 	char l =' ',k;							// l holds current character in file, k holds 1 character look ahead
-	char output[256] = "";				// holds the output for each term;
+	char output[256] = "";					// holds the output for each term;
 	while( (l = fgetc(fp)) ){
 		if(l == EOF){
-			//printf("%s\n", output);
 			break;
 		}
 		if(status > 0){
 			switch(statusT){
-				case 1:					// if in state of string
+				case 1:						// if in state of string
 					output[strlen(output)] = l;
 					if( l == '"' ){
 						l = fgetc(fp);
 						status = 0;
 					}
 					break;
-				case 2:					// if in state of int (numerical-literal)
-					switch(l){
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9':
-						case '#':
-						case '.':
-						case '_':
-							output[strlen(output)] = l;
-							break;
-						default:
-							status = 0;
+				case 2:						// if in state of int (numerical-literal)
+					if (ishex(l) || l == '.' || l == '_' || l == '#'){
+						output[strlen(output)] = l;
+					}else{
+						status = 0;
 					}
 					//['0 - 9', 'A-F', '_', '.', '#']
 					// 16#FFF#
 					break;
-				case 3:					// if in state of Comment
+				case 3:						// if in state of Comment
 					output[strlen(output)] = l;
 					if(l == '*'){
 						l = fgetc(fp);
@@ -73,60 +62,30 @@ int main(int argc, char *argv[]){
 						}
 					}
 					break;
-				case 4:					// if in state of opperator
+				case 4:						// if in state of opperator
 					status = 0;
 					break;
-				case 5:					// if in state of variable name
-					switch(l){
-						case 'a':
-						case 'b':
-						case 'c':
-						case 'd':
-						case 'e':
-						case 'f':
-						case 'g':
-						case 'h':
-						case 'i':
-						case 'j':
-						case 'k':
-						case 'l':
-						case 'm':
-						case 'n':
-						case 'o':
-						case 'p':
-						case 'q':
-						case 'r':
-						case 's':
-						case 't':
-						case 'u':
-						case 'v':
-						case 'w':
-						case 'x':
-						case 'y':
-						case 'z':
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9':
-						case '_':
-//							printf("output len: %lu", strlen(output));
-							output[strlen(output)] = l;
-							break;
-						default:
-							status = 0;
-							if( strstr("accessor and array begin bool case character constant else elsif end exit function if in integer interface is loop module mutator natural null of or others out positive procedure range return struct subtype then type when while", output) != NULL){
+				case 5:						// if in state of variable name
+					if (isletter(l) || isnumber(l) || l == '_'){
+						output[strlen(output)] = l;
+					}else{
+						status = 0;
+						if( strlen(output) > 1){
+							int count = strlen(output);
+							char keytest[258];
+							for (int i = count - 1; i >=0; i--){
+								keytest[i+1] = output[i];
+							}
+							keytest[0] = ' '; // add space to front of string
+							keytest[count+1] = ' '; // add space to end of string
+							if( strstr(" accessor and array begin bool case character constant else elsif end exit function if in integer interface is loop module mutator natural null of or others out positive procedure range return struct subtype then type when while ", keytest) != NULL){
 								statusT = 6;
 							}
+						}	
 					}
 					break;
 				
-				case 7:					// if character literal
+				case 7:						// if character literal
 					output[strlen(output)] = l;
 					if( l == '\'' ){
 						l = fgetc(fp);
@@ -141,9 +100,9 @@ int main(int argc, char *argv[]){
 			}	
 		}
 		if( status == 0 ){
-										// writeout output
+											// writeout output
 			printf("%s", output);
-										// output type of lexeme
+											// output type of lexeme
 			switch(statusT){
 				case 1:
 					printf(" (string)\n");
@@ -167,43 +126,32 @@ int main(int argc, char *argv[]){
 					printf(" (character literal)\n");
 					break;
 			}
-										// clear string
+											// clear string
 			memset(output, 0, strlen(output));
-										// get next status
-			switch(l){
+											// get next status
+			switch((int)l){
 				/*
 				 * Numerical - Literal
 				 */
-				case '0':				// listing all possible starting characters
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
+				case 48 ... 57:				// listing all possible starting characters
 					// if in 0-9
-					status = 1;			// set status to found 
-					statusT = 2;		// set status type to int (numeric-literal)
-					break;
+					status = 1;				// set status to found 
+					statusT = 2;			// set status type to int (numeric-literal)
+					break;					// stop looking for a lexeme it it's found
 				/*
 				 * Strings
 				 */
-				case '"':				// " is the only starting character for strings
-					// if starts with "
-					status = 1;			// set status to found
-					statusT = 1;		// set status type to string
-					break;
+				case '"':					// " is the only starting character for strings
+					status = 1;				// set status to found
+					statusT = 1;			// set status type to string
+					break;					// stop looking for a lexeme it it's found
 				/*
 				 * char literal
 				 */
-				case '\'':				// ' is the only starting character for character literals
-					// if starts with '
+				case '\'':					// ' is the only starting character for character literals
 					status = 1;
 					statusT = 7;
-					break;
+					break;					// stop looking for a lexeme it it's found
 				/*
 				 *  Comments / Operators
 				 */
@@ -211,94 +159,82 @@ int main(int argc, char *argv[]){
 					k = fgetc(fp);
 					if( k == '*' ){			// if could be a comment;
 						status = 1;
-						statusT = 3;
-						break;
+						statusT = 3;		// set status to comment it it's a comment
+						break;				// stop looking for a lexeme type
 					}else{
 						ungetc(k, fp);		// if it isn't a comment, move on to see if it is an operator
-						k='\0'; // forget k
+						k='\0';				// forget look ahead
 					}
 				/*
 				 * Operators
 				 */ 
 				case '<':
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='=' || k=='<' || k=='>' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='=' || k=='<' || k=='>' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
-					// if could be an operator
+											// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;
+					break;					// stop looking for a lexeme it it's found
 				case '>':
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='=' || k=='<' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='=' || k=='<' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
 					// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;
+					break;					// stop looking for a lexeme it it's found
 				case '=':
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='>' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='>' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
 					// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;
+					break;					// stop looking for a lexeme it it's found
 				case ':':
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='=' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='=' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
 					// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;
+					break;					// stop looking for a lexeme it it's found
 				case '.':
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='.' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='.' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
-					// if could be an operator
+					// if it is be an operator
 					status = 1;
 					statusT = 4;	
-					break;
-				case '*': // this is still an option since the case of /* has already been tested fo
-					// check if double character operator
-					k = fgetc(fp);	// look ahead at the next character
-					if( k=='*' ){
-						//break;		// stop looking for status
-					}else{
-						ungetc(k, fp); // move the pointer back
-						k='\0'; // forget k
+					break;					// stop looking for a lexeme it it's found
+				case '*':					// this is still an option since the case of /* has already been tested fo
+											// check if double character operator
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='*' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
 					}
-					// if could be an operator
+					// if it is an operator
 					status = 1;
 					statusT = 4;	
-					break;
-				case '+':
+					break;					// stop looking for a lexeme it it's found
+				case '+':					// look for the other operators
 				case '-':
 				case '(':
 				case ')':
@@ -308,11 +244,11 @@ int main(int argc, char *argv[]){
 				case '&':
 				case ';':
 				case ',':
-					// if could be an operator
+					// if it is an operator
 					status = 1;
 					statusT = 4;	
 					break;
-				case '!': // ! is a special case, since it cannot be alone as an operator
+				case '!':				// ! is a special case, since it cannot be alone as an operator
 					k = fgetc(fp);
 					if( k=='=' ){
 						status = 1;
@@ -326,36 +262,12 @@ int main(int argc, char *argv[]){
 				/*
 				 * Variable Names - reserved words
 				 */ 
-				case 'a':
-				case 'b':
-				case 'c':
-				case 'd':
-				case 'e':
-				case 'f':
-				case 'g':
-				case 'h':
-				case 'i':
-				case 'j':
-				case 'k':
-				case 'l':
-				case 'm':
-				case 'n':
-				case 'o':
-				case 'p':
-				case 'q':
-				case 'r':
-				case 's':
-				case 't':
-				case 'u':
-				case 'v':
-				case 'w':
-				case 'x':
-				case 'y':
-				case 'z':
+				case 65 ... 90:
+				case 97 ... 122:
 					status = 1;
 					statusT = 5;
 					// if could be a variable name
-					break;
+					break;					// stop looking for a lexeme it it's found
 				case EOF:
 					status = 0;
 					statusT = 0;
@@ -367,10 +279,10 @@ int main(int argc, char *argv[]){
 					k='\0';
 					status = 0;
 					statusT = 0;
-					break;
+					break;					// stop looking for a lexeme it it's found
 				default:
-					printf("%c (UNK)", l);
-					return 1;
+					printf("%c (UNK)", l);	// output the unknown lexeme
+					return 1;				// return non-zero for error
 			}
 			
 			output[strlen(output)] = l;
@@ -384,3 +296,28 @@ int main(int argc, char *argv[]){
 }
 
 
+int isletter(char x){
+	int c = (int) x;
+	return ( ( c >= 65 && c <= 90 ) || ( c >= 97 && c <= 122 ) );
+}
+int ishex(char x){
+	int c = (int) x;
+	return ( ( c >= 65 && c <= 70 ) || ( c >= 97 && c <= 102 ) || isnumber(x) );
+}
+int isnumber(char x){
+	int c = (int) x;
+	return ( c >= 48 && c <= 57 );
+}
+int isoperator(char x){
+	int c = (int) x;
+	// returns true if c is in [ ':', ';', '<', '=', '>', '?', '[', ']', '{', '|', '}', '.', '/' '(', ')', '*', '+', ',', '&']
+	return ( ( c >= 123 && c <= 125 ) ||
+				c == 93 || 
+				c == 91 || 
+				( c >= 58 && c <= 63 ) || 
+				c == 47 || 
+				c == 46 || 
+				(c >=40 && c <= 44) || 
+				c == 38
+			);
+}
