@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo $* > .currentedit
+
+cat .currentedit
+$EDITOR `cat .currentedit`
+
+if [ -e .lastedit ] && cmp .currentedit .lastedit > /dev/null
+then
+	/bin/rm .currentedit	
+else
+	if [ -e .lastedit ]
+	then
+		/bin/mv .lastedit .penultimateedit
+	fi
+	/bin/mv .currentedit .lastedit
+fi

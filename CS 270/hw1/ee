@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo $* > .ee-lastfile-edited
+
+$EDITOR `cat .ee-lastfile-edited`

@@ -1,0 +1,16 @@
+#!/bin/bash
+# Author: Zane Durkin <durk7832@vandals.uidaho.edu>
+output=$1
+tmp=/tmp/delay_tmp_file_$$.tmp
+
+cat > $tmp
+
+if [ -s $tmp ]
+then
+	/bin/cp $tmp $output
+	/bin/rm $tmp
+	exit 0
+else
+	echo "WARNING(delay): The input streem is empty."
+	exit 1
+fi

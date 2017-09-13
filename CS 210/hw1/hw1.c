@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
 	int status = 0;							// tells if machine is in a state or not
 	int statusT = 0;						// holds the current state of the machine
 	char l =' ',k;							// l holds current character in file, k holds 1 character look ahead
-	char output[256] = "";					// holds the output for each term;
+	char output[400] = "";					// holds the output for each term; a larger number is needed to hold larger comments
 	while( (l = fgetc(fp)) ){
 		if(l == EOF){
 			break;
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
 					printf(" (keyword)\n");
 					break;
 				case 7:
-					printf(" (character literal)\n");
+					printf(" (char literal)\n");
 					break;
 			}
 											// clear string
