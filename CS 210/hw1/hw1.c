@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
 	int status = 0;							// tells if machine is in a state or not
 	int statusT = 0;						// holds the current state of the machine
 	char l =' ',k;							// l holds current character in file, k holds 1 character look ahead
-	char output[400] = "";					// holds the output for each term; a larger number is needed to hold larger comments
+	char output[1000] = "";					// holds the output for each term; a larger number is needed to hold larger comments
 	while( (l = fgetc(fp)) ){
 		if(l == EOF){
 			break;
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
 					printf(" (keyword)\n");
 					break;
 				case 7:
-					printf(" (char literal)\n");
+					printf(" (character literal)\n");
 					break;
 			}
 											// clear string
@@ -167,76 +167,79 @@ int main(int argc, char *argv[]){
 					}else{
 						ungetc(k, fp);		// if it isn't a comment, move on to see if it is an operator
 						k='\0';				// forget look ahead
+						status = 1;// so it must be an operator
+						statusT = 4;	
+						break;
 					}
 				/*
 				 * Operators
 				 */ 
 				case '<':
 											// check if double character operator
+											// if could be an operator
+					status = 1;
+					statusT = 4;	
 					k = fgetc(fp);			// look ahead at the next character
 					if( !( k=='=' || k=='<' || k=='>' ) ){
 						ungetc(k, fp);		// move the pointer back
 						k='\0';				// forget look ahead
 					}
-											// if could be an operator
-					status = 1;
-					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
+					break;
 				case '>':
 											// check if double character operator
-					k = fgetc(fp);			// look ahead at the next character
-					if( !( k=='=' || k=='<' ) ){
-						ungetc(k, fp);		// move the pointer back
-						k='\0';				// forget look ahead
-					}
 					// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
+					k = fgetc(fp);			// look ahead at the next character
+					if( !( k=='=' || k=='>' ) ){
+						ungetc(k, fp);		// move the pointer back
+						k='\0';				// forget look ahead
+					}
+					break;
 				case '=':
 											// check if double character operator
+					// if could be an operator
+					status = 1;
+					statusT = 4;	
 					k = fgetc(fp);			// look ahead at the next character
 					if( !( k=='>' ) ){
 						ungetc(k, fp);		// move the pointer back
 						k='\0';				// forget look ahead
 					}
+					break;
+				case ':':
+											// check if double character operator
 					// if could be an operator
 					status = 1;
 					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
-				case ':':
-											// check if double character operator
 					k = fgetc(fp);			// look ahead at the next character
 					if( !( k=='=' ) ){
 						ungetc(k, fp);		// move the pointer back
 						k='\0';				// forget look ahead
 					}
-					// if could be an operator
-					status = 1;
-					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
+					break;
 				case '.':
 											// check if double character operator
+					// if it is be an operator
+					status = 1;
+					statusT = 4;	
 					k = fgetc(fp);			// look ahead at the next character
 					if( !( k=='.' ) ){
 						ungetc(k, fp);		// move the pointer back
 						k='\0';				// forget look ahead
 					}
-					// if it is be an operator
-					status = 1;
-					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
+					break;
 				case '*':					// this is still an option since the case of /* has already been tested fo
 											// check if double character operator
+					// if it is an operator
+					status = 1;
+					statusT = 4;	
 					k = fgetc(fp);			// look ahead at the next character
 					if( !( k=='*' ) ){
 						ungetc(k, fp);		// move the pointer back
 						k='\0';				// forget look ahead
 					}
-					// if it is an operator
-					status = 1;
-					statusT = 4;	
-					break;					// stop looking for a lexeme it it's found
+					break;
 				case '+':					// look for the other operators
 				case '-':
 				case '(':

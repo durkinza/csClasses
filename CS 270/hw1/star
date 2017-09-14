@@ -1,0 +1,17 @@
+#!/bin/sh
+if [ $# -lt 2 ]
+then
+	echo "Error(star): $0 requires a tarfile and at least one other file."
+	exit 1
+else 
+	tarfile=$1
+	shift
+	if [ -e "$tarfile.tar" ]
+	then
+		echo "Error(star): target tar file $tarfile.tar already exists."
+		exit 1
+	else 
+		tar -cvf $tarfile.tar $*  2> /dev/null
+		exit $?
+	fi
+fi
