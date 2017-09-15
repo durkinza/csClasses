@@ -8,7 +8,8 @@ else
 	shift
 	if [ -e "$tarfile.tar" ]
 	then
-		echo "Error(star): target tar file $tarfile.tar already exists."
+		#echo "Error(star): target tar file $tarfile.tar already exists."
+		echo "Error(star): target tar file filename already exists."
 		exit 1
 	else 
 		tar -cvf $tarfile.tar $*  2> /dev/null
