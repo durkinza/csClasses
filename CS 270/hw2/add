@@ -1,0 +1,23 @@
+#!/bin/sh
+saveDir=$HOME/.save
+
+# make save directory if it doesn't exit
+if [ ! -d $saveDir ]; then
+  mkdir -p $saveDir;
+fi
+
+if [ -s /dev/stdin ]; then
+#	echo "Added input stream to saveData"
+	cat /dev/stdin > $saveDir/saveData
+fi
+
+if [ $# -gt 0 ]; then
+	for file in $*
+	do
+#		echo "Added: $file"
+		cp -r $file $saveDir/
+	done
+fi
+
+#echo "\nSaved files:" 
+ls -A1 $saveDir
