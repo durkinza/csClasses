@@ -20,4 +20,4 @@ if [ $# -gt 0 ]; then
 fi
 
 #echo "\nSaved files:" 
-ls -A1 $saveDir
+ls -a1 $saveDir

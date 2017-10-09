@@ -19,5 +19,5 @@ if [ $# -gt 0 ]; then
 	done
 fi
 
-#echo "\nSaved files:" 
+#echo "\nSaved files:"
 ls -A1 $saveDir
