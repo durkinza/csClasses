@@ -1,5 +1,5 @@
 #!/bin/sh
 DATE=`date +'%h-%d-%Y'`
-mkdir "Backup-$DATE" 2> /dev/null
-cp $@ "Backup-$DATE/"
+mkdir -p "Backup-$DATE" 2> /dev/null
+cp -r $@ "Backup-$DATE/"
 
