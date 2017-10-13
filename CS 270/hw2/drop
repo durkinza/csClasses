@@ -25,5 +25,5 @@ else
 	done
 fi
 
-echo "\nSaved files:"
-ls -A1 $saveDir
+#echo "\nSaved files:"
+ls -a1 $saveDir
