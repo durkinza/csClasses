@@ -11,35 +11,35 @@ table.o\
 funcs.o
 
 HDRS=\
-funcs.h\
-table.h
+table.h\
+funcs.h
 
 
-CC=g++
+CXX=g++
 
 dbug=gdb
 
 LIBS=#-lm
 
-CXXFLAGS=-O3 -g -Wall
+CXXFLAGS=-g -Wall
 #CXXFLAGS=-g -Wall # use for debugging code
 
 $(BIN): $(OBJS)
-	$(CC) $(CXXFLAGS) $(OBJS) $(LIBS) -o $(BIN)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBS) -o $(BIN)
 
 all : 
-	touch $(SRCS)
+	touch $(HDRS) $(SRCS) 
 	make
 
 tar :
 	tar -cvf $(BIN).tar $(SRCS) $(HDRS) makefile
 
 debug : $(OBJS)
-	$(CC) -g $(OBJS) -o $(BIN) 
+	$(CXX) -g $(OBJS) -o $(BIN) 
 	$(dbug) $(BIN)
 
 clean :
-	rm -f $(OBJS) a.out core
+	rm -f *.o
 	
 clobber :
 	rm -f $(OBJS) a.out core $(BIN) $(BIN).tar

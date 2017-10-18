@@ -1,0 +1,62 @@
+
+* ================================================ *
+|      RERUN of Tests for CS270 Assignment 3       |
+|       Comparison with Expected Output            |
+* ================================================ *
+
+You must create the expected files.
+funcs.cpp
+funcs.h
+main.cpp
+makefile
+table.cpp
+table.h
+
+touch everything
+
+make
+g++ -g -Wall   -c -o main.o main.cpp
+g++ -g -Wall   -c -o table.o table.cpp
+g++ -g -Wall   -c -o funcs.o funcs.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+make should not build anything
+make: `main' is up to date.
+
+touch main.cpp, make
+g++ -g -Wall   -c -o main.o main.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+touch table.cpp, make
+g++ -g -Wall   -c -o table.o table.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+touch funcs.cpp, make
+g++ -g -Wall   -c -o funcs.o funcs.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+touch funcs.h, make
+make: `main' is up to date.
+
+make all
+touch table.h funcs.h main.cpp table.cpp funcs.cpp 
+make
+g++ -g -Wall   -c -o main.o main.cpp
+g++ -g -Wall   -c -o table.o table.cpp
+g++ -g -Wall   -c -o funcs.o funcs.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+make clean
+funcs.o
+main.o
+table.o
+rm -f *.o
+ls: *.o: No such file or directory
+
+make should build everthing
+g++ -g -Wall   -c -o main.o main.cpp
+g++ -g -Wall   -c -o table.o table.cpp
+g++ -g -Wall   -c -o funcs.o funcs.cpp
+g++ -g -Wall main.o table.o funcs.o  -o main
+
+* End of testing
