@@ -1,0 +1,3 @@
+#!/bin/sh
+saveDir=$HOME/.save
+ls -a1 $saveDir

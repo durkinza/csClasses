@@ -1,0 +1,29 @@
+#!/bin/sh
+saveDir=$HOME/.save
+
+# check that the save directory exists
+if [ ! -d $saveDir ]; then
+	echo "Save directory doesn't exist"
+	exit 1;
+fi
+
+if [ $# -lt 1 ]; then
+	# if no specific file is given, drop all saved files
+	cp -R $saveDir/ .
+#	cp -Rv $saveDir/.[a-zA-Z0-9]* .
+#	echo "A file name is required"
+#	exit 1;
+else
+	for file in $*
+	do
+		if [ ! -e $saveDir/$file ]; then
+			echo "File doesn't exist: $file"
+		else
+			echo "Dropping: $file"
+			cp -r $saveDir/$file .
+		fi
+	done
+fi
+
+#echo "\nSaved files:"
+ls -a1 $saveDir

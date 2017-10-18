@@ -5,5 +5,5 @@ then
 	$EDITOR `cat .ee-lastfile-edited`
 else
 	echo `ls -t | head -1` > .ee-lastfile-edited
-	$EDITOR .ee-lastfile-edited	
+	$EDITOR `cat .ee-lastfile-edited`	
 fi

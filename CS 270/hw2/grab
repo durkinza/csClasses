@@ -1,0 +1,26 @@
+#!/bin/sh
+saveDir=$HOME/.save
+
+# make save directory if it doesn't exit
+if [ ! -d $saveDir ]; then
+	mkdir -p $saveDir;
+else
+	rm -r $saveDir
+	mkdir -p $saveDir
+fi
+
+if [ -s /dev/stdin ]; then
+#	echo "Grabbing input stream"
+	cat /dev/stdin > $saveDir/saveData
+fi
+
+if [ $# -gt 0 ]; then
+	for file in $*
+	do
+#		echo "Grabbing: $file"
+		mv $file $saveDir/$file
+	done
+fi
+
+#echo "\nSaved files:" 
+ls -a1 $saveDir
