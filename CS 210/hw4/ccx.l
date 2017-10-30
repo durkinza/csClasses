@@ -22,30 +22,29 @@
      * must be indented because anything that appears in the leftmost column
      * is considered the start of a formal definition.
      */
-	 /*OPERATOR ([\+\(\)\[\]\;\,\-\|\&]|\:\=?|\.\.?|\<[\>\<\=]?|\>[\>\=]?|\=[\>]?|\/(?!\*)|\*(\*?)(?!\/)|\!\=?)*/
 DIGIT    [0-9]
 HEXD     [A-Fa-f]
 ID       [a-zA-Z][_A-Za-z0-9]*
 CHARLIT	 (')[a-zA-Z0-9](')
 STRING	 (")[a-zA-Z0-9](")
 NUMLIT   [0-9][0-9a-fA-F_.#]*
-
-	/*COMMENT  (\/\*[\s\S]*\*\/)*/
-	/*COMMENT (\/\*((?!\*\/)([\r\n\S\s]))*\*\/)*/
-	/*COMMENT (\/\*)([\s\S][^\*][^\/]*)(\*\/)*/
-
 %x COMMENT
 %x STRING
 %%
 
+	/* If the first set is the start of a comment, set the flag to say so*/
 "/*"            BEGIN(COMMENT); printf("%s", yytext);
 "//".*          /* // comments to end of line */
+	/* Print the comment until it finds an ending  */
+<COMMENT>[^*/]* printf("%s", yytext);
+	/* Once an ending tag is found, then output comment type and stop comment */
+<COMMENT>"*/"   printf("%s (comment)\n", yytext);BEGIN(INITIAL);
 
-<COMMENT>[^*/]* printf("%s", yytext);/* Eat non-comment delimiters */
-<COMMENT>"*/"   printf("%s (comment)\n", yytext);BEGIN(INITIAL);/* Eat a / or * if it doesn't match comment sequence */
-
+	/* If a " is found, set the flag to say it's a string */
 "\""			BEGIN(STRING); printf("%s", yytext);
+	/* Output everything until the ending " is found*/
 <STRING>[^"]	printf("%s", yytext);
+	/* Once an ending " is found, then output string type and stop string*/
 <STRING>"\""	printf("%s (string)\n",yytext);BEGIN(INITIAL);
 
   /* Could have been .|\n ECHO, but this is more efficient. */
