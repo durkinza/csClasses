@@ -18,7 +18,7 @@ int makeFile(char * fn, int k, int v, int p);
 int openFile(char * fn, int &k, int &v, int &p);
 int getData(char * fn, int pfd, char * key, int k, int v, int p);
 void getHeaders(int pfd, int &k, int &v, int &p);
-int setData(char * fn, int pfd, char * key, int k, int v, int p);
+int setData(char * fn, int pfd, char * key, int noOver, int k, int v, int p);
 unsigned int hash(const char *str);
 int d = 0; // debug option
 
@@ -115,7 +115,7 @@ int main(int argc, char*  argv[]){
 				printf("ERROR(key): No key was specified for key file '%s'\n", file);
 				exit(1);
 			}
-			setData(file, pfd, key, k, v, p);
+			setData(file, pfd, key, noOverwrite, k, v, p);
 			break;
 		/*case 3:			// action to get header data of file
 			//printf("opening File\n");
@@ -136,8 +136,8 @@ int makeFile(char * fn, int k, int v, int p){
 		exit(0);
 	}else{
 		char * mgbits;
-		mgbits = (char*) malloc (4);
-		if (mgbits==NULL) exit (1);
+		mgbits = (char*) malloc(4);
+		if (mgbits==NULL) exit(1);
 		mgbits[0]='K';
 		mgbits[1]='E';
 		mgbits[2]='Y';
@@ -172,7 +172,7 @@ int openFile(char * fn, int &k, int &v, int &p){
 		return pfd;
 	}else{
 		// verify that the file is correct before continuing
-		char * key= (char *)malloc(4);
+		char * key= (char *)malloc(5);
 		read(pfd, key, 4);
 		if(d==1)printf("DEBUG(key): magic bits are: %s\n", key); // debug
 		if(std::strcmp(key, "KEYZ") ==0){
@@ -198,7 +198,7 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	position += (4+(3*sizeof(int))); // find how many bits must be moved to get to the specified row, including header data
 	lseek(pfd, position, SEEK_SET);
 	int keyS;
-	char * keyV = NULL;
+	char * keyV = (char *) malloc(v);
 	int rowsUsed=0;
 	if(pread(pfd, &keyS, sizeof(int), position) && keyS == 0 ){
 		printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
@@ -207,11 +207,15 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
 		     && keyS != 0 
 		   ) &&( 
-				pread(pfd, keyV, sizeof(int), position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
+				pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
 				(strcmp(keyV, key) !=0)
 		   )
 		)
 	{
+	if(d==1){
+		printf("DEBUG(key): keyS: %d\n", keyS);
+		printf("DEBUG(key): keyV: %s\n", keyV);
+	}
 	rowsUsed++;
 	}
 	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);
@@ -237,7 +241,7 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	return 0;
 }
 
-int setData(char * fn, int pfd, char * key, int k, int v, int p){
+int setData(char * fn, int pfd, char * key, int noOver, int k, int v, int p){
 	int h = hash(key);
 	int rowSize = k+v+(2*sizeof(int));
 	int position = ((h%p)*rowSize);
@@ -250,9 +254,9 @@ int setData(char * fn, int pfd, char * key, int k, int v, int p){
 	lseek(pfd, position, SEEK_SET);
 	int keySize = strlen(key); // using strlen because key is a pointer, so sizeof is always 8
 	int keyS;
-	char * keyV = NULL;
+	char * keyV = (char *) malloc(v);
 	int rowsUsed=0;
-	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
+	while( ( (pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) != -1)
 		     && keyS != 0 
 		   ) &&( 
 				pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
@@ -262,12 +266,16 @@ int setData(char * fn, int pfd, char * key, int k, int v, int p){
 	{
 	rowsUsed++;
 	}
+	if(noOver!=0  && (strcmp(keyV, key) == 0)){
+		printf("ERROR(key): Attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
+		exit(1);
+	}
 	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);
 	char value[v];
 	char buf[1];
 	int i =0;
 	while( i<v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
-		printf("b: %c\n", buf[0]);
+		if(d==1)printf("b: %c\n", buf[0]);
 		value[i] = buf[0];
 		i++;	
 	}
