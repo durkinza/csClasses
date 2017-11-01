@@ -104,9 +104,17 @@ int main(int argc, char*  argv[]){
 			//pfd = makeFile(file, k, v, p);
 			break;
 		case 1:			// action to just get data
+			if(key==NULL){
+				printf("ERROR(key): No key was specified for key file '%s'\n", file);
+				exit(1);
+			}
 			getData(file, pfd, key, k, v, p);
 			break;
 		case 2:			// action to set data
+			if(key==NULL){
+				printf("ERROR(key): No key was specified for key file '%s'\n", file);
+				exit(1);
+			}
 			setData(file, pfd, key, k, v, p);
 			break;
 		/*case 3:			// action to get header data of file
@@ -135,8 +143,7 @@ int makeFile(char * fn, int k, int v, int p){
 		mgbits[2]='Y';
 		mgbits[3]='Z';
 		// write the magic bits to the file
-		write(pfd,  mgbits, sizeof(4));
-		//write(pfd, "KEYZ", sizeof(4));
+		write(pfd,  mgbits, sizeof(4)); //write(pfd, "KEYZ", sizeof(4));
 		free(mgbits);
 		
 		int bits = write(pfd, &k, sizeof(int)); 
@@ -165,7 +172,7 @@ int openFile(char * fn, int &k, int &v, int &p){
 		return pfd;
 	}else{
 		// verify that the file is correct before continuing
-		char key[5];
+		char * key= (char *)malloc(4);
 		read(pfd, key, 4);
 		if(d==1)printf("DEBUG(key): magic bits are: %s\n", key); // debug
 		if(std::strcmp(key, "KEYZ") ==0){
