@@ -15,58 +15,70 @@
 
 unsigned int hash(const char *str);
 int makeFile(char * fn, int k, int v, int p);
-int openFile(char * fn, int k, int v, int p);
-int getData(int pfd, char * key);
-int getHeaders(int pfd);
-int setData(int pfd, char * key, char * value);
+int openFile(char * fn, int &k, int &v, int &p);
+int getData(char * fn, int pfd, char * key, int k, int v, int p);
+void getHeaders(int pfd, int &k, int &v, int &p);
+int setData(char * fn, int pfd, char * key, int k, int v, int p);
 unsigned int hash(const char *str);
+int d = 0; // debug option
 
 int main(int argc, char*  argv[]){
 	int c;
-	char * file;
+	char * file = NULL;
 	int pfd;
-	char * key;
-	char * saveValue = NULL;
+	char * key = NULL;
 	int action = 0;
+	int show_max = 0;
+	int noOverwrite = 0;
+	int quiet=0;
 	int k = 32;
 	int p = 331;
 	int v = 64;
-	int d = 0; // debug option
 	char help[] = "Usage: key {-s | -g} file key\n       key -[hnkvp] file\n";
 	opterr = 0; // should stop getopt from giving it's own errors
-	while ((c = getopt (argc, argv, "sgndhk:v:p:")) != -1){
+	while ((c = getopt (argc, argv, "sgndhoqk:v:p:")) != -1){
 		switch (c){
+			case 'd':
+				// set debugging on
+				d = 1;
+				break;
 			case 'g':
 				// for getting value from file
 				action = 1; // set action to getting data
 				break;
-			case 's':
-				// for saving value to file
-				action = 2; // set action to saving data
-				break;
-			case 'n':
-				//for returning header values from file
-				action = 3; // set action to returning headers
+			case 'h':
+				// send help
+				printf("%s",help);
+				exit(0);
 				break;
 			case 'k':
 				// for setting key value size on new files
 				k=atoi(optarg);
 				break;
-			case 'v':
-				// for setting value size on new files
-				v=atoi(optarg);
+			case 'n':
+				//for returning header values from file
+				show_max = 1; // set action to returning headers
+				break;
+			case 'o':
+				//for 
+				noOverwrite = 1; // set action to returning headers
 				break;
 			case 'p':
 				// for setting number of rows in a new file
 				p=atoi(optarg);
 				break;
-			case 'd':
-				// set debugging on
-				d = 1;
-			case 'h':
-				// send help
-				printf("%s",help);
-				exit(0);
+			case 'q':
+				// for silencing misuse messages
+				quiet = 1;
+				break;
+			case 's':
+				// for saving value to file
+				action = 2; // set action to saving data
+				break;
+			case 'v':
+				// for setting value size on new files
+				v=atoi(optarg);
+				break;
 			default:
 				printf("ERROR(key): option -%c is not an option\n", optopt);
 				printf("%s",help);
@@ -74,45 +86,39 @@ int main(int argc, char*  argv[]){
 		}
 	}
 	int index = optind;
-	if(index < argc){
+	if(index < argc){ // get file name from argument list
 		file = argv[index];
-		//printf("opening %s for reading\n", file);
-		pfd = openFile(file, k, v, p);
-		/*
-		if(pfd == -1){
-			printf("ERROR(key): Cannot create file '%s'\n", file);
-			exit(1);
-		}
-		printf("opened file\n");*/
+		if(d==1)printf("DEBUG(key): opening %s for reading\n", file);
+		//pfd = openFile(file, k, v, p);
 		index++;
 	}
-	if(index < argc){
+	if(index < argc){  // get key from argument list
 		key = argv[index];
 		index++;
 	}
 	
-
+	pfd = openFile(file, k, v, p);
+	
 	switch(action){
 		case 0:			// if nothing is specified, then try to make the file
-			pfd = makeFile(file, k, v, p);
+			//pfd = makeFile(file, k, v, p);
 			break;
 		case 1:			// action to just get data
-			pfd = openFile(file, k, v, p);
-			getData(pfd, key);
+			getData(file, pfd, key, k, v, p);
 			break;
 		case 2:			// action to set data
-			pfd = openFile(file, k, v, p);
-			setData(pfd, key, saveValue);
+			setData(file, pfd, key, k, v, p);
 			break;
-		case 3:			// action to get header data of file
+		/*case 3:			// action to get header data of file
 			//printf("opening File\n");
 			pfd = openFile(file, k, v, p);
 			//printf("getHeaders\n");
-			getHeaders(pfd);
-			break;
+			printf("%d %d %d\n", k, v, p);
+			break;*/
 	}
-
+	if(show_max){printf("%d %d %d\n", k, v, p);}
 	close(pfd);
+	return 0;
 }
 
 int makeFile(char * fn, int k, int v, int p){
@@ -138,8 +144,10 @@ int makeFile(char * fn, int k, int v, int p){
 		write(pfd, &p, sizeof(int));
 		if (bits == -1){
 			printf("ERROR(key): Cannot create file '%s'\n", fn);
-			//printf("errno: %d\n",errno);
-			//printf("%s\n", strerror(errno));
+			if(d==1){ // debug
+				printf("DEBUG(key): errno: %d\n",errno);
+				printf("DEBUG(key): strerror: %s\n", strerror(errno));
+			}
 			exit(0);
 		}
 		 
@@ -147,7 +155,7 @@ int makeFile(char * fn, int k, int v, int p){
 	}
 }
 
-int openFile(char * fn, int k, int v, int p){
+int openFile(char * fn, int &k, int &v, int &p){
 	int pfd;
 	if ((pfd = open(fn, O_RDWR)) == -1){
 		if((pfd = makeFile(fn, k, v, p)) == -1){
@@ -159,8 +167,9 @@ int openFile(char * fn, int k, int v, int p){
 		// verify that the file is correct before continuing
 		char key[5];
 		read(pfd, key, 4);
-		//printf("key is: %s\n", key);
+		if(d==1)printf("DEBUG(key): magic bits are: %s\n", key); // debug
 		if(std::strcmp(key, "KEYZ") ==0){
+			getHeaders(pfd, k, v, p);
 			return pfd;	
 		}
 		// if the magic bits are wrong, say so
@@ -168,25 +177,106 @@ int openFile(char * fn, int k, int v, int p){
 		exit(1);
 	}
 }
-
-int getHeaders(int pfd){
-	int k, v, p; 
-	//printf("getting headers\n");
+void getHeaders(int pfd, int &k, int &v, int &p){
 	read(pfd, &k, sizeof(int));
 	read(pfd, &v, sizeof(int));
 	read(pfd, &p, sizeof(int));
-	printf("%d %d %d", k, v, p);
-	return 0;
 }
 
-int getData(int pfd, char * key){
-	return 0;
-}
-
-int setData(int pfd, char * key, char * setValue){
+int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	int h = hash(key);
-	printf("%d", h);
-	
+	int rowSize = k+v+(2*sizeof(int));
+	int position = ((h%p)*rowSize); 
+	position = position < 0? -position: position;
+	position += (4+(3*sizeof(int))); // find how many bits must be moved to get to the specified row, including header data
+	lseek(pfd, position, SEEK_SET);
+	int keyS;
+	char * keyV = NULL;
+	int rowsUsed=0;
+	if(pread(pfd, &keyS, sizeof(int), position) && keyS == 0 ){
+		printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
+		exit(1);
+	}
+	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
+		     && keyS != 0 
+		   ) &&( 
+				pread(pfd, keyV, sizeof(int), position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
+				(strcmp(keyV, key) !=0)
+		   )
+		)
+	{
+	rowsUsed++;
+	}
+	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);
+	int keySize;
+	int valueSize;
+	read(pfd, &keySize, sizeof(int));
+	read(pfd, &valueSize, sizeof(int));
+	char * value = (char *)malloc(keySize);
+	char * keyFound = (char *)malloc(valueSize);
+	read(pfd, keyFound, keySize);
+	read(pfd, value, valueSize);
+	if(d == 1){
+		printf("DEBUG(key): hash: %d\n", h);
+		printf("DEBUG(key): position: %d\n",position);
+		printf("DEBUG(key): keySize: %d\n", keySize);
+		printf("DEBUG(key): keyS: %d\n", keyS);
+		printf("DEBUG(key): valueSize: %d\n", valueSize);
+		printf("DEBUG(key): keyFound: %s\n", keyFound);
+	}
+	printf("%s\n", value);
+	free(value);
+	free(keyFound);
+	return 0;
+}
+
+int setData(char * fn, int pfd, char * key, int k, int v, int p){
+	int h = hash(key);
+	int rowSize = k+v+(2*sizeof(int));
+	int position = ((h%p)*rowSize);
+	position = position < 0? -position: position;
+	position += (4+(3*sizeof(int))); // find how many bits must be moved to get to the specified row, including header data
+	if(d == 1){ // debug
+		printf("DEBUG(key): hash: %d\n", h);
+		printf("DEBUG(key): position: %d\n", position);
+	}
+	lseek(pfd, position, SEEK_SET);
+	int keySize = strlen(key); // using strlen because key is a pointer, so sizeof is always 8
+	int keyS;
+	char * keyV = NULL;
+	int rowsUsed=0;
+	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
+		     && keyS != 0 
+		   ) &&( 
+				pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
+				(strcmp(keyV, key) !=0)
+		   )
+		)
+	{
+	rowsUsed++;
+	}
+	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);
+	char value[v];
+	char buf[1];
+	int i =0;
+	while( i<v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
+		printf("b: %c\n", buf[0]);
+		value[i] = buf[0];
+		i++;	
+	}
+	value[i-1] = '\0';
+	int valueSize = strlen(value); // using strlen because sizeof will return size of array and not size of string
+	if(d==1){
+		printf("DEBUG(key): key: %s\n", key);
+		printf("DEBUG(key): keySize: %d\n", keySize);
+		printf("DEBUG(key): value: %s\n", value);
+		printf("DEBUG(key): valueSize: %d\n", valueSize);
+	}
+	write(pfd, &keySize, sizeof(int));	
+	write(pfd, &valueSize, sizeof(int));
+	write(pfd, key, keySize); 
+	write(pfd, value, valueSize);
+
 	return 0;
 }
 
