@@ -1,0 +1,225 @@
++ rm key
++ g++ key.cpp -o key
+/usr/bin/g++ key.cpp -o key
++ rm z
++ key z
++ echo 0
+0
++ key -n z
+32 64 331
++ echo 0
+0
++ rm z
++ key -k10 -v10 -p8 z
++ echo 0
+0
++ key -n z
+10 10 8
++ echo snoopy
++ key -s z DOG
++ echo 0
+0
++ echo garfield
++ key -s z CAT
++ echo 0
+0
++ key -g z DOG
+snoopy
++ echo 0
+0
++ key -g z CAT
+garfield
++ echo 0
+0
++ key -g z BAT
+ERROR(key): trying to get value from key file 'z' for nonexistent record for key 'BAT'
++ echo 1
+1
++ key -g z
+ERROR(key): no key was specified for key file 'z'
++ echo 3
+3
++ echo katie
++ key -s z DOG
++ echo 0
+0
++ echo elsie
++ key -s z COW
++ echo 0
+0
++ echo p51
++ key -s z AIRCRAFT
++ echo 0
+0
++ key -g z DOG
+katie
++ echo 0
+0
++ key -g z AIRCRAFT
+p51
++ echo 0
+0
++ echo abbey
++ key -s z DOG
++ echo 0
+0
++ echo ka
++ key -s z SNAKE
++ echo 0
+0
++ key -g z CAT
+garfield
++ echo 0
+0
++ key -g z COW
+elsie
++ echo 0
+0
++ key -g z DOG
+abbey
++ echo 0
+0
++ key -g z SNAKE
+ka
++ echo 0
+0
++ key -g z AIRCRAFT
+p51
++ echo 0
+0
++ echo kaa
++ key -s z SNAKE
++ echo 0
+0
++ key -g z SNAKE
+kaa
++ echo 0
+0
++ echo macromolecules
++ key -s z ALTERATIONS
++ echo 0
+0
++ key -g z ALTERATIONS
+macromolec+ echo 0
+0
++ key -g z ALTERATIONABLE
+macromolec+ echo 0
+0
++ key -g z SNAKE
+kaa
++ echo 0
+0
++ key -k z
+ERROR(key): number on -k option: z is not legal.
++ echo 0
+0
++ key -y
+ERROR(key): option -y is not an option
+Usage: key {-s | -g} file key
+       key -[hnkvp] file
++ echo 1
+1
++ key -h
+Usage: key {-s | -g} file key
+       key -[hnkvp] file
++ echo 0
+0
++ echo fido
++ key -so z DOG
+ERROR(key): attempt to overwrite record for key 'DOG' when in no-overwrite mode
++ echo 1
+1
++ echo fido
++ key -soq z DOG
++ echo 1
+1
++ key -g z DOG
+abbey
++ echo 0
+0
++ rm z
++ key z
++ echo 0
+0
++ key -n z
+32 64 331
++ echo 0
+0
++ key -k100 z
++ echo 0
+0
++ key -n z
+32 64 331
++ echo 0
+0
++ rm z
++ key -k20 -k30 -k40 -v120 -v130 -v140 -p220 -p230 -p240 z
++ echo 0
+0
++ key -n z
+20 120 220
++ echo 0
+0
++ key -n z it is a wonderful day in the neighborhood
+20 120 220
++ echo 0
+0
++ rm z
++ echo zanzibar
++ key -k20 -v30 -p40 -sn z namibia
+20 30 40
++ echo 0
+0
++ key -n z
+20 30 40
++ echo 0
+0
++ key -g z namibia
+zanzibar
++ echo 0
+0
++ key -hhhhhhhhhhhhhhhhhnnnnnnnnnnnn z
+Usage: key {-s | -g} file key
+       key -[hnkvp] file
++ echo 0
+0
++ rm z
++ echo botswana
++ key -os z LION
++ echo 0
+0
++ key -og z LION
+botswana
++ echo 0
+0
++ echo zambia
++ key -os z LION
+ERROR(key): attempt to overwrite record for key 'LION' when in no-overwrite mode
++ echo 1
+1
++ key -og z LION
+botswana
++ echo 0
+0
++ hi
+Howdy!
++ date
++ key z
+ERROR(key): File 'z' is not of type key file.
++ key -g z DOG
+ERROR(key): File 'z' is not of type key file.
++ date
++ key -s z CAT
+ERROR(key): File 'z' is not of type key file.
++ rm z
++ key -g z DOG
+ERROR(key): trying to get value from key file 'z' for nonexistent record for key 'DOG'
++ key -n
+32 64 331
++ rm z
++ echo fido
++ key -s z DOG
++ key -g z DOG
+fido
++ key -n
+32 64 331

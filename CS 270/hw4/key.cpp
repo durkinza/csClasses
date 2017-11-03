@@ -16,9 +16,9 @@
 unsigned int hash(const char *str);
 int makeFile(char * fn, int k, int v, int p);
 int openFile(char * fn, int &k, int &v, int &p);
-int getData(char * fn, int pfd, char * key, int k, int v, int p);
+int getData(char * fn, int pfd, char * key, int q, int k, int v, int p);
 void getHeaders(int pfd, int &k, int &v, int &p);
-int setData(char * fn, int pfd, char * key, int noOver, int k, int v, int p);
+int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p);
 unsigned int hash(const char *str);
 int d = 0; // debug option
 
@@ -53,18 +53,28 @@ int main(int argc, char*  argv[]){
 				break;
 			case 'k':
 				// for setting key value size on new files
+				if((int)*optarg > 57 || (int)*optarg < 48){
+					printf("ERROR(key): number on -k option: %s is not legal.\n", optarg);
+					if(d==1)printf("DEBUG(key): -k option: %d\n", k);
+					exit(1);
+				}
 				k=atoi(optarg);
 				break;
 			case 'n':
-				//for returning header values from file
+				// for returning header values from file
 				show_max = 1; // set action to returning headers
 				break;
 			case 'o':
-				//for 
+				// Set to throw an error when over writing a previous record 
 				noOverwrite = 1; // set action to returning headers
 				break;
 			case 'p':
 				// for setting number of rows in a new file
+				if((int)*optarg > 57 || (int)*optarg < 48){
+					printf("ERROR(key): number on -p option: %s is not legal.\n", optarg);
+					if(d==1)printf("DEBUG(key): -p option: %d\n", p);
+					exit(1);
+				}
 				p=atoi(optarg);
 				break;
 			case 'q':
@@ -77,12 +87,17 @@ int main(int argc, char*  argv[]){
 				break;
 			case 'v':
 				// for setting value size on new files
+				if((int)*optarg > 57 || (int)*optarg < 48){
+					printf("ERROR(key): number on -v option: %s is not legal.\n", optarg);
+					if(d==1)printf("DEBUG(key): -v option: %d\n", v);
+					exit(1);
+				}
 				v=atoi(optarg);
 				break;
 			default:
 				printf("ERROR(key): option -%c is not an option\n", optopt);
 				printf("%s",help);
-				exit(0);
+				exit(1);
 		}
 	}
 	int index = optind;
@@ -100,29 +115,20 @@ int main(int argc, char*  argv[]){
 	pfd = openFile(file, k, v, p);
 	
 	switch(action){
-		case 0:			// if nothing is specified, then try to make the file
-			//pfd = makeFile(file, k, v, p);
-			break;
 		case 1:			// action to just get data
 			if(key==NULL){
 				printf("ERROR(key): No key was specified for key file '%s'\n", file);
 				exit(1);
 			}
-			getData(file, pfd, key, k, v, p);
+			getData(file, pfd, key, quiet, k, v, p);
 			break;
 		case 2:			// action to set data
 			if(key==NULL){
 				printf("ERROR(key): No key was specified for key file '%s'\n", file);
 				exit(1);
 			}
-			setData(file, pfd, key, noOverwrite, k, v, p);
+			setData(file, pfd, key, noOverwrite, quiet, k, v, p);
 			break;
-		/*case 3:			// action to get header data of file
-			//printf("opening File\n");
-			pfd = openFile(file, k, v, p);
-			//printf("getHeaders\n");
-			printf("%d %d %d\n", k, v, p);
-			break;*/
 	}
 	if(show_max){printf("%d %d %d\n", k, v, p);}
 	close(pfd);
@@ -190,7 +196,7 @@ void getHeaders(int pfd, int &k, int &v, int &p){
 	read(pfd, &p, sizeof(int));
 }
 
-int getData(char * fn, int pfd, char * key, int k, int v, int p){
+int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 	int h = hash(key);
 	int rowSize = k+v+(2*sizeof(int));
 	int position = ((h%p)*rowSize); 
@@ -200,8 +206,8 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	int keyS;
 	char * keyV = (char *) malloc(v);
 	int rowsUsed=0;
-	if(pread(pfd, &keyS, sizeof(int), position) && keyS == 0 ){
-		printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
+	if((pread(pfd, &keyS, sizeof(int), position) < 0 ) || keyS == 0 ){
+		if(q!=1)printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
 		exit(1);
 	}
 	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
@@ -212,11 +218,12 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 		   )
 		)
 	{
-	if(d==1){
-		printf("DEBUG(key): keyS: %d\n", keyS);
-		printf("DEBUG(key): keyV: %s\n", keyV);
-	}
-	rowsUsed++;
+		rowsUsed++;
+		if(d==1){
+			printf("DEBUG(key): keyS: %d\n", keyS);
+			printf("DEBUG(key): keyV: %s\n", keyV);
+			printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
+		}
 	}
 	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);
 	int keySize;
@@ -241,7 +248,7 @@ int getData(char * fn, int pfd, char * key, int k, int v, int p){
 	return 0;
 }
 
-int setData(char * fn, int pfd, char * key, int noOver, int k, int v, int p){
+int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p){
 	int h = hash(key);
 	int rowSize = k+v+(2*sizeof(int));
 	int position = ((h%p)*rowSize);
@@ -264,10 +271,11 @@ int setData(char * fn, int pfd, char * key, int noOver, int k, int v, int p){
 		   )
 		)
 	{
-	rowsUsed++;
+		rowsUsed++;
+		if(d==1)printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
 	}
 	if(noOver!=0  && (strcmp(keyV, key) == 0)){
-		printf("ERROR(key): Attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
+		if(q!=1)printf("ERROR(key): Attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
 		exit(1);
 	}
 	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);

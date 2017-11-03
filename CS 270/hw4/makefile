@@ -15,7 +15,7 @@ dbug=gdb
 
 LIBS=
 
-CXXFLAGS=-O3 -Wall
+CXXFLAGS=-O3 -g -Wall
 #CXXFLAGS=-g -Wall # use for debugging code
 
 $(BIN): $(OBJS)
