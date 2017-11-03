@@ -2,7 +2,6 @@
  * File: key.cpp
  * 
  */
-//#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,8 +10,7 @@
 #include <fcntl.h>
 
 
-//#include <string.h>
-
+// define functions
 unsigned int hash(const char *str);
 int makeFile(char * fn, int k, int v, int p);
 int openFile(char * fn, int &k, int &v, int &p);
@@ -20,161 +18,142 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p);
 void getHeaders(int pfd, int &k, int &v, int &p);
 int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p);
 unsigned int hash(const char *str);
-int d = 0; // debug option
+int d = 0; // global debug option
 
 int main(int argc, char*  argv[]){
-	int c;
-	char * file = NULL;
-	int pfd;
-	char * key = NULL;
-	int action = 0;
-	int show_max = 0;
-	int noOverwrite = 0;
-	int quiet=0;
-	int k = 32;
-	int p = 331;
-	int v = 64;
+	int c;										// variable for holding argument
+	char * file = NULL;							// Holds requested file name
+	int pfd;									// Holds file pointer
+	char * key = NULL;							// Holds given key to either search for or set
+	int action = 0;								// action is set to get data(1) or to set data (2)
+	int show_max = 0;							// set to show k, p, v values to false
+	int noOverwrite = 0;						// set no Overwrite to false
+	int quiet=0;								// set quite messages to false
+	int k = 32;									// set default value for k
+	int p = 331;								// set default value for p
+	int v = 64;									// set default value for v
 	char help[] = "Usage: key {-s | -g} file key\n       key -[hnkvp] file\n";
-	opterr = 0; // should stop getopt from giving it's own errors
+	opterr = 0;									// should stop getopt from giving it's own errors
 	while ((c = getopt (argc, argv, "sgndhoqk:v:p:")) != -1){
 		switch (c){
 			case 'd':
-				// set debugging on
-				d = 1;
+				d = 1;							// set debugging on
 				break;
-			case 'g':
-				// for getting value from file
-				action = 1; // set action to getting data
+			case 'g':							// for getting value from file
+				action = 1;						// set action to getting data
 				break;
-			case 'h':
+			case 'h':							// if they use help option
 				// send help
-				printf("%s",help);
-				exit(0);
+				printf("%s",help);				// print out help
+				exit(0);						// leave program
 				break;
-			case 'k':
-				// for setting key value size on new files
-				if((int)*optarg > 57 || (int)*optarg < 48){
+			case 'k':							// for setting key value size on new files
+				if( (int)*optarg > 57 || (int)*optarg < 48)
+				{								// check that the k option given is a number
 					printf("ERROR(key): number on -k option: %s is not legal.\n", optarg);
 					if(d==1)printf("DEBUG(key): -k option: %d\n", k);
-					exit(1);
+					exit(1);					// print an error if k is not a number, and leave program
 				}
 				k=atoi(optarg);
 				break;
-			case 'n':
-				// for returning header values from file
-				show_max = 1; // set action to returning headers
+			case 'n':							// for returning header values from file
+				show_max = 1;					// set show max values to true
 				break;
-			case 'o':
-				// Set to throw an error when over writing a previous record 
-				noOverwrite = 1; // set action to returning headers
+			case 'o':							// Set to throw an error when over writing a previous record 
+				noOverwrite = 1;				// set no Overwrite to true, so warnings will show if they try to overwrite an already set value
 				break;
-			case 'p':
-				// for setting number of rows in a new file
-				if((int)*optarg > 57 || (int)*optarg < 48){
+			case 'p':							// for setting number of rows in a new file
+				if((int)*optarg > 57 || (int)*optarg < 48)
+				{								// check that the p option is a number
 					printf("ERROR(key): number on -p option: %s is not legal.\n", optarg);
 					if(d==1)printf("DEBUG(key): -p option: %d\n", p);
-					exit(1);
+					exit(1);					// print an error if p is not a number, and leave program
 				}
 				p=atoi(optarg);
 				break;
-			case 'q':
-				// for silencing misuse messages
-				quiet = 1;
+			case 'q':							// for silencing misuse messages
+				quiet = 1;						// set quiet to true
 				break;
-			case 's':
-				// for saving value to file
-				action = 2; // set action to saving data
+			case 's':							// for saving value to file
+				action = 2;						// set action to saving data
 				break;
-			case 'v':
-				// for setting value size on new files
-				if((int)*optarg > 57 || (int)*optarg < 48){
+			case 'v':							// for setting max value size on new file
+				if((int)*optarg > 57 || (int)*optarg < 48)
+				{								// check that the v option is a number
 					printf("ERROR(key): number on -v option: %s is not legal.\n", optarg);
 					if(d==1)printf("DEBUG(key): -v option: %d\n", v);
-					exit(1);
+					exit(1);					// print an error if v is not a number, and leave program
 				}
 				v=atoi(optarg);
 				break;
-			default:
+			default:							// if an unknown option was given
 				printf("ERROR(key): option -%c is not an option\n", optopt);
-				printf("%s",help);
-				exit(1);
+				printf("%s",help);				// pring an error on the improper argument
+				exit(1);						// leave program
 		}
 	}
 	int index = optind;
-	if(index < argc){ // get file name from argument list
+	if(index < argc){							// get file name from argument list
 		file = argv[index];
 		if(d==1)printf("DEBUG(key): opening %s for reading\n", file);
-		//pfd = openFile(file, k, v, p);
-		index++;
+		index++;								// increment index to show that the filename was retrieved
 	}
-	if(index < argc){  // get key from argument list
+	if(index < argc){							// get key from argument list
 		key = argv[index];
-		index++;
+		index++;								// increment index to show that key was retrieved
 	}
 	
-	pfd = openFile(file, k, v, p);
+	pfd = openFile(file, k, v, p);				// open the choosen file, or create it if it doens't exist
 	
+	if(show_max)printf("%d %d %d\n", k, v, p);	// print max values if that option was set
+	if (action != 0){
+		if(pfd == -1){
+			printf("ERROR(key): Cannot create file '%s'\n", file);
+			exit(1);
+		}
+		if(key==NULL){
+			printf("ERROR(key): No key was specified for key file '%s'\n", file);
+			exit(1);						// if the key is missing, throw an error and leave
+		}
+	}
+
 	switch(action){
-		case 1:			// action to just get data
-			if(key==NULL){
-				printf("ERROR(key): No key was specified for key file '%s'\n", file);
-				exit(1);
-			}
+		case 1:									// action to just get data
 			getData(file, pfd, key, quiet, k, v, p);
 			break;
-		case 2:			// action to set data
-			if(key==NULL){
-				printf("ERROR(key): No key was specified for key file '%s'\n", file);
-				exit(1);
-			}
+		case 2:									// action to set data
 			setData(file, pfd, key, noOverwrite, quiet, k, v, p);
 			break;
 	}
-	if(show_max){printf("%d %d %d\n", k, v, p);}
-	close(pfd);
-	return 0;
+	close(pfd);									// close the file 
+	return 0;									// return 0, leave program
 }
 
-int makeFile(char * fn, int k, int v, int p){
+int makeFile(char * fn, int k, int v, int p){	// for making the key file if it doens't exist
 	int pfd;
 	if ((pfd = open(fn, O_CREAT|O_RDWR, S_IRUSR | S_IWUSR)) == -1){
-    	printf("ERROR(key): Cannot create file '%s'\n", fn);
-		exit(0);
-	}else{
-		char * mgbits;
-		mgbits = (char*) malloc(4);
-		if (mgbits==NULL) exit(1);
-		mgbits[0]='K';
-		mgbits[1]='E';
-		mgbits[2]='Y';
-		mgbits[3]='Z';
-		// write the magic bits to the file
-		write(pfd,  mgbits, sizeof(4)); //write(pfd, "KEYZ", sizeof(4));
-		free(mgbits);
-		
-		int bits = write(pfd, &k, sizeof(int)); 
-		write(pfd, &v, sizeof(int));
-		write(pfd, &p, sizeof(int));
-		if (bits == -1){
+		return pfd;								// if a file cannot be made, throw an error
+	}else{										// if file is made and opened successfully
+		int bits = write(pfd, "KEYZ", sizeof(4));// set magic bits of file
+		write(pfd, &k, sizeof(int));			// write k value to file
+		write(pfd, &v, sizeof(int));			// write v value to file
+		write(pfd, &p, sizeof(int));			// write p value to file
+		if (bits == -1){						// check that the first value could be written to
 			printf("ERROR(key): Cannot create file '%s'\n", fn);
 			if(d==1){ // debug
 				printf("DEBUG(key): errno: %d\n",errno);
 				printf("DEBUG(key): strerror: %s\n", strerror(errno));
 			}
-			exit(0);
+			exit(0);							// leave program is values cannot be set
 		}
-		 
 		return pfd;
 	}
 }
 
 int openFile(char * fn, int &k, int &v, int &p){
 	int pfd;
-	if ((pfd = open(fn, O_RDWR)) == -1){
-		if((pfd = makeFile(fn, k, v, p)) == -1){
-	    	printf("ERROR(key): Cannot create file '%s'\n", fn); 
-			exit(1);
-		}
+	if ((pfd = open(fn, O_RDWR)) == -1){		// try to open file normally
+		pfd = makeFile(fn, k, v, p);			// try to make file if it doesn't open
 		return pfd;
 	}else{
 		// verify that the file is correct before continuing
@@ -219,7 +198,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 		)
 	{
 		rowsUsed++;
-		if(d==1){
+		if(d==1){ // debug
 			printf("DEBUG(key): keyS: %d\n", keyS);
 			printf("DEBUG(key): keyV: %s\n", keyV);
 			printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
@@ -234,7 +213,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 	char * keyFound = (char *)malloc(valueSize);
 	read(pfd, keyFound, keySize);
 	read(pfd, value, valueSize);
-	if(d == 1){
+	if(d == 1){ // debug
 		printf("DEBUG(key): hash: %d\n", h);
 		printf("DEBUG(key): position: %d\n",position);
 		printf("DEBUG(key): keySize: %d\n", keySize);
@@ -242,7 +221,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 		printf("DEBUG(key): valueSize: %d\n", valueSize);
 		printf("DEBUG(key): keyFound: %s\n", keyFound);
 	}
-	printf("%s\n", value);
+	printf("%s", value);
 	free(value);
 	free(keyFound);
 	return 0;
@@ -279,17 +258,16 @@ int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int
 		exit(1);
 	}
 	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);
-	char value[v];
+	char * value = (char *)malloc(v);
 	char buf[1];
 	int i =0;
-	while( i<v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
-		if(d==1)printf("b: %c\n", buf[0]);
+	while( i<=v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
+		if(d==1)printf("DEBUG(key) buf: %c\n", buf[0]);
 		value[i] = buf[0];
 		i++;	
 	}
-	value[i-1] = '\0';
 	int valueSize = strlen(value); // using strlen because sizeof will return size of array and not size of string
-	if(d==1){
+	if(d==1){ // debug
 		printf("DEBUG(key): key: %s\n", key);
 		printf("DEBUG(key): keySize: %d\n", keySize);
 		printf("DEBUG(key): value: %s\n", value);
