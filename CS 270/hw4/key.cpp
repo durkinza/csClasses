@@ -15,7 +15,6 @@ unsigned int hash(const char *str);
 int makeFile(char * fn, int k, int v, int p);
 int openFile(char * fn, int &k, int &v, int &p);
 int getData(char * fn, int pfd, char * key, int q, int k, int v, int p);
-void getHeaders(int pfd, int &k, int &v, int &p);
 int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p);
 unsigned int hash(const char *str);
 int d = 0; // global debug option
@@ -155,64 +154,58 @@ int openFile(char * fn, int &k, int &v, int &p){
 	if ((pfd = open(fn, O_RDWR)) == -1){		// try to open file normally
 		pfd = makeFile(fn, k, v, p);			// try to make file if it doesn't open
 		return pfd;
-	}else{
-		// verify that the file is correct before continuing
-		char * key= (char *)malloc(5);
-		read(pfd, key, 4);
+	}else{										// verify that the file is correct before continuing
+		char * key= (char *)malloc(5);			// clear out a string to hold the magic bits
+		read(pfd, key, 4);						// read in the first 4 bits (magic bits)
 		if(d==1)printf("DEBUG(key): magic bits are: %s\n", key); // debug
-		if(std::strcmp(key, "KEYZ") ==0){
-			getHeaders(pfd, k, v, p);
-			return pfd;	
+		if(std::strcmp(key, "KEYZ") ==0){		// if the first 4 bits are KEYZ
+			read(pfd, &k, sizeof(int));			// get the k value
+			read(pfd, &v, sizeof(int));			// get the v value
+			read(pfd, &p, sizeof(int));			// get the p value
+			return pfd;							// return the pfd, leave the function 
 		}
-		// if the magic bits are wrong, say so
+												// if the magic bits are wrong, say so
 		printf("ERROR(key): File '%s' is not of type key file.\n", fn);
-		exit(1);
+		exit(1);								// leave if file is wrong type
 	}
-}
-void getHeaders(int pfd, int &k, int &v, int &p){
-	read(pfd, &k, sizeof(int));
-	read(pfd, &v, sizeof(int));
-	read(pfd, &p, sizeof(int));
 }
 
 int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
-	int h = hash(key);
-	int rowSize = k+v+(2*sizeof(int));
-	int position = ((h%p)*rowSize); 
-	position = position < 0? -position: position;
-	position += (4+(3*sizeof(int))); // find how many bits must be moved to get to the specified row, including header data
-	lseek(pfd, position, SEEK_SET);
-	int keyS;
-	char * keyV = (char *) malloc(v);
-	int rowsUsed=0;
+	int h = hash(key);							// get hash of key
+	int rowSize = k+v+(2*sizeof(int));			// find the max row size
+	int position = ((h%p)*rowSize);				// find the position in the file that this key should start at
+	position = position < 0? -position: position; // make sure that the position is a positive number
+	position += (4+(3*sizeof(int)));			// find how many bits must be moved to get to the specified row, including header data
+	lseek(pfd, position, SEEK_SET);				// seek the the position
+	int keyS;									// int to hold the size of the key in the file
+	char * keyV = (char *) malloc(v);			// char to hold the value of the key in the file
+	int rowsUsed=0;								// counter to keep track of the row (for if multiple rows have the same hash)
 	if((pread(pfd, &keyS, sizeof(int), position) < 0 ) || keyS == 0 ){
+												// if the expected position is empty, or has a key size of zero, throw an error, if quiet is not set
 		if(q!=1)printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
-		exit(1);
+		exit(1);								// exit with error
 	}
-	while( ( pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) 
-		     && keyS != 0 
-		   ) &&( 
-				pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
-				(strcmp(keyV, key) !=0)
-		   )
-		)
-	{
-		rowsUsed++;
+												// while the next row can be read, and the key size is not 0
+	while( (pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) && keyS != 0 ) 
+												// and while the key is not the same as the given key
+		   &&(pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) && (strcmp(keyV, key) !=0)))
+	{											// move through the rows in the file, until either we hit an empty row,
+		rowsUsed++;								//	or till we hit a row who's key matches the requested key
 		if(d==1){ // debug
 			printf("DEBUG(key): keyS: %d\n", keyS);
 			printf("DEBUG(key): keyV: %s\n", keyV);
 			printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
 		}
 	}
-	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);
-	int keySize;
-	int valueSize;
-	read(pfd, &keySize, sizeof(int));
-	read(pfd, &valueSize, sizeof(int));
-	char * value = (char *)malloc(keySize);
-	char * keyFound = (char *)malloc(valueSize);
-	read(pfd, keyFound, keySize);
-	read(pfd, value, valueSize);
+	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);// once a row is found, seek to that row's position
+	int keySize;								// get ready to read the key size
+	int valueSize;								// get ready to read the value size
+	read(pfd, &keySize, sizeof(int));			// read the key size
+	read(pfd, &valueSize, sizeof(int));			// read the value size
+	char * value = (char *)malloc(keySize);		// get ready to read the value
+	char * keyFound = (char *)malloc(valueSize);// get ready to read the key
+	read(pfd, keyFound, keySize);				// read the key 
+	read(pfd, value, valueSize);				// read the value
 	if(d == 1){ // debug
 		printf("DEBUG(key): hash: %d\n", h);
 		printf("DEBUG(key): position: %d\n",position);
@@ -221,62 +214,60 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 		printf("DEBUG(key): valueSize: %d\n", valueSize);
 		printf("DEBUG(key): keyFound: %s\n", keyFound);
 	}
-	printf("%s", value);
-	free(value);
+	printf("%s", value);						// output the value found
+	free(value);								// clear up some memory
 	free(keyFound);
 	return 0;
 }
 
 int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p){
-	int h = hash(key);
-	int rowSize = k+v+(2*sizeof(int));
-	int position = ((h%p)*rowSize);
-	position = position < 0? -position: position;
-	position += (4+(3*sizeof(int))); // find how many bits must be moved to get to the specified row, including header data
+	int h = hash(key);							// get hash value
+	int rowSize = k+v+(2*sizeof(int));			// get size of a row
+	int position = ((h%p)*rowSize);				// get the expected position
+	position = position < 0? -position: position;// make sure the position is a postive value
+	position += (4+(3*sizeof(int)));			// find how many bits must be moved to get to the specified row, including header data
 	if(d == 1){ // debug
 		printf("DEBUG(key): hash: %d\n", h);
 		printf("DEBUG(key): position: %d\n", position);
 	}
-	lseek(pfd, position, SEEK_SET);
-	int keySize = strlen(key); // using strlen because key is a pointer, so sizeof is always 8
-	int keyS;
-	char * keyV = (char *) malloc(v);
-	int rowsUsed=0;
-	while( ( (pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) != -1)
-		     && keyS != 0 
-		   ) &&( 
-				pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) &&
-				(strcmp(keyV, key) !=0)
-		   )
-		)
+	lseek(pfd, position, SEEK_SET);				// seek to the expected position
+	int keySize = strlen(key);					// using strlen because key is a pointer, so sizeof is always 8
+	int keyS;									// get ready to search for key size
+	char * keyV = (char *) malloc(v);			// get ready to search for key value
+	int rowsUsed=0;								// keep track of which row the key is in
+	while(((pread(pfd, &keyS, sizeof(int), position+(rowsUsed*rowSize)) != -1) && keyS != 0 )
+												// while the row can be read, and the key size is not 0
+			&&(pread(pfd, keyV, keyS, position+(rowsUsed*rowSize)+(sizeof(int)*2)) && (strcmp(keyV, key) !=0)))
+												// and while the key's value doesn't match the given key's value
 	{
-		rowsUsed++;
+												// move through the rows of the file, until either an empty row is found,
+		rowsUsed++;								//	or until the requested row is found
 		if(d==1)printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
 	}
-	if(noOver!=0  && (strcmp(keyV, key) == 0)){
+	if(noOver!=0  && (strcmp(keyV, key) == 0)){	// if the key was already used, and no-overwrite mode is active, output an error
 		if(q!=1)printf("ERROR(key): Attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
-		exit(1);
+		exit(1);								// leave program to prevent overwriting value
 	}
-	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);
-	char * value = (char *)malloc(v);
-	char buf[1];
-	int i =0;
+	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);	// seek to the row with the matching or empty key
+	char * value = (char *)malloc(v);			// get ready to read in a value from stdin
+	char buf[1];								// get a buffer ready to read a character from stdin
+	int i =0;									// counter for getting size of string given by stdin
 	while( i<=v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
 		if(d==1)printf("DEBUG(key) buf: %c\n", buf[0]);
-		value[i] = buf[0];
-		i++;	
+		value[i] = buf[0];						// transfer each character into the value string
+		i++;									// move to next character in value string
 	}
-	int valueSize = strlen(value); // using strlen because sizeof will return size of array and not size of string
+	int valueSize = strlen(value);				// using strlen because sizeof will return size of array and not size of string
 	if(d==1){ // debug
 		printf("DEBUG(key): key: %s\n", key);
 		printf("DEBUG(key): keySize: %d\n", keySize);
 		printf("DEBUG(key): value: %s\n", value);
 		printf("DEBUG(key): valueSize: %d\n", valueSize);
 	}
-	write(pfd, &keySize, sizeof(int));	
-	write(pfd, &valueSize, sizeof(int));
-	write(pfd, key, keySize); 
-	write(pfd, value, valueSize);
+	write(pfd, &keySize, sizeof(int));			// write key size to the start of the row
+	write(pfd, &valueSize, sizeof(int));		// write value size to the start of the row
+	write(pfd, key, keySize);					// write key to the row
+	write(pfd, value, valueSize);				// write value to the row
 
 	return 0;
 }
