@@ -122,7 +122,7 @@ int main(int argc, char*  argv[]){
 			exit(1);
 		}
 		if(key==NULL){
-			printf("ERROR(key): No key was specified for key file '%s'\n", file);
+			printf("ERROR(key): no key was specified for key file '%s'\n", file);
 			exit(1);						// if the key is missing, throw an error and leave
 		}
 	}
@@ -214,6 +214,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 		if(q!=1)printf("ERROR(key): trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
 		exit(1);								// exit with error
 	}
+	free(keyV);									// freeing up memory
 	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);// once a row is found, seek to that row's position
 	int keySize;								// get ready to read the key size
 	int valueSize;								// get ready to read the value size
@@ -227,7 +228,6 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 		printf("DEBUG(key): hash: %d\n", h);
 		printf("DEBUG(key): position: %d\n",position);
 		printf("DEBUG(key): keySize: %d\n", keySize);
-		printf("DEBUG(key): keyS: %d\n", keyS);
 		printf("DEBUG(key): valueSize: %d\n", valueSize);
 		printf("DEBUG(key): keyFound: %s\n", keyFound);
 	}
@@ -266,6 +266,7 @@ int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int
 		if(q!=1)printf("ERROR(key): attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
 		exit(1);								// leave program to prevent overwriting value
 	}
+	free(keyV);									// freeing up some memory
 	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);	// seek to the row with the matching or empty key
 	char * value = (char *)malloc(v);			// get ready to read in a value from stdin
 	char buf[1];								// get a buffer ready to read a character from stdin
