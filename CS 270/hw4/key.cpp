@@ -31,7 +31,9 @@ int main(int argc, char*  argv[]){
 	int k = 32;									// set default value for k
 	int p = 331;								// set default value for p
 	int v = 64;									// set default value for v
-	char help[] = "Usage: key {-s | -g} file key\n       key -[hnkvp] file\n";
+	bool kF, vF, pF;							// boolean for k, v, p values
+	kF = vF = pF = false;						// set all flags to false
+	char help[] = "Usage: key {-s | -g}[o] file key\n       key -[hnkpv] file\n";
 	opterr = 0;									// should stop getopt from giving it's own errors
 	while ((c = getopt (argc, argv, "sgndhoqk:v:p:")) != -1){
 		switch (c){
@@ -47,13 +49,16 @@ int main(int argc, char*  argv[]){
 				exit(0);						// leave program
 				break;
 			case 'k':							// for setting key value size on new files
-				if( (int)*optarg > 57 || (int)*optarg < 48)
-				{								// check that the k option given is a number
-					printf("ERROR(key): number on -k option: %s is not legal.\n", optarg);
-					if(d==1)printf("DEBUG(key): -k option: %d\n", k);
-					exit(1);					// print an error if k is not a number, and leave program
+				if(!kF){
+												// check that the k option given is a number
+					if( (int)*optarg > 57 || (int)*optarg < 48){
+						printf("ERROR(key): number on -k option: %s is not legal.\n", optarg);
+						if(d==1)printf("DEBUG(key): -k option: %d\n", k);
+						exit(1);				// print an error if k is not a number, and leave program
+					}
+					k=atoi(optarg);
+					kF = true;					// set k value to set
 				}
-				k=atoi(optarg);
 				break;
 			case 'n':							// for returning header values from file
 				show_max = 1;					// set show max values to true
@@ -62,13 +67,16 @@ int main(int argc, char*  argv[]){
 				noOverwrite = 1;				// set no Overwrite to true, so warnings will show if they try to overwrite an already set value
 				break;
 			case 'p':							// for setting number of rows in a new file
-				if((int)*optarg > 57 || (int)*optarg < 48)
-				{								// check that the p option is a number
-					printf("ERROR(key): number on -p option: %s is not legal.\n", optarg);
-					if(d==1)printf("DEBUG(key): -p option: %d\n", p);
-					exit(1);					// print an error if p is not a number, and leave program
+				if(!pF){
+												// check that the p option is a number
+					if((int)*optarg > 57 || (int)*optarg < 48){
+						printf("ERROR(key): number on -p option: %s is not legal.\n", optarg);
+						if(d==1)printf("DEBUG(key): -p option: %d\n", p);
+						exit(1);				// print an error if p is not a number, and leave program
+					}
+					p=atoi(optarg);
+					pF = true;					// set p value to set
 				}
-				p=atoi(optarg);
 				break;
 			case 'q':							// for silencing misuse messages
 				quiet = 1;						// set quiet to true
@@ -77,13 +85,16 @@ int main(int argc, char*  argv[]){
 				action = 2;						// set action to saving data
 				break;
 			case 'v':							// for setting max value size on new file
-				if((int)*optarg > 57 || (int)*optarg < 48)
-				{								// check that the v option is a number
-					printf("ERROR(key): number on -v option: %s is not legal.\n", optarg);
-					if(d==1)printf("DEBUG(key): -v option: %d\n", v);
-					exit(1);					// print an error if v is not a number, and leave program
+				if(!vF){
+												// check that the v option is a number
+					if((int)*optarg > 57 || (int)*optarg < 48){
+						printf("ERROR(key): number on -v option: %s is not legal.\n", optarg);
+						if(d==1)printf("DEBUG(key): -v option: %d\n", v);
+						exit(1);				// print an error if v is not a number, and leave program
+					}
+					v=atoi(optarg);
+					vF=true;					// set v value to set
 				}
-				v=atoi(optarg);
 				break;
 			default:							// if an unknown option was given
 				printf("ERROR(key): option -%c is not an option\n", optopt);
@@ -171,6 +182,7 @@ int openFile(char * fn, int &k, int &v, int &p){
 }
 
 int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
+	key[k] = '\0';
 	int h = hash(key);							// get hash of key
 	int rowSize = k+v+(2*sizeof(int));			// find the max row size
 	int position = ((h%p)*rowSize);				// find the position in the file that this key should start at
@@ -182,7 +194,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 	int rowsUsed=0;								// counter to keep track of the row (for if multiple rows have the same hash)
 	if((pread(pfd, &keyS, sizeof(int), position) < 0 ) || keyS == 0 ){
 												// if the expected position is empty, or has a key size of zero, throw an error, if quiet is not set
-		if(q!=1)printf("ERROR(key): Trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
+		if(q!=1)printf("ERROR(key): trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
 		exit(1);								// exit with error
 	}
 												// while the next row can be read, and the key size is not 0
@@ -196,6 +208,11 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 			printf("DEBUG(key): keyV: %s\n", keyV);
 			printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
 		}
+	}
+	if(strcmp(keyV, key) != 0){
+												// if the expected position is empty, or has a key size of zero, throw an error, if quiet is not set
+		if(q!=1)printf("ERROR(key): trying to get value from key file '%s' for nonexistent record for key '%s'\n", fn, key);
+		exit(1);								// exit with error
 	}
 	lseek(pfd, position+(rowsUsed*rowSize), SEEK_SET);// once a row is found, seek to that row's position
 	int keySize;								// get ready to read the key size
@@ -221,6 +238,7 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 }
 
 int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p){
+	key[k] = '\0';
 	int h = hash(key);							// get hash value
 	int rowSize = k+v+(2*sizeof(int));			// get size of a row
 	int position = ((h%p)*rowSize);				// get the expected position
@@ -245,14 +263,14 @@ int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int
 		if(d==1)printf("DEBUG(key): row used, moveing to row: %d\n", rowsUsed);
 	}
 	if(noOver!=0  && (strcmp(keyV, key) == 0)){	// if the key was already used, and no-overwrite mode is active, output an error
-		if(q!=1)printf("ERROR(key): Attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
+		if(q!=1)printf("ERROR(key): attempt to overwrite record for key '%s' when in no-overwrite mode\n", key);
 		exit(1);								// leave program to prevent overwriting value
 	}
 	lseek(pfd, (rowsUsed*rowSize), SEEK_CUR);	// seek to the row with the matching or empty key
 	char * value = (char *)malloc(v);			// get ready to read in a value from stdin
 	char buf[1];								// get a buffer ready to read a character from stdin
 	int i =0;									// counter for getting size of string given by stdin
-	while( i<=v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
+	while( i<v && read(0, buf, sizeof(buf))>0) {// read from stdin character by character
 		if(d==1)printf("DEBUG(key) buf: %c\n", buf[0]);
 		value[i] = buf[0];						// transfer each character into the value string
 		i++;									// move to next character in value string

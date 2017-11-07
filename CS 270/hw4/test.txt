@@ -115,13 +115,13 @@ ERROR(key): number on -k option: z is not legal.
 0
 + key -y
 ERROR(key): option -y is not an option
-Usage: key {-s | -g} file key
-       key -[hnkvp] file
+Usage: key {-s | -g}[o] file key
+       key -[hnkpv] file
 + echo 1
 1
 + key -h
-Usage: key {-s | -g} file key
-       key -[hnkvp] file
+Usage: key {-s | -g}[o] file key
+       key -[hnkpv] file
 + echo 0
 0
 + echo fido
@@ -179,8 +179,8 @@ zanzibar
 + echo 0
 0
 + key -hhhhhhhhhhhhhhhhhnnnnnnnnnnnn z
-Usage: key {-s | -g} file key
-       key -[hnkvp] file
+Usage: key {-s | -g}[o] file key
+       key -[hnkpv] file
 + echo 0
 0
 + rm z
