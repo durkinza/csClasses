@@ -46,7 +46,6 @@ typedef int16_t flex_int16_t;
 typedef uint16_t flex_uint16_t;
 typedef int32_t flex_int32_t;
 typedef uint32_t flex_uint32_t;
-typedef uint64_t flex_uint64_t;
 #else
 typedef signed char flex_int8_t;
 typedef short int flex_int16_t;
@@ -153,12 +152,7 @@ typedef unsigned int flex_uint32_t;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
 
-#ifndef YY_TYPEDEF_YY_SIZE_T
-#define YY_TYPEDEF_YY_SIZE_T
-typedef size_t yy_size_t;
-#endif
-
-extern yy_size_t yyleng;
+extern int yyleng;
 
 extern FILE *yyin, *yyout;
 
@@ -184,6 +178,11 @@ extern FILE *yyin, *yyout;
 
 #define unput(c) yyunput( c, (yytext_ptr)  )
 
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
+
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
 struct yy_buffer_state
@@ -201,7 +200,7 @@ struct yy_buffer_state
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	yy_size_t yy_n_chars;
+	int yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -271,8 +270,8 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 
 /* yy_hold_char holds the character lost when yytext is formed. */
 static char yy_hold_char;
-static yy_size_t yy_n_chars;		/* number of characters read into yy_ch_buf */
-yy_size_t yyleng;
+static int yy_n_chars;		/* number of characters read into yy_ch_buf */
+int yyleng;
 
 /* Points to current character in buffer. */
 static char *yy_c_buf_p = (char *) 0;
@@ -300,7 +299,7 @@ static void yy_init_buffer (YY_BUFFER_STATE b,FILE *file  );
 
 YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
 YY_BUFFER_STATE yy_scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,yy_size_t len  );
+YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,int len  );
 
 void *yyalloc (yy_size_t  );
 void *yyrealloc (void *,yy_size_t  );
@@ -355,7 +354,7 @@ static void yy_fatal_error (yyconst char msg[]  );
  */
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
-	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+	yyleng = (size_t) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
@@ -617,13 +616,9 @@ char *yytext;
 * must be indented because anything that appears in the leftmost column
 * is considered the start of a formal definition.
 */
-/*OPERATOR ([\+\(\)\[\]\;\,\-\|\&]|\:\=?|\.\.?|\<[\>\<\=]?|\>[\>\=]?|\=[\>]?|\/(?!\*)|\*(\*?)(?!\/)|\!\=?)*/
-/*COMMENT  (\/\*[\s\S]*\*\/)*/
-/*COMMENT (\/\*((?!\*\/)([\r\n\S\s]))*\*\/)*/
-/*COMMENT (\/\*)([\s\S][^\*][^\/]*)(\*\/)*/
 
 
-#line 627 "lex.yy.c"
+#line 622 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -664,7 +659,7 @@ FILE *yyget_out (void );
 
 void yyset_out  (FILE * out_str  );
 
-yy_size_t yyget_leng (void );
+int yyget_leng (void );
 
 char *yyget_text (void );
 
@@ -714,7 +709,7 @@ static int input (void );
 /* This used to be an fputs(), but since the string might contain NUL's,
  * we now use fwrite().
  */
-#define ECHO fwrite( yytext, yyleng, 1, yyout )
+#define ECHO do { if (fwrite( yytext, yyleng, 1, yyout )) {} } while (0)
 #endif
 
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
@@ -725,7 +720,7 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		yy_size_t n; \
+		unsigned n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -807,10 +802,11 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 39 "ccx.l"
+#line 33 "ccx.l"
 
 
-#line 814 "lex.yy.c"
+	/* If the first set is the start of a comment, set the flag to say so*/
+#line 810 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -895,39 +891,44 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 41 "ccx.l"
+#line 36 "ccx.l"
 BEGIN(COMMENT); printf("%s", yytext);
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 42 "ccx.l"
+#line 37 "ccx.l"
 /* // comments to end of line */
 	YY_BREAK
+/* Print the comment until it finds an ending  */
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 44 "ccx.l"
-printf("%s", yytext);/* Eat non-comment delimiters */
+#line 39 "ccx.l"
+printf("%s", yytext);
 	YY_BREAK
+/* Once an ending tag is found, then output comment type and stop comment */
 case 4:
 YY_RULE_SETUP
-#line 45 "ccx.l"
-printf("%s (comment)\n", yytext);BEGIN(INITIAL);/* Eat a / or * if it doesn't match comment sequence */
+#line 41 "ccx.l"
+printf("%s (comment)\n", yytext);BEGIN(INITIAL);
 	YY_BREAK
+/* If a " is found, set the flag to say it's a string */
 case 5:
 YY_RULE_SETUP
-#line 47 "ccx.l"
+#line 44 "ccx.l"
 BEGIN(STRING); printf("%s", yytext);
 	YY_BREAK
+/* Output everything until the ending " is found*/
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 48 "ccx.l"
+#line 46 "ccx.l"
 printf("%s", yytext);
 	YY_BREAK
+/* Once an ending " is found, then output string type and stop string*/
 case 7:
 YY_RULE_SETUP
-#line 49 "ccx.l"
+#line 48 "ccx.l"
 printf("%s (string)\n",yytext);BEGIN(INITIAL);
 	YY_BREAK
 /* Could have been .|\n ECHO, but this is more efficient. */
@@ -951,84 +952,84 @@ printf("%s (string)\n",yytext);BEGIN(INITIAL);
      */
 case 8:
 YY_RULE_SETUP
-#line 70 "ccx.l"
+#line 69 "ccx.l"
 { printf("%s (numeric literal)\n", yytext); }
 	YY_BREAK
 case 9:
-#line 73 "ccx.l"
+#line 72 "ccx.l"
 case 10:
-#line 74 "ccx.l"
+#line 73 "ccx.l"
 case 11:
-#line 75 "ccx.l"
+#line 74 "ccx.l"
 case 12:
-#line 76 "ccx.l"
+#line 75 "ccx.l"
 case 13:
-#line 77 "ccx.l"
+#line 76 "ccx.l"
 case 14:
-#line 78 "ccx.l"
+#line 77 "ccx.l"
 case 15:
-#line 79 "ccx.l"
+#line 78 "ccx.l"
 case 16:
-#line 80 "ccx.l"
+#line 79 "ccx.l"
 case 17:
-#line 81 "ccx.l"
+#line 80 "ccx.l"
 case 18:
-#line 82 "ccx.l"
+#line 81 "ccx.l"
 case 19:
-#line 83 "ccx.l"
+#line 82 "ccx.l"
 case 20:
-#line 84 "ccx.l"
+#line 83 "ccx.l"
 case 21:
-#line 85 "ccx.l"
+#line 84 "ccx.l"
 case 22:
-#line 86 "ccx.l"
+#line 85 "ccx.l"
 case 23:
-#line 87 "ccx.l"
+#line 86 "ccx.l"
 case 24:
-#line 88 "ccx.l"
+#line 87 "ccx.l"
 case 25:
-#line 89 "ccx.l"
+#line 88 "ccx.l"
 case 26:
-#line 90 "ccx.l"
+#line 89 "ccx.l"
 case 27:
-#line 91 "ccx.l"
+#line 90 "ccx.l"
 case 28:
-#line 92 "ccx.l"
+#line 91 "ccx.l"
 case 29:
-#line 93 "ccx.l"
+#line 92 "ccx.l"
 case 30:
-#line 94 "ccx.l"
+#line 93 "ccx.l"
 case 31:
-#line 95 "ccx.l"
+#line 94 "ccx.l"
 case 32:
-#line 96 "ccx.l"
+#line 95 "ccx.l"
 case 33:
-#line 97 "ccx.l"
+#line 96 "ccx.l"
 case 34:
-#line 98 "ccx.l"
+#line 97 "ccx.l"
 case 35:
-#line 99 "ccx.l"
+#line 98 "ccx.l"
 case 36:
-#line 100 "ccx.l"
+#line 99 "ccx.l"
 case 37:
-#line 101 "ccx.l"
+#line 100 "ccx.l"
 case 38:
-#line 102 "ccx.l"
+#line 101 "ccx.l"
 case 39:
-#line 103 "ccx.l"
+#line 102 "ccx.l"
 case 40:
-#line 104 "ccx.l"
+#line 103 "ccx.l"
 case 41:
-#line 105 "ccx.l"
+#line 104 "ccx.l"
 case 42:
-#line 106 "ccx.l"
+#line 105 "ccx.l"
 case 43:
-#line 107 "ccx.l"
+#line 106 "ccx.l"
 case 44:
-#line 108 "ccx.l"
+#line 107 "ccx.l"
 case 45:
 YY_RULE_SETUP
-#line 108 "ccx.l"
+#line 107 "ccx.l"
 {
     /* The action to be taken when we encounter a keyword */
 	printf("%s (keyword)\n", yytext );
@@ -1036,28 +1037,28 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 113 "ccx.l"
+#line 112 "ccx.l"
 { 
 		printf("%s (identifier)\n", yytext);
 		}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 117 "ccx.l"
+#line 116 "ccx.l"
 { 
 		printf("%s (character literal)\n", yytext); 
 		}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 120 "ccx.l"
+#line 119 "ccx.l"
 {
 		printf("%s (string)\n",yytext);
 		}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 124 "ccx.l"
+#line 123 "ccx.l"
 { 
 		printf("%s (operator)\n", yytext); 
 		}
@@ -1065,20 +1066,20 @@ YY_RULE_SETUP
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 128 "ccx.l"
+#line 127 "ccx.l"
 /* discard whitespace */
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 130 "ccx.l"
+#line 129 "ccx.l"
 printf("Unrecognized character: %s\n", yytext);
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 132 "ccx.l"
+#line 131 "ccx.l"
 ECHO;
 	YY_BREAK
-#line 1082 "lex.yy.c"
+#line 1083 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(STRING):
@@ -1266,7 +1267,7 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			yy_size_t num_to_read =
+			int num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
@@ -1280,7 +1281,7 @@ static int yy_get_next_buffer (void)
 
 			if ( b->yy_is_our_buffer )
 				{
-				yy_size_t new_size = b->yy_buf_size * 2;
+				int new_size = b->yy_buf_size * 2;
 
 				if ( new_size <= 0 )
 					b->yy_buf_size += b->yy_buf_size / 8;
@@ -1311,7 +1312,7 @@ static int yy_get_next_buffer (void)
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			(yy_n_chars), num_to_read );
+			(yy_n_chars), (size_t) num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
 		}
@@ -1421,7 +1422,7 @@ static int yy_get_next_buffer (void)
 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
 		{ /* need to shift things up to make room */
 		/* +2 for EOB chars. */
-		register yy_size_t number_to_move = (yy_n_chars) + 2;
+		register int number_to_move = (yy_n_chars) + 2;
 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
 		register char *source =
@@ -1470,7 +1471,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+			int offset = (yy_c_buf_p) - (yytext_ptr);
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -1494,7 +1495,7 @@ static int yy_get_next_buffer (void)
 				case EOB_ACT_END_OF_FILE:
 					{
 					if ( yywrap( ) )
-						return 0;
+						return EOF;
 
 					if ( ! (yy_did_buffer_switch_on_eof) )
 						YY_NEW_FILE;
@@ -1746,7 +1747,7 @@ void yypop_buffer_state (void)
  */
 static void yyensure_buffer_stack (void)
 {
-	yy_size_t num_to_alloc;
+	int num_to_alloc;
     
 	if (!(yy_buffer_stack)) {
 
@@ -1843,11 +1844,12 @@ YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )
+YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
-	yy_size_t n, i;
+	yy_size_t n;
+	int i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
 	n = _yybytes_len + 2;
@@ -1929,7 +1931,7 @@ FILE *yyget_out  (void)
 /** Get the length of the current token.
  * 
  */
-yy_size_t yyget_leng  (void)
+int yyget_leng  (void)
 {
         return yyleng;
 }
@@ -2077,7 +2079,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 132 "ccx.l"
+#line 131 "ccx.l"
 
 
 /*

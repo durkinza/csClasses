@@ -1,0 +1,8 @@
+#!/bin/sh
+echo $#
+if [ !$# ]
+then 
+	echo "no arguments given"
+else
+	echo "Arguments given: $*"
+fi
