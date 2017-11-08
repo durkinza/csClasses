@@ -54,7 +54,7 @@ int main(int argc, char*  argv[]){
 					if( (int)*optarg > 57 || (int)*optarg < 48){
 						printf("ERROR(key): number on -k option: %s is not legal.\n", optarg);
 						if(d==1)printf("DEBUG(key): -k option: %d\n", k);
-						exit(1);				// print an error if k is not a number, and leave program
+						exit(0);				// print an error if k is not a number, and leave program
 					}
 					k=atoi(optarg);
 					kF = true;					// set k value to set
@@ -123,7 +123,7 @@ int main(int argc, char*  argv[]){
 		}
 		if(key==NULL){
 			printf("ERROR(key): no key was specified for key file '%s'\n", file);
-			exit(1);						// if the key is missing, throw an error and leave
+			exit(3);						// if the key is missing, throw an error and leave
 		}
 	}
 
