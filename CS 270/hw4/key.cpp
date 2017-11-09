@@ -183,10 +183,9 @@ int openFile(char * fn, int &k, int &v, int &p){
 
 int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 	key[k] = '\0';
-	int h = hash(key);							// get hash of key
+	unsigned int h = hash(key);							// get hash of key
 	int rowSize = k+v+(2*sizeof(int));			// find the max row size
-	int position = ((h%p)*rowSize);				// find the position in the file that this key should start at
-	position = position < 0? -position: position; // make sure that the position is a positive number
+	unsigned int position = ((h%p)*rowSize);				// find the position in the file that this key should start at
 	position += (4+(3*sizeof(int)));			// find how many bits must be moved to get to the specified row, including header data
 	lseek(pfd, position, SEEK_SET);				// seek the the position
 	int keyS;									// int to hold the size of the key in the file
@@ -239,10 +238,9 @@ int getData(char * fn, int pfd, char * key, int q, int k, int v, int p){
 
 int setData(char * fn, int pfd, char * key, int noOver, int q, int k, int v, int p){
 	key[k] = '\0';
-	int h = hash(key);							// get hash value
+	unsigned int h = hash(key);							// get hash value
 	int rowSize = k+v+(2*sizeof(int));			// get size of a row
-	int position = ((h%p)*rowSize);				// get the expected position
-	position = position < 0? -position: position;// make sure the position is a postive value
+	unsigned int position = ((h%p)*rowSize);				// get the expected position
 	position += (4+(3*sizeof(int)));			// find how many bits must be moved to get to the specified row, including header data
 	if(d == 1){ // debug
 		printf("DEBUG(key): hash: %d\n", h);
