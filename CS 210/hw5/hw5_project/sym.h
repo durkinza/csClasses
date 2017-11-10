@@ -6,7 +6,8 @@
 struct sym {
     char * name;
     double value;
-} sym_tbl[NSYMS];
+	sym * next;
+} sym_tbl;
 
 struct sym * sym_lookup(char *);
 
