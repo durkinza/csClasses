@@ -7,7 +7,7 @@
 
 %union {
     double dval;
-    struct sym * symptr = NULL;
+    struct sym * symptr;
 }
 
 %token <symptr> NAME
@@ -24,7 +24,7 @@ statement_list
     ;
 
 statement
-    : NAME '=' expression { $1->value = $3; $1->next = sym_tbl; sym_tbl = $1;}
+    : NAME '=' expression { $1->value = $3; }
     | expression { printf("= %g\n", $1); }
     ;
 
@@ -32,11 +32,11 @@ expression
     : expression '+' expression { $$ = $1 + $3; }
     | expression '-' expression { $$ = $1 - $3; }
     | expression '*' expression { $$ = $1 * $3; }
-    | expression '/' expression { $$ = $1 / $3; }
+    | expression '/' expression { if($3)$$ = $1 / $3;else{yyerror("divide by zero");} }
     | '-' expression %prec UMINUS { $$ = -$2; }
     | '(' expression ')' { $$ = $2; }
     | NUMBER
-    | NAME { $$ = $1->value;}
+    | NAME { $$ = $1->value; }
     ;
 
 %%
@@ -44,15 +44,9 @@ expression
 struct sym * sym_lookup(char * s)
 {
     char * p;
-    struct sym * sp = sym_tbl;
-	while (sp != NULL){
-		if(sp->name && strcmp(sp->name, s) ==0)
-			return sp;
-		sp = sp->next;
-	}
-	yyerror("symbol doesn't exist");
-	
-  /*  for (sp=sym_tbl; sp < &sym_tbl[NSYMS]; sp++)
+    struct sym * sp;
+
+    for (sp=sym_tbl; sp < &sym_tbl[NSYMS]; sp++)
     {
         if (sp->name && strcmp(sp->name, s) == 0)
             return sp;
@@ -64,7 +58,7 @@ struct sym * sym_lookup(char * s)
         return sp; 
     }
    
-    yyerror("Too many symbols");*/
+    yyerror("Too many symbols");
     exit(-1);
     return NULL; /* unreachable */
 }
