@@ -1,13 +1,17 @@
 #ifndef SYMTBL_H
 #define SYMTBL_H
 
-#define NSYMS   (3)
+#define PI		(3.14159)
+#define PHI		(1.61803)
 
-struct sym {
+#define NSYMS   (3)
+typedef struct sym {
     char * name;
     double value;
-} sym_tbl[NSYMS];
-
+	struct sym *next;
+} sym;
+sym * sym_tbl;
 struct sym * sym_lookup(char *);
-
+struct sym *  sym_add(char * s, double val);
+void printSymTbl();
 #endif /* SYMTBL_H */

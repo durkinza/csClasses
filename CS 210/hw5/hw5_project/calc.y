@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "sym.h"
+sym pi = {.value=PI, .name="pi", .next=NULL};
 %}
 
 %union {
@@ -17,6 +18,7 @@
 %nonassoc UMINUS
 
 %type <dval> expression
+
 %%
 statement_list
     : statement '\n'
@@ -36,11 +38,35 @@ expression
     | '-' expression %prec UMINUS { $$ = -$2; }
     | '(' expression ')' { $$ = $2; }
     | NUMBER
-    | NAME { $$ = $1->value; }
+    | NAME { $$ = $1->value;}
     ;
 
 %%
 
+struct sym * sym_add(char * s, double val){
+	struct sym * tmp= (sym *) malloc(sizeof(sym));
+	tmp->value=val;
+	tmp->name=s;
+	tmp->next=sym_tbl;
+	sym_tbl = tmp;
+	return tmp;
+}
+
+struct sym * sym_lookup(char * s)
+{
+	char * p;
+	struct sym * sp = sym_tbl;
+	while(sp != NULL){
+		if(sp->name && strcmp(sp->name, s) == 0)
+			return sp;
+			
+		sp = sp->next;
+	}
+	//yyerror("symbol doesn't exist");
+	return sym_add(s, 0.0);
+	return NULL; /* unreachable */
+}
+/*
 struct sym * sym_lookup(char * s)
 {
     char * p;
@@ -60,6 +86,6 @@ struct sym * sym_lookup(char * s)
    
     yyerror("Too many symbols");
     exit(-1);
-    return NULL; /* unreachable */
-}
+    return NULL; //unreachable
+}*/
 
