@@ -27,7 +27,7 @@ statement_list
 
 statement
     : PRINT {printSymTbl();}
-	| NAME '=' expression { if($1->edit)$1->value = $3; }
+	| NAME '=' expression { if($1->edit)$1->value = $3;else{yyerror("assign to const");}}
     | expression { printf("= %g\n", $1); }
     ;
 
