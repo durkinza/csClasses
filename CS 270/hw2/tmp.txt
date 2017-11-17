@@ -1,0 +1,315 @@
+
+* ================================================ *
+|      Tests for CS270 Assignment 2                |
+|       Comparison with Expected Output            |
+* ================================================ *
+
+DO: find Animals -type f
+Animals/Fish/Fresh/stickleback
+Animals/Fish/Fresh/trout
+Animals/Fish/salmon
+Animals/Fish/Salt/cod
+Animals/Fish/Salt/tuna
+Animals/frog
+Animals/Mammals/Carnivore/Bear/panda
+Animals/Mammals/Carnivore/Bear/polar
+Animals/Mammals/Carnivore/lion
+Animals/Mammals/Carnivore/raccoon
+Animals/Mammals/Carnivore/tiger
+Animals/Mammals/dolphin
+Animals/Mammals/hedgehog
+Animals/Mammals/horse
+Animals/Mammals/Lagomorphia/hare
+Animals/Mammals/Lagomorphia/pica
+Animals/Mammals/Lagomorphia/rabbit
+Animals/snake
+Animals/turtle
+
+DO: cd Animals/Fish/
+
+DO: ls
+Fresh
+Salt
+salmon
+
+DO: cd Fresh
+
+DO: ls
+stickleback
+trout
+
+DO: save trout
+.
+..
+trout
+
+DO: lssave
+.
+..
+trout
+
+DO: cd ..
+
+DO: drop
+.
+..
+trout
+
+DO: ls
+Fresh
+Salt
+salmon
+trout
+
+DO: lssave
+.
+..
+trout
+
+DO: drop
+.
+..
+trout
+
+DO: ls
+Fresh
+Salt
+salmon
+trout
+
+DO: cd ..
+
+DO: drop
+.
+..
+trout
+
+DO: ls
+Fish
+Mammals
+frog
+snake
+trout
+turtle
+
+DO: cd Fish
+
+DO: save salmon trout
+.
+..
+salmon
+trout
+
+DO: cd ../Mammals/Lagomorphia
+
+DO: drop
+.
+..
+salmon
+trout
+
+DO: save rabbit
+.
+..
+rabbit
+
+DO: add pica
+.
+..
+pica
+rabbit
+
+DO: cd ../..
+
+DO: pwd
+/Users/zane/School/OneDrive - University of Idaho/CS/CS 270/hw2/Animals
+
+DO: mkdir -p Fuzzy
+
+DO: drop
+.
+..
+pica
+rabbit
+
+DO: cd Fuzzy
+
+DO: drop
+.
+..
+pica
+rabbit
+
+DO: ls | save
+.
+..
+saveData
+
+DO: ls
+pica
+rabbit
+
+DO: cd ..
+
+DO: drop
+.
+..
+saveData
+
+DO: cat saveData
+pica
+rabbit
+
+DO: ls
+Fish
+Fuzzy
+Mammals
+frog
+pica
+rabbit
+saveData
+snake
+trout
+turtle
+
+DO: grab snake turtle
+.
+..
+snake
+turtle
+
+DO: lssave
+.
+..
+snake
+turtle
+
+DO: mkdir -p Reptile
+
+DO: cd Reptile
+
+DO: drop
+.
+..
+snake
+turtle
+
+DO: ls
+snake
+turtle
+
+DO: cd ..
+
+DO: pwd
+/Users/zane/School/OneDrive - University of Idaho/CS/CS 270/hw2/Animals
+
+DO: echo toad > toad
+
+DO: grab toad
+.
+..
+toad
+
+DO: echo crocodile | add
+.
+..
+saveData
+toad
+
+DO: cd Reptile
+
+DO: drop
+.
+..
+saveData
+toad
+
+DO: get
+crocodile
+toad
+
+DO: mv saveData crocodile
+
+DO: cd ..
+
+DO: echo "trombone" | grab
+.
+..
+saveData
+
+DO: get
+trombone
+PWD
+/Users/zane/School/OneDrive - University of Idaho/CS/CS 270/hw2/Animals
+
+DO: cd Fish
+
+DO: save Fresh salmon
+.
+..
+Fresh
+salmon
+
+DO: cd Salt
+
+DO: lssave
+.
+..
+Fresh
+salmon
+
+DO: drop
+.
+..
+Fresh
+salmon
+
+DO: ls -R
+Fresh
+cod
+salmon
+tuna
+
+./Fresh:
+stickleback
+trout
+
+
+DO: cd ../../..
+
+DO: find Animals -type f
+Animals/Fish/Fresh/stickleback
+Animals/Fish/Fresh/trout
+Animals/Fish/salmon
+Animals/Fish/Salt/cod
+Animals/Fish/Salt/Fresh/stickleback
+Animals/Fish/Salt/Fresh/trout
+Animals/Fish/Salt/salmon
+Animals/Fish/Salt/tuna
+Animals/Fish/trout
+Animals/frog
+Animals/Fuzzy/pica
+Animals/Fuzzy/rabbit
+Animals/Mammals/Carnivore/Bear/panda
+Animals/Mammals/Carnivore/Bear/polar
+Animals/Mammals/Carnivore/lion
+Animals/Mammals/Carnivore/raccoon
+Animals/Mammals/Carnivore/tiger
+Animals/Mammals/dolphin
+Animals/Mammals/hedgehog
+Animals/Mammals/horse
+Animals/Mammals/Lagomorphia/hare
+Animals/Mammals/Lagomorphia/pica
+Animals/Mammals/Lagomorphia/rabbit
+Animals/Mammals/Lagomorphia/salmon
+Animals/Mammals/Lagomorphia/trout
+Animals/pica
+Animals/rabbit
+Animals/Reptile/crocodile
+Animals/Reptile/snake
+Animals/Reptile/toad
+Animals/Reptile/turtle
+Animals/saveData
+Animals/trout
+
+END OF TESTS

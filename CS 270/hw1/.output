@@ -1,0 +1,51 @@
+=======================================
+STAR
+star-stuff frogs snakes toads
+frogs
+snakes
+toads
+Return code is 0
+star-stuff.tar
+What's in the tar:
+frogs
+snakes
+toads
+
+star star-stuff frogs snakes toads
+ERROR(star): target tar file filename already exists.
+Return code is 1
+star-stuff.tar
+What's in the tar:
+frogs
+snakes
+toads
+
+star star-stuff.tar frogs snakes toads
+frogs
+snakes
+toads
+Return code is 0
+star-stuff.tar
+star-stuff.tar.tar
+What's in .tar:
+frogs
+snakes
+toads
+What's in .tar.tar:
+frogs
+snakes
+toads
+
+star frogs snakes toads
+snakes
+toads
+Return code is 0
+frogs.tar
+star-stuff.tar
+star-stuff.tar.tar
+What's in the tar:
+frogs
+snakes
+toads
+
+END OF TESTS
