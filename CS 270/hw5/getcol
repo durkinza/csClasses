@@ -3,48 +3,57 @@ from optparse import OptionParser
 import sys
 
 def main():
-	parser = OptionParser(version="%prog 1.0")
-	parser.add_option("-i", "--insep", dest="insep",
-						type="string", action="store",
-						help="input separator",
-						default=" ")
-	parser.add_option("-o", "--outsep", dest="outsep",
-						type="string", action="store",
-						help="output separator",
-						default=",")
-	parser.add_option("-l", "--lastsep", dest="lastsep",
-						type="string", action="store",
-						help="last output serparator",
-						default=";")
-	parser.add_option("-s", dest="strip", action="store_true",
-						help="strip each input column of whitespace",
-						default=False)
-	(options, args) = parser.parse_args()
+    parser = OptionParser(version="%prog 1.0")
+    parser.add_option("-i", "--insep", dest="insep",
+                                type="string", action="store",
+                                help="input separator",
+                                default=" ")
+    parser.add_option("-o", "--outsep", dest="outsep",
+                                type="string", action="store",
+                                help="output separator",
+                                default=" ")
+    parser.add_option("-l", "--lastsep", dest="lastsep",
+                                type="string", action="store",
+                                help="last output serparator",
+                                default="")
+    parser.add_option("-s", dest="strip", action="store_true",
+                                help="strip each input column of whitespace",
+                                default=False)
+    (options, args) = parser.parse_args()
+    # parse the arguments
+    # read in the file
+    lines = sys.stdin.readlines()
 
-	# parse the arguments
-	# read in the file
-	lines = sys.stdin.readlines()
-
-	#print(options)
-	#print(args)
-	for arg in args:
-		tmp = [1,1,1]
-		orig = arg.split(":")
-		tmp[0] = orig[0]
-		tmp[1] = (orig[1] if len(orig)>1 else tmp[0] )
-		tmp[2] = (orig[2] if len(orig)>2 else 1 )
-		for line in lines:
-			line = line.strip()
-			cols = line.split(options.insep)
-			output = ""
-			for i in range(int(tmp[0])-1, int(tmp[1]), int(tmp[2])):
-				try:
-					if(options.strip):
-						cols[i] = cols[i].strip()
-					output += (cols[i]+str(options.outsep))
-				except:
-					continue
-			output = output.rstrip(options.outsep)
-			print(output,end=options.lastsep+'\n')
+    #print(options)
+    #print(args)
+    columns = list()
+    for arg in args:
+        tmp = [1,1,1]
+        orig = arg.split(":")
+        tmp[0] = int(orig[0])
+        tmp[1] = int(orig[1] if len(orig)>1 else tmp[0] )
+        tmp[2] = int(orig[2] if len(orig)>2 else 1 )
+        if tmp[1] < tmp[0]:
+            #tmp[2] = -abs(tmp[2])
+            tmp[1] = tmp[1]-2
+        columns.append(list(range(tmp[0]-1, tmp[1], tmp[2])))
+        #print(columns[-1])
+    for line in lines:
+        line = line.rstrip('\n')
+        line = line.split(options.insep)
+        flag = 0;
+        for column in columns:
+            for x in column:
+                if x < len(line):
+                    if(flag):
+                        print(options.outsep, end="")
+                    try:
+                        if(options.strip):
+                            print(line[x].strip(), end="")
+                        else:
+                            print(line[x], end="")
+                        flag = 1
+                    except Exception as e: continue
+        if flag: print(options.lastsep)
 
 main()

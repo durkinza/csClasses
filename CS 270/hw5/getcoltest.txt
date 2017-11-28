@@ -1,0 +1,5 @@
+1 001 one uno uno eins ichi yī | Able
+2 010 two dos due zwei ni èr || Baker
+3 011 three tres tre drei san sān ||| Charlie
+4 100 four cuatro quattro vier shi sì |V Dog
+5 101 five cinco cinque funf go wü V Easy

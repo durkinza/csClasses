@@ -1,0 +1,7 @@
+1 001 one uno uno eins ichi yī | Able
+2 010 two dos due zwei ni èr ||
+3 011 three tres tre drei san sān
+4 100 four cuatro quattro vier shi 
+5 101 five cinco cinque funf
+6 110 six seis sei
+7 111 seven siete

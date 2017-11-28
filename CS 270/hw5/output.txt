@@ -1,0 +1,164 @@
+
+getcol 1 2 3 < getcoltest.txt
+1 001 one
+2 010 two
+3 011 three
+4 100 four
+5 101 five
+
+getcol 1 1 2 2 < getcoltest.txt
+1 1 001 001
+2 2 010 010
+3 3 011 011
+4 4 100 100
+5 5 101 101
+
+getcol 3 2 1 < getcoltest.txt
+one 001 1
+two 010 2
+three 011 3
+four 100 4
+five 101 5
+
+getcol 1 100 < getcoltest.txt
+1
+2
+3
+4
+5
+
+getcol 7 < getcoltest.txt
+ichi
+ni
+san
+shi
+go
+
+getcol 700 < getcoltest.txt
+
+getcol -- 0 -1 < getcoltest.txt
+Able |
+Baker ||
+Charlie |||
+Dog |V
+Easy V
+
+getcol 1:100 < getcoltest.txt
+1 001 one uno uno eins ichi yī | Able
+2 010 two dos due zwei ni èr || Baker
+3 011 three tres tre drei san sān ||| Charlie
+4 100 four cuatro quattro vier shi sì |V Dog
+5 101 five cinco cinque funf go wü V Easy
+
+getcol 1:1 2:2 < getcoltest.txt
+1 001
+2 010
+3 011
+4 100
+5 101
+
+getcol 1:2 2:3 < getcoltest.txt
+1 001 001 one
+2 010 010 two
+3 011 011 three
+4 100 100 four
+5 101 101 five
+
+getcol 1:4 10:4 < getcoltest.txt
+1 001 one uno
+2 010 two dos
+3 011 three tres
+4 100 four cuatro
+5 101 five cinco
+
+getcol 1:100:2 < getcoltest.txt
+1 one uno ichi |
+2 two due ni ||
+3 three tre san |||
+4 four quattro shi |V
+5 five cinque go V
+
+getcol 2:100:2 < getcoltest.txt
+001 uno eins yī Able
+010 dos zwei èr Baker
+011 tres drei sān Charlie
+100 cuatro vier sì Dog
+101 cinco funf wü Easy
+
+getcol 2:100:3 < getcoltest.txt
+001 uno yī
+010 due èr
+011 tre sān
+100 quattro sì
+101 cinque wü
+
+getcol 1:4 10:4:-1 < getcoltest.txt
+1 001 one uno Able | yī ichi eins uno uno
+2 010 two dos Baker || èr ni zwei due dos
+3 011 three tres Charlie ||| sān san drei tre tres
+4 100 four cuatro Dog |V sì shi vier quattro cuatro
+5 101 five cinco Easy V wü go funf cinque cinco
+
+getcol 3 4:5 6:8:2 1 2 < getcoltest.txt
+one uno uno eins yī 1 001
+two dos due zwei èr 2 010
+three tres tre drei sān 3 011
+four cuatro quattro vier sì 4 100
+five cinco cinque funf wü 5 101
+
+getcol -it -oT 1:10 < getcoltest.txt
+1 001 one uno uno eins ichi yī | Able
+2 010 Two dos due zwei ni èr || Baker
+3 011 Three Tres Tre drei san sān ||| Charlie
+4 100 four cuaTro quaTTro vier shi sì |V Dog
+5 101 five cinco cinque funf go wü V Easy
+
+getcol -i' '  1:10 < getcoltest.txt
+1 001 one uno uno eins ichi yī | Able
+2 010 two dos due zwei ni èr || Baker
+3 011 three tres tre drei san sān ||| Charlie
+4 100 four cuatro quattro vier shi sì |V Dog
+5 101 five cinco cinque funf go wü V Easy
+
+getcol 5:7 < getcoltestshort.txt
+uno eins ichi
+due zwei ni
+tre drei san
+quattro vier shi
+cinque funf
+sei
+
+tr ' ' ',' < getcoltest.txt | getcol -i','  1:10
+1 001 one uno uno eins ichi yī | Able
+2 010 two dos due zwei ni èr || Baker
+3 011 three tres tre drei san sān ||| Charlie
+4 100 four cuatro quattro vier shi sì |V Dog
+5 101 five cinco cinque funf go wü V Easy
+
+tr ' ' ',' < getcoltest.txt | getcol -i',' -o' : '  1:10
+1 : 001 : one : uno : uno : eins : ichi : yī : | : Able
+2 : 010 : two : dos : due : zwei : ni : èr : || : Baker
+3 : 011 : three : tres : tre : drei : san : sān : ||| : Charlie
+4 : 100 : four : cuatro : quattro : vier : shi : sì : |V : Dog
+5 : 101 : five : cinco : cinque : funf : go : wü : V : Easy
+
+sed 's/ /  :   /g' < getcoltest.txt | getcol -i':' -o';' 1:10
+1  ;   001  ;   one  ;   uno  ;   uno  ;   eins  ;   ichi  ;   yī  ;   |  ;   Able
+2  ;   010  ;   two  ;   dos  ;   due  ;   zwei  ;   ni  ;   èr  ;   ||  ;   Baker
+3  ;   011  ;   three  ;   tres  ;   tre  ;   drei  ;   san  ;   sān  ;   |||  ;   Charlie
+4  ;   100  ;   four  ;   cuatro  ;   quattro  ;   vier  ;   shi  ;   sì  ;   |V  ;   Dog
+5  ;   101  ;   five  ;   cinco  ;   cinque  ;   funf  ;   go  ;   wü  ;   V  ;   Easy
+
+sed 's/ /  :   /g' < getcoltest.txt | getcol -i':' -o';' -s 1:10
+1;001;one;uno;uno;eins;ichi;yī;|;Able
+2;010;two;dos;due;zwei;ni;èr;||;Baker
+3;011;three;tres;tre;drei;san;sān;|||;Charlie
+4;100;four;cuatro;quattro;vier;shi;sì;|V;Dog
+5;101;five;cinco;cinque;funf;go;wü;V;Easy
+
+sed 's/ /  :   /g' < getcoltest.txt | getcol -i':' -o' & ' -l' \' -s 1:10
+1 & 001 & one & uno & uno & eins & ichi & yī & | & Able \\
+2 & 010 & two & dos & due & zwei & ni & èr & || & Baker \\
+3 & 011 & three & tres & tre & drei & san & sān & ||| & Charlie \\
+4 & 100 & four & cuatro & quattro & vier & shi & sì & |V & Dog \\
+5 & 101 & five & cinco & cinque & funf & go & wü & V & Easy \\
