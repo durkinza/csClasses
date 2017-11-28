@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-from optparse import OptionParser
+from optparse import OptionParser, SUPPRESS_HELP
 import sys
 
 def main():
     parser = OptionParser(version="%prog 1.0")
     parser.add_option("-i", "--insep", dest="insep",
-                                type="string", action="store",
+                                type="string", metavar="STR", action="store",
                                 help="input separator",
                                 default=" ")
     parser.add_option("-o", "--outsep", dest="outsep",
-                                type="string", action="store",
+                                type="string", metavar="STR", action="store",
                                 help="output separator",
                                 default=" ")
     parser.add_option("-l", "--lastsep", dest="lastsep",
-                                type="string", action="store",
+                                type="string", metavar="STR", action="store",
                                 help="last output serparator",
                                 default="")
     parser.add_option("-s", dest="strip", action="store_true",
                                 help="strip each input column of whitespace",
+                                default=False)
+    parser.add_option("-r", dest="reverse", action="store_true",
+                                #help="allow printing columns in reverse order",
+                                help=SUPPRESS_HELP,
                                 default=False)
     (options, args) = parser.parse_args()
     # parse the arguments
@@ -33,8 +37,8 @@ def main():
         tmp[0] = int(orig[0])
         tmp[1] = int(orig[1] if len(orig)>1 else tmp[0] )
         tmp[2] = int(orig[2] if len(orig)>2 else 1 )
-        if tmp[1] < tmp[0]:
-            #tmp[2] = -abs(tmp[2])
+        if options.reverse and tmp[1] < tmp[0]:
+            tmp[2] = -abs(tmp[2])
             tmp[1] = tmp[1]-2
         columns.append(list(range(tmp[0]-1, tmp[1], tmp[2])))
         #print(columns[-1])
