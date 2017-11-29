@@ -1,19 +1,16 @@
 (* Zane Durkin (durk7832) *)
-val username = "durk7832";
-val args = CommandLine.arguments();
-val filename = hd args;
-print filename;
-val file = TextIO.openOut filename;
-TextIO.output(file, username^"\n");
-fun printArg arg = 
-	if arg = [] then(
-		[]
-	) else (
-		TextIO.output(file, hd arg ^"\n");
-		printArg(tl arg)
+val username = "durk7832";					(* Set username to vaiable *)
+val args = CommandLine.arguments();			(* Get the command line arguments *)
+val filename = hd args;						(* Get the file name as first argument *)
+val file = TextIO.openOut filename;			(* Open the output file *)	
+TextIO.output(file, username^"\n");			(* Output username for first line *)
+fun printArg(arg:string list) =				(* Create function *)
+	if arg = [] then true 					(* - If the list is empty, just give return *)
+	else (									(* - If the list isn't empty *)
+		TextIO.output(file, hd arg ^"\n");	(* - Write the argument to the file *)
+		printArg(tl arg)					(* - Recurse to the next argument *)
 	);
-
-printArg args;
-TextIO.output(file, username^"\n");
-TextIO.closeOut file;
-OS.Process.exit(OS.Process.success);
+printArg args;								(* Call function that was just made *)
+TextIO.output(file, username^"\n");			(* Write username to end file*)
+TextIO.closeOut file;						(* Close file when done writing *)
+val _ = OS.Process.exit(OS.Process.success);(* exit program *)
