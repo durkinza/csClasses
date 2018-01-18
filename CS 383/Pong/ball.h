@@ -3,6 +3,8 @@
 
 #include <QTimer>
 #include <QGraphicsRectItem>
+#include <QBrush>
+#include <QPen>
 #include <QObject>
 #include <paddle.h>
 

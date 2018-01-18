@@ -5,6 +5,8 @@
 #include <QGraphicsView>
 #include <QWidget>
 #include <QGraphicsScene>
+#include <QGraphicsTextItem>
+#include <help.h>
 #include <paddle.h>
 #include <ball.h>
 #include <board.h>
@@ -18,11 +20,14 @@ public:
     int screen_width;
     int screen_height;
     Board * scene;
+    Help * help;
+    QGraphicsTextItem * smallHelp;
     Paddle * RPaddle;
     Paddle * LPaddle;
     Score * Lscore;
     Score * Rscore;
-
+private:
+    bool helpShowing;
 };
 
 #endif // GAME_H

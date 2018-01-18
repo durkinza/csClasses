@@ -6,6 +6,7 @@ Paddle::Paddle(bool computer)
     width = 20;
     height = 100;
     setRect(0,0,width, height);
+    this->computer = computer;
     if(computer){
         //connect to timer
         QTimer * timer = new QTimer();
@@ -22,6 +23,13 @@ void Paddle::keyPressEvent(QKeyEvent *event)
     }
     else if(event->key() == Qt::Key_Down || event->key() == Qt::Key_S){
         this->move(10);
+    }
+}
+
+void Paddle::focusOutEvent()
+{
+    if(!this->computer){
+        this->setFocus();
     }
 }
 

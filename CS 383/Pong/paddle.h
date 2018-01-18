@@ -10,10 +10,12 @@ class Paddle: public QObject, public QGraphicsRectItem{
 public:
     Paddle(bool computer);
     void keyPressEvent(QKeyEvent * event);
+    void focusOutEvent();
     void move(int d);
 public slots:
     void autoMove();
 private:
+    bool computer;
     int width;
     int height;
 };
