@@ -2,8 +2,11 @@
 
 int main(){
 	int x;
-	
-	while(true){
-		x = 1+1;
+	clock_t init, final;
+
+	init=time(NULL);	
+	final = init + (5*60);
+	while(time(NULL) < final ){
+		x = x+1;
 	}
 }
