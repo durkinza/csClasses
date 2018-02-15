@@ -11,17 +11,17 @@
 
 #define MAX_COMMAND 255
 
-void prompt(char *com[MAX_COMMAND][MAX_COMMAND]);// output '?:' and wait for response
+void prompt(char * com[MAX_COMMAND][MAX_COMMAND]);// output '?:' and wait for response
 int main(){
 	pid_t childpid;
-	char * command[MAX_COMMAND];
+	char *command[MAX_COMMAND];
 	int com_len, child_ret_val;
 	while(1){
 		prompt(&command);
 		//printf("commmand is %s\n", com ); 
 		if( strcmp( command[0], "exit" ) == 0 ) return 0;
 		if( ( childpid = fork() ) == 0 ){ // child function
-			printf("command: %s\n",command[0]);
+			printf("after fork command: %s\n",command[0]);
 			printf("arg1: %s\n", command[1]); 
 			if( execvp( command[0], command ) < 0 ){
 				fprintf(stderr, "Exec of %s failed\n", command[0]);
