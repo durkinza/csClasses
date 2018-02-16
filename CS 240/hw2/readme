@@ -1,0 +1,15 @@
+# My Shell
+
+A bash-syntax compatible shell written in C
+
+
+### How to Compile
+Enter folder where msh.c is located
+
+While on a unix system, run 
+`gcc -o msh msh.c`
+
+Now run 
+`./msh`
+
+And now you're all set
