@@ -3,7 +3,7 @@
 output=$1
 tmp=/tmp/delay_tmp_file_$$.tmp
 
-cat > $tmp
+cat $1  > $tmp
 
 if [ -s $tmp ]
 then
