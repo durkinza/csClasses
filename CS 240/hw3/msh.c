@@ -70,11 +70,15 @@ void alias_remove(char * name){							// remove alias from table
 	alias * prev = alias_tbl;
 	while(tmp != NULL){
 		if(strcmp(tmp->name, name) == 0){
-			prev->next = tmp->next;
-			free(tmp);
+			if(tmp == alias_tbl){			// if it is the head
+				alias_tbl = tmp->next;		// move head down
+			}else{
+				prev->next = tmp->next;		// skip tmp
+			}
+			//free(&tmp);					// free the memory
 		}else{
-			prev= tmp;
-			tmp = tmp->next;
+			prev= tmp;					// move down a location
+			tmp = tmp->next;			// move down a location
 		}
 	}
 }
