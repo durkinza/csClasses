@@ -8,18 +8,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <ctype.h>
-#include <curses.h>
 
-//#include <readline/readline.h>
-//#include <readline/history.h>
 #define MAX_COMMAND 255
 
 int crnt_history = 0;
 
-void getCommand(FILE *);
-void readrc();
-void execute(char * command[]);
+void getCommand(FILE *);								// for reading commands from a file
+void readrc();											// for reading mshrc file
+void execute(char * command[]);							// for executing a command
 
 typedef struct history {
     char value[MAX_COMMAND][MAX_COMMAND];
@@ -33,8 +29,8 @@ typedef struct alias {
 	struct alias * next;
 } alias;
 
-history * hist_tbl = NULL;
-alias * alias_tbl = NULL;
+history * hist_tbl = NULL;								// create linked list for history
+alias * alias_tbl = NULL;								// create linked list for aliases
 
 history * history_lookup(int i);
 history * history_add(char ** s);
@@ -46,99 +42,13 @@ void alias_add(char * name , char * value);
 void alias_remove(char * name);
 void printAliasTbl();
 
-char * alias_lookup(char * s){							// return alias or given value
-	alias * a = alias_tbl;
-	while (a != NULL){
-		if(strcmp(a->name, s) ==0)
-			return a->value;
-		a = a->next;
-	}
-	return s;
-}
 
-void alias_add(char * name, char * value){				// add alias to table
-	alias * tmp = malloc(sizeof(alias));
-	alias * h = alias_tbl;
-	int count = 0;
-	strcpy(tmp->name, name);
-	strcpy(tmp->value, value);
-	tmp->next = h;
-	alias_tbl = tmp;	
-}
-void alias_remove(char * name){							// remove alias from table
-	alias * tmp = alias_tbl;
-	alias * prev = alias_tbl;
-	while(tmp != NULL){
-		if(strcmp(tmp->name, name) == 0){
-			if(tmp == alias_tbl){			// if it is the head
-				alias_tbl = tmp->next;		// move head down
-			}else{
-				prev->next = tmp->next;		// skip tmp
-			}
-			//free(&tmp);					// free the memory
-		}else{
-			prev= tmp;					// move down a location
-			tmp = tmp->next;			// move down a location
-		}
-	}
-}
-
-void printAliasTbl(){									// print entire alias table
-	alias * tmp = alias_tbl;
-	while(tmp != NULL){
-		printf("%s=%s\n", tmp->name, tmp->value);
-		tmp = tmp->next;	
-	}
-}
-
-history * history_add(char ** s){
-	history * tmp= malloc(sizeof(history));				// clear out an empty symbol
-	history * hi = hist_tbl;							// pointer transverse with
-	int count = 0;
-	while(s[count] != NULL)
-		count++;
-	tmp->count = count;
-	for(int i = 0; i < count; i++) {
-	    strcpy(tmp->value[i], s[i]); // allocates the second dimension
-	}
-	tmp->next = hi;										// set new->next to the head
-	hist_tbl = tmp;
-	return tmp;
-}
-
-history * history_lookup(int i){						// return history item, or null
-	history * h = hist_tbl;
-	for(int j = 0; j < i; j++){
-		if(h == NULL)
-			return NULL;
-		h = h->next;
-	}
-	return h;
-}
-
-void printHistory(int i){								// print given history item
-	history * tmp = history_lookup(i);
-	if(tmp != NULL)
-	for(int i=0; i < tmp->count; i++){
-		printf("%s\n", tmp->value[i]);
-	}
-}
-
-void printHistTbl(){									// print last 20 history items
-	history * tmp = hist_tbl;
-	int max = 20;
-	int at = 0;
-	for(int i=19; i>=0; i--){
-		printHistory(i);
-	} 
-}
-
-int main(){
-	readrc();
-	char ** command;
-	while( 1 ){
-        printf( "?: ");
-		getCommand(stdin);
+int main(){											
+	readrc();											// read in mshrc file
+	char ** command;									// get ready to read commands
+	while( 1 ){											// always read	
+        printf( "?: ");									// print terminal pre-fix
+		getCommand(stdin);								// read command
 	} // end while(1)
 } // end main
 
@@ -263,20 +173,20 @@ void execute(char * command[]){
 
 	if( command[0][0] == '!'){							// runn previous command, !! or {!1, ..., !N}
 		char com [MAX_COMMAND][MAX_COMMAND];
-		if(command[0][1] == '!'){
+		if(command[0][1] == '!'){						// if is !!, then run last command
 			if(history_lookup(0) == NULL)
 				return;
 			memcpy(com,history_lookup(0)->value, 255*255);	
-		}else{
-			memmove(command[0], command[0]+1, strlen(command[0]));
-			int c = atoi(command[0]);
-			if(history_lookup(c-1) == NULL)
+		}else{											// if is not !, then get number
+			memmove(command[0], command[0]+1, strlen(command[0]));// move [!123] -> [123]
+			int c = atoi(command[0]);					// convert to number
+			if(history_lookup(c-1) == NULL)				// check that the history exists
 				return;
-			memcpy(com,history_lookup(c-1)->value, 255*255);	
+			memcpy(com,history_lookup(c-1)->value, 255*255);// get item in history location
 		}
 
-		char * b[MAX_COMMAND];
-		for (int i =0; i < MAX_COMMAND; i++){
+		char * b[MAX_COMMAND];							// convert char[][] to char **
+		for (int i =0; i < MAX_COMMAND; i++){			
 			if(strcmp(com[i], "") != 0){
 				if ((b[i] = malloc(sizeof(char) * sizeof(com[i]))) == NULL) {
 					printf("unable to allocate memory \n");
@@ -286,20 +196,20 @@ void execute(char * command[]){
 			}else
 				b[i] = NULL;	
 		}
-		char ** mother = b;
-		printf("ouptut: :%s\n",mother[0]);
-		//fprintf(stdin, "test");
-		//fflush(stdin);
-		execute(mother);
+		char ** mother = b;								// now char [][] is char **
+		printf("Runinning :%s\n",mother[0]);				// say command that is running
+		// normally would just print command to terminal
+		// But not sure how to pre-fill terminal without readline library
+		execute(mother);								// execute command
 		return;
 	}
 	history_add(command);								// add command to history
 
 	if( strcmp(command[0], "cd") == 0){					// change directories
 		if(command[1] !=  NULL){
-			chdir(command[1]);
+			chdir(command[1]);							// go to given directory
 		}else{
-			chdir(getenv("HOME"));
+			chdir(getenv("HOME"));						// if no directory is give, go home
 		}
 		
 		return;
@@ -308,14 +218,14 @@ void execute(char * command[]){
 		if(command[1] != NULL){
 			alias_add(strtok(command[1], "="), strtok(NULL, "="));
 		}else
-			printAliasTbl();
+			printAliasTbl();							// if no alias given, just print aliases
 		return;
 	}
 	if( strcmp(command[0], "unalias") == 0){			// remove aliases
 		if(command[1] != NULL){
 			alias_remove(command[1]);
 		}else
-			printAliasTbl();
+			printAliasTbl();							// if no alias given, just print aliases
 		return;
 	}
 	
@@ -340,4 +250,97 @@ void execute(char * command[]){
 		exit(1);
 
 	}// end fork
+}
+
+/*
+ * Alias Managment
+ */
+
+char * alias_lookup(char * s){							// return alias or given value
+	alias * a = alias_tbl;
+	while (a != NULL){									// move down list until end is reache
+		if(strcmp(a->name, s) ==0)		
+			return a->value;							// return alias, if it found
+		a = a->next;
+	}
+	return s;											// default to the given name
+}
+
+void alias_add(char * name, char * value){				// add alias to table
+	alias * tmp = malloc(sizeof(alias));				// make new alias
+	alias * h = alias_tbl;								// make head pointer
+	strcpy(tmp->name, name);							// fill new alias struct	
+	strcpy(tmp->value, value);
+	tmp->next = h;										// add alias to head
+	alias_tbl = tmp;	
+}
+void alias_remove(char * name){							// remove alias from table
+	alias * tmp = alias_tbl;
+	alias * prev = alias_tbl;
+	while(tmp != NULL){
+		if(strcmp(tmp->name, name) == 0){
+			if(tmp == alias_tbl){			// if it is the head
+				alias_tbl = tmp->next;		// move head down
+			}else{
+				prev->next = tmp->next;		// skip tmp
+			}
+			//free(&tmp);					// free the memory
+		}else{
+			prev= tmp;					// move down a location
+			tmp = tmp->next;			// move down a location
+		}
+	}
+}
+
+void printAliasTbl(){									// print entire alias table
+	alias * tmp = alias_tbl;
+	while(tmp != NULL){
+		printf("%s=%s\n", tmp->name, tmp->value);
+		tmp = tmp->next;	
+	}
+}
+
+/*
+ * History Managment
+ */
+
+history * history_add(char ** s){
+	history * tmp= malloc(sizeof(history));				// clear out an empty symbol
+	history * hi = hist_tbl;							// pointer transverse with
+	int count = 0;
+	while(s[count] != NULL)
+		count++;
+	tmp->count = count;
+	for(int i = 0; i < count; i++) {
+	    strcpy(tmp->value[i], s[i]); // allocates the second dimension
+	}
+	tmp->next = hi;										// set new->next to the head
+	hist_tbl = tmp;
+	return tmp;
+}
+
+history * history_lookup(int i){						// return history item, or null
+	history * h = hist_tbl;
+	for(int j = 0; j < i; j++){
+		if(h == NULL)
+			return NULL;
+		h = h->next;
+	}
+	return h;
+}
+
+void printHistory(int i){								// print given history item
+	history * tmp = history_lookup(i);
+	if(tmp != NULL)
+	for(int i=0; i < tmp->count; i++){
+		printf("%s", tmp->value[i]);
+	}
+	printf("\n");
+}
+
+void printHistTbl(){									// print last 20 history items
+	history * tmp = hist_tbl;
+	for(int i=19; i>=0; i--){
+		printHistory(i);
+	} 
 }
