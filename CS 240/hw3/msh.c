@@ -6,18 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <unistd.h>
-//#include <readline/readline.h>
-//#include <readline/history.h>
-//#include <termios.h>
-//#include <curses.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define MAX_COMMAND 255
-#define UP			0x48
-#define DOWN		0x50
-#define LEFT		0x4B
-#define RIGHT		0x4D
 #define READ_END 0
 #define WRITE_END 1
 
@@ -58,7 +51,6 @@ int main(){
 	path = getenv("PATH");
 	user = getenv("USER");
 	readrc();											// read in mshrc file
-	//using_history();
 	char ** command;									// get ready to read commands
 	while( 1 ){											// always read	
         printf( "?: ");									// print terminal pre-fix
@@ -67,6 +59,8 @@ int main(){
 } // end main
 
 void getCommand(FILE *file){
+	int pipefd[2];
+	pipe(pipefd);
 	int word_len = 0;									// holds word length
 	int arr_len = 0;									// holds number of words
 	int in_double_quotes = 0;							// if in double quotes
@@ -78,31 +72,43 @@ void getCommand(FILE *file){
 	int in = fileno(stdin);
 	int out = fileno(stdout);
 	int err = fileno(stderr);			// files for input, output, error
-	int pipefd[2];
-	pipe(pipefd);
-	char ** command;
+	char * command[MAX_COMMAND];
 	while(another){
 		word_len = 0;
 		arr_len = 0;
 		another = 0;
 		while( ( c[word_len] = getc(file) ) != EOF )	{	// read until end of line
 			if( ( c[word_len] == '\n' || (int)c[word_len] == 0x0a ) && !(in_single_quotes || in_double_quotes) ){
-				printf("break\n");
 				break;
 			}
 			if ( !in_single_quotes && c[word_len]=='$'){
-				printf("$\n");
+				//printf("$\n");
 				in_var = 1;
-				while( ( ( c[word_len] = getc(file)))){
-					if( !( c[word_len] >=0x41 && c[word_len] <= 0x5a) || !( c[word_len] >= 0x61 && c[word_len] <= 0x7a) || !(c[word_len] != '_')){
-						in_var = 0;
+				int eof =0;	
+				while( (c[word_len] = getc(file)) != EOF){
+					if( !( c[word_len] >=65 && c[word_len] <= 90) && !( c[word_len] >= 97 && c[word_len] <= 122) && c[word_len] != '_'){
+						//printf("word: %s\n", c[word_len]);
 						break;
 					}
+					word_len++;
 				}
+				in_var = 0;
+				c[word_len] = '\0';
+				//printf("word: %s word_len: %d\n", c, word_len);
 				strcpy(c, getenv(c));
+				int len = strlen(c);
+				c[len+1] = '\0';
+				//printf("word: %s len: %d\n", c, len);
+				//printf("lastchar: |%c| %d\n", c[len], len);
+				
+				command[arr_len] = malloc(strlen(c)+1);		// create space for word in memory
+				strcpy(command[arr_len], c);				// copy string into array
+				command[arr_len][len] = '\0';
+				arr_len++;									// increment words in array
+				word_len = 0;								// reset character counter
+				continue;
 			}
 			if ( c[word_len] == '\033'){
-				printf("escape\n");
 				getc(file); // skip the [
 				switch(getc(file)) { // the real value
 			        case 'A':
@@ -118,22 +124,19 @@ void getCommand(FILE *file){
 				}
 			}
 			if ( c[word_len] == '"'){
-				printf("double\n");
 				in_double_quotes = !in_double_quotes;
 				continue;
 			}
 			if (c[word_len] == '\''){
-				printf("single\n");
 				in_single_quotes = !in_single_quotes;
 				continue;
 			}
 			if(c[word_len] == ';' && !(in_single_quotes || in_double_quotes) ){
-				printf("semi\n");
 				another = 1;
 				break;
 			}
 			if(c[word_len] == '|' && !(in_single_quotes || in_double_quotes) ){
-				printf("pipe\n");
+				//printf("pipe\n");
 				if(pcount > 1)
 					in = pipefd[READ_END];
 				out = pipefd[WRITE_END];
@@ -145,7 +148,7 @@ void getCommand(FILE *file){
 				break;	
 			}
 			if( c[word_len] == ' ' && !(in_single_quotes || in_double_quotes) ){
-				printf("space %d word: %d\n", c[word_len], word_len);
+				//printf("space %d word: %d\n", c[word_len], word_len);
 				if(word_len == 0){							// check that the word is not just a space
 					continue;
 				}
@@ -155,30 +158,25 @@ void getCommand(FILE *file){
 				arr_len++;									// increment words in array
 				word_len = 0;								// reset character counter
 			}else{
-				printf("letter %c %d\n", c[word_len], c[word_len]);
+				//printf("letter %c %d\n", c[word_len], c[word_len]);
 				word_len++;									// increment character counter
 			}
 		}
 		if(in_single_quotes || in_double_quotes){
 			printf("[ERROR] unfinished string \n");
-			if(in_single_quotes)
+			/*if(in_single_quotes)
 				printf("in single\n");
 			if(in_double_quotes)
-				printf("in double\n");
+				printf("in double\n");*/
 			break;
 		}	
-		printf("start\n");
-		if( c[word_len] == ' ' || (int)c[word_len] == 10 || c[word_len] == '\n' || c[word_len] == ';' || c[word_len] == EOF){
-			printf("1\n");
+		if( c[word_len] == ' ' || c[word_len] == '\n' || c[word_len] == ';' || c[word_len] == EOF){
 			c[word_len] = '\0';								// be sure last argument ends with terminator
 		}
-			printf("2\n");
-			command[arr_len] = malloc(word_len+1);
-			printf("3\n");
-			strcpy(command[arr_len], c);
-		printf("exit\n");
+		command[arr_len] = malloc(word_len+1);
+		strcpy(command[arr_len], c);
 		if (strlen(command[arr_len]) == 0)
-			command[arr_len] = NULL;
+			command[arr_len] = NULL;							// if last command is empty, just set it to null
 		else
 			command[arr_len+1]= NULL;							// be sure to set last array element to null
 		if(!another)
@@ -199,7 +197,7 @@ void readrc(){
 		printf("Could not load %s file\n", path);			// say file can't be opened
 	else{													
 		while( (letter = getc(rc) )){						// look a letter ahead
-			if(letter == EOF || letter == (int)NULL || letter == -1){
+			if(letter == EOF || letter == '\0' || letter == -1){
 				break;										// if at end of file, exit
 			}else{
 				printf(""); // needed for some reason, not sure why
@@ -207,8 +205,8 @@ void readrc(){
 			ungetc(letter, rc);
 			getCommand(rc);
 		}
+		fclose(rc);
 	}
-	fclose(rc);
 }
 
 void execute(char * command[], int in, int out, int err){	
@@ -258,7 +256,7 @@ void execute(char * command[], int in, int out, int err){
 				b[i] = NULL;	
 		}
 		char ** mother = b;								// now char [][] is char **
-		printf("Runinning :%s\n",mother[0]);				// say command that is running
+		printf("%s\n",mother[0]);				// say command that is running
 		// normally would just print command to terminal
 		// But not sure how to pre-fill terminal while restricted to getchar function
 		execute(mother, in, out, err);								// execute command
@@ -283,7 +281,11 @@ void execute(char * command[], int in, int out, int err){
 	}
 	if( strcmp(command[0], "alias") == 0){				// create alias
 		if(command[1] != NULL){
-			alias_add(strtok(command[1], "="), strtok(NULL, "="));
+			char * name =strtok(command[1], "=");
+			char * value =strtok(NULL, "=");
+			//printf("name: %s value: %s\n", name, value);
+			alias_add(name, value);
+			//alias_add(strtok(command[1], "="), strtok(NULL, "="));
 		}else
 			printAliasTbl();							// if no alias given, just print aliases
 		return;
@@ -330,7 +332,7 @@ void execute(char * command[], int in, int out, int err){
 
 char * alias_lookup(char * s){							// return alias or given value
 	alias * a = alias_tbl;
-	while (a != NULL){									// move down list until end is reache
+	while (a != NULL){									// move down list until end is reached
 		if(strcmp(a->name, s) ==0)		
 			return a->value;							// return alias, if it found
 		a = a->next;
@@ -340,12 +342,12 @@ char * alias_lookup(char * s){							// return alias or given value
 
 void alias_add(char * name, char * value){				// add alias to table
 	alias * tmp = malloc(sizeof(alias));				// make new alias
-	alias * h = alias_tbl;								// make head pointer
 	strcpy(tmp->name, name);							// fill new alias struct	
 	strcpy(tmp->value, value);
-	tmp->next = h;										// add alias to head
+	tmp->next = alias_tbl;										// add alias to head
 	alias_tbl = tmp;	
 }
+
 void alias_remove(char * name){							// remove alias from table
 	alias * tmp = alias_tbl;
 	alias * prev = alias_tbl;
@@ -353,10 +355,11 @@ void alias_remove(char * name){							// remove alias from table
 		if(strcmp(tmp->name, name) == 0){
 			if(tmp == alias_tbl){			// if it is the head
 				alias_tbl = tmp->next;		// move head down
+				tmp = alias_tbl;
+				prev = alias_tbl;
 			}else{
 				prev->next = tmp->next;		// skip tmp
 			}
-			//free(&tmp);					// free the memory
 		}else{
 			prev= tmp;					// move down a location
 			tmp = tmp->next;			// move down a location
@@ -367,7 +370,7 @@ void alias_remove(char * name){							// remove alias from table
 void printAliasTbl(){									// print entire alias table
 	alias * tmp = alias_tbl;
 	while(tmp != NULL){
-		printf("%s=%s\n", tmp->name, tmp->value);
+		printf("alias %s='%s'\n", tmp->name, tmp->value);
 		tmp = tmp->next;	
 	}
 }
