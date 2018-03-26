@@ -8,14 +8,25 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+//#include <readline/readline.h>
+//#include <readline/history.h>
+//#include <termios.h>
+//#include <curses.h>
 
 #define MAX_COMMAND 255
+#define UP			0x48
+#define DOWN		0x50
+#define LEFT		0x4B
+#define RIGHT		0x4D
+#define READ_END 0
+#define WRITE_END 1
 
 int crnt_history = 0;
+char *path, *user;
 
 void getCommand(FILE *);								// for reading commands from a file
 void readrc();											// for reading mshrc file
-void execute(char * command[]);							// for executing a command
+void execute(char * command[], int in, int out, int err);							// for executing a command
 
 typedef struct history {
     char value[MAX_COMMAND][MAX_COMMAND];
@@ -44,7 +55,10 @@ void printAliasTbl();
 
 
 int main(){											
+	path = getenv("PATH");
+	user = getenv("USER");
 	readrc();											// read in mshrc file
+	//using_history();
 	char ** command;									// get ready to read commands
 	while( 1 ){											// always read	
         printf( "?: ");									// print terminal pre-fix
@@ -53,23 +67,42 @@ int main(){
 } // end main
 
 void getCommand(FILE *file){
-	char ** command;
 	int word_len = 0;									// holds word length
 	int arr_len = 0;									// holds number of words
-	int in_double_quotes = 0;
-	int in_single_quotes = 0;
-	char c[MAX_COMMAND];
-	int another = 1;
+	int in_double_quotes = 0;							// if in double quotes
+	int in_single_quotes = 0;							// if in single quotes
+	int in_var = 0;										// if building variable starting with '$'
+	char c[MAX_COMMAND];								// buffer for current word
+	int another = 1;									// if there is another command on same line (seperated by ';')
+	int pcount=0;											// how many commands are being piped
+	int in = fileno(stdin);
+	int out = fileno(stdout);
+	int err = fileno(stderr);			// files for input, output, error
+	int pipefd[2];
+	pipe(pipefd);
+	char ** command;
 	while(another){
 		word_len = 0;
 		arr_len = 0;
 		another = 0;
 		while( ( c[word_len] = getc(file) ) != EOF )	{	// read until end of line
-			if(c[word_len] == '\n' && !(in_single_quotes || in_double_quotes) ){
+			if( ( c[word_len] == '\n' || (int)c[word_len] == 0x0a ) && !(in_single_quotes || in_double_quotes) ){
+				printf("break\n");
 				break;
 			}
+			if ( !in_single_quotes && c[word_len]=='$'){
+				printf("$\n");
+				in_var = 1;
+				while( ( ( c[word_len] = getc(file)))){
+					if( !( c[word_len] >=0x41 && c[word_len] <= 0x5a) || !( c[word_len] >= 0x61 && c[word_len] <= 0x7a) || !(c[word_len] != '_')){
+						in_var = 0;
+						break;
+					}
+				}
+				strcpy(c, getenv(c));
+			}
 			if ( c[word_len] == '\033'){
-				getc(file); // skip the [
+				printf("escape\n");
 				getc(file); // skip the [
 				switch(getc(file)) { // the real value
 			        case 'A':
@@ -85,18 +118,34 @@ void getCommand(FILE *file){
 				}
 			}
 			if ( c[word_len] == '"'){
+				printf("double\n");
 				in_double_quotes = !in_double_quotes;
 				continue;
 			}
 			if (c[word_len] == '\''){
+				printf("single\n");
 				in_single_quotes = !in_single_quotes;
 				continue;
 			}
 			if(c[word_len] == ';' && !(in_single_quotes || in_double_quotes) ){
+				printf("semi\n");
 				another = 1;
 				break;
 			}
+			if(c[word_len] == '|' && !(in_single_quotes || in_double_quotes) ){
+				printf("pipe\n");
+				if(pcount > 1)
+					in = pipefd[READ_END];
+				out = pipefd[WRITE_END];
+				another = 1;
+				pcount++;
+				c[word_len] = '\0';
+				command[arr_len] = malloc(word_len+1);
+				strcpy(command[arr_len], c);
+				break;	
+			}
 			if( c[word_len] == ' ' && !(in_single_quotes || in_double_quotes) ){
+				printf("space %d word: %d\n", c[word_len], word_len);
 				if(word_len == 0){							// check that the word is not just a space
 					continue;
 				}
@@ -106,23 +155,36 @@ void getCommand(FILE *file){
 				arr_len++;									// increment words in array
 				word_len = 0;								// reset character counter
 			}else{
+				printf("letter %c %d\n", c[word_len], c[word_len]);
 				word_len++;									// increment character counter
 			}
 		}
 		if(in_single_quotes || in_double_quotes){
-			printf("[ERROR] un finished string ");
+			printf("[ERROR] unfinished string \n");
+			if(in_single_quotes)
+				printf("in single\n");
+			if(in_double_quotes)
+				printf("in double\n");
 			break;
 		}	
-		if( c[word_len] == ' ' || c[word_len] == '\n' || c[word_len] == ';' || c[word_len] == EOF)
+		printf("start\n");
+		if( c[word_len] == ' ' || (int)c[word_len] == 10 || c[word_len] == '\n' || c[word_len] == ';' || c[word_len] == EOF){
+			printf("1\n");
 			c[word_len] = '\0';								// be sure last argument ends with terminator
+		}
+			printf("2\n");
 			command[arr_len] = malloc(word_len+1);
+			printf("3\n");
 			strcpy(command[arr_len], c);
+		printf("exit\n");
 		if (strlen(command[arr_len]) == 0)
 			command[arr_len] = NULL;
 		else
 			command[arr_len+1]= NULL;							// be sure to set last array element to null
+		if(!another)
+			out = fileno(stdout);
 		if(command[0] != NULL && command[0] != (char *)EOF)
-		execute(command);
+		execute(command, in, out, err);
 	}
 }
 
@@ -149,7 +211,7 @@ void readrc(){
 	fclose(rc);
 }
 
-void execute(char * command[]){	
+void execute(char * command[], int in, int out, int err){	
 	pid_t childpid;
 	int child_ret_val;
 	if ( strlen(command[0]) < 1){
@@ -170,7 +232,6 @@ void execute(char * command[]){
 	}
 
 	
-
 	if( command[0][0] == '!'){							// runn previous command, !! or {!1, ..., !N}
 		char com [MAX_COMMAND][MAX_COMMAND];
 		if(command[0][1] == '!'){						// if is !!, then run last command
@@ -199,8 +260,8 @@ void execute(char * command[]){
 		char ** mother = b;								// now char [][] is char **
 		printf("Runinning :%s\n",mother[0]);				// say command that is running
 		// normally would just print command to terminal
-		// But not sure how to pre-fill terminal without readline library
-		execute(mother);								// execute command
+		// But not sure how to pre-fill terminal while restricted to getchar function
+		execute(mother, in, out, err);								// execute command
 		return;
 	}
 	history_add(command);								// add command to history
@@ -213,6 +274,12 @@ void execute(char * command[]){
 		}
 		
 		return;
+	}
+	if( strcmp(command[0], "export") == 0 ){
+		if(command[1] != NULL){
+			putenv(command[1]);
+		}
+	
 	}
 	if( strcmp(command[0], "alias") == 0){				// create alias
 		if(command[1] != NULL){
@@ -230,13 +297,18 @@ void execute(char * command[]){
 	}
 	
 	command[0] = alias_lookup(command[0]);				// replace with alias, if it exists
-	
 	if( ( childpid = fork() ) == 0 ){// child function
-
+		dup2(in, STDIN_FILENO);			// switch out stdin
+		dup2(out, STDOUT_FILENO);		// switch out stdout
+		dup2(err, STDERR_FILENO);		// switch out stderr
 		if( execvp( command[0], command ) < 0 ){		// if exec failed, say why
 			fprintf(stderr, "Exec of %s failed\n", command[0]);
 			exit(1);									// exit with error
 		}
+		
+		dup2(STDIN_FILENO, in);			// switch out stdin
+		dup2(STDOUT_FILENO, out);		// switch out stdout
+		dup2(STDERR_FILENO, err);		// switch out stderr
 
 	}else if( childpid > 0){// parent function
 
@@ -344,3 +416,4 @@ void printHistTbl(){									// print last 20 history items
 		printHistory(i);
 	} 
 }
+
