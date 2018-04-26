@@ -14,8 +14,8 @@
 #include <sys/shm.h>
 
 #define BUFF_SIZE 1000
-#define NUM_PROD 1
-#define NUM_CON 1
+#define NUM_PROD 4
+#define NUM_CON 4
 #define READ 0
 #define WRITE 1
 

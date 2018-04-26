@@ -6,7 +6,7 @@ An assignment we had to do because of reasons.
 Enter folder where sim.c is located
 
 While on a unix (redhat) system, run 
-`gcc sim.c -o sim`
+`gcc sim.c -o sim -std=gnu99`
 
 Now run 
 `./sim`
