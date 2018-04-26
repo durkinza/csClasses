@@ -1,0 +1,14 @@
+# A thing
+
+An assignment we had to do because of reasons.
+
+### How to Compile
+Enter folder where sim.c is located
+
+While on a unix (redhat) system, run 
+`gcc sim.c -o sim`
+
+Now run 
+`./sim`
+
+And now you're all set
