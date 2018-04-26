@@ -66,6 +66,9 @@ int main(int argc, char *argv[]){
 		processes[i] = start_prod(p_pipe[i+NUM_CON], i, time, max_p);
 		printf("created producer: %d - pid: %d\n", i+1, processes[i]);
 	}
+
+	// wait for processes to end
+	wait(NULL);
 }
 
 
