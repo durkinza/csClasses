@@ -1,0 +1,85 @@
+\documentclass[14pt]{article}
+
+\usepackage{enumitem} 
+\usepackage{calc}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Selected Problems from Stallings Textbook: Chapter 01}
+
+\author{Zane Durkin\\
+    University of Idaho}
+
+\begin{description}[align=left, labelwidth=2cm]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] HA-01
+\item [Work Name] Selected Problems from Stallings Textbook: Chapter 01
+\item [Work Version] Version 1
+\item [Long Date] Sunday, 26 August 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+
+
+\begin{abstract}
+In this article I will be going over problems 1.1, 1.4 and 1.7 from Chapter 1. 
+\end{abstract}
+
+\section{Problem 1.1}
+Consider an automated teller machine (ATM) in which users provide a personal identification number (PIN) and a card for account access. Give examples of confidentiality, integrity, and availability requirements associated with the system and, in each case, indicate the degree of imporance of the requirement \cite{stallings}.
+\subsection{Confidentiality}
+The ATM must ensure that only the User is allowed to see their bank information, and that the User will not be able to access another User's bank information. The User is required to provide their card and PIN to prove that they have access to view their account information. This is a requirement of high importance, due to the 
+\subsection{Integrity}
+The ATM must prevent the User's account from being tampered with. The ATM can only change the user's account data if the user as athorized the manipulation of their account information.
+\subsection{Availability}
+The ATM must be able to access the user's account information when the user wishes to use the ATM. If a user wishes to retreive money from their account, the ATM must be able to tender out the money that the user withdrew from their account.
+
+\section{Problem 1.4}
+For each of the following assets, assign a low, moderate, or high impact level for the loss of confidentiality, availability, and integrity, respectively, Justfy your answers.
+\begin{enumerate}[label=(\alph*)]
+\item An organziation managing public information on its Web server\cite{stallings}.
+	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
+		\item [Confidentiality] This is why....
+		\item [Availability] This is why...
+		\item [Integrity] This is why...
+	\end{description}
+\item A law enforcement organization managing extremely sensitive investigative information \cite{stallings}.
+	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
+		\item [Confidentiality] This is why....
+		\item [Availability] This is why...
+		\item [Integrity] This is why...
+	\end{description}
+\item A financial organization managing routine administrative information (not privacy. related information) \cite{stallings}.
+	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
+		\item [Confidentiality] This is why....
+		\item [Availability] This is why...
+		\item [Integrity] This is why...
+	\end{description}
+\item An information system used for large acquisitions in a contracting organization contains both sensiteve, pre-solicatation phase contract information and routine administrative information. Assess the impact for the two data sets separately and the infomation system as a whole \cite{stallings}.
+	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
+		\item [Confidentiality] This is why....
+		\item [Availability] This is why...
+		\item [Integrity] This is why...
+	\end{description}
+\item A power plant contains a SCADA (supervisory control and data acquisition) system controlling the distribution of electric power for a large military installation. The SCADA system contains both real-time sensor data and routine administration information. Addess the impact for the two data sets separately and the information systems as a whole.
+	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
+		\item [Confidentiality] This is why....
+		\item [Availability] This is why...
+		\item [Integrity] This is why...
+	\end{description}
+\end{enumerate}
+
+\section{Problem 1.7}
+
+
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+
+\end{document}
+
