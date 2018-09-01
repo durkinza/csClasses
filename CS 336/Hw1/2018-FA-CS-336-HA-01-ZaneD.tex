@@ -2,6 +2,8 @@
 
 \usepackage{enumitem} 
 \usepackage{calc}
+\usepackage{tikz}
+\usetikzlibrary{trees}
 \parskip=.9ex
 \textwidth=7.0in
 \textheight=9.0in
@@ -32,50 +34,72 @@ In this article I will be going over problems 1.1, 1.4 and 1.7 from Chapter 1.
 \end{abstract}
 
 \section{Problem 1.1}
-Consider an automated teller machine (ATM) in which users provide a personal identification number (PIN) and a card for account access. Give examples of confidentiality, integrity, and availability requirements associated with the system and, in each case, indicate the degree of imporance of the requirement \cite{stallings}.
+Consider an automated teller machine (ATM) in which users provide a personal identification number (PIN) and a card for account access. Give examples of confidentiality, integrity, and availability requirements associated with the system and, in each case, indicate the degree of importance of the requirement \cite{stallings}.
 \subsection{Confidentiality}
 The ATM must ensure that only the User is allowed to see their bank information, and that the User will not be able to access another User's bank information. The User is required to provide their card and PIN to prove that they have access to view their account information. This is a requirement of high importance, due to the 
 \subsection{Integrity}
-The ATM must prevent the User's account from being tampered with. The ATM can only change the user's account data if the user as athorized the manipulation of their account information.
+The ATM must prevent the User's account from being tampered with. The ATM can only change the user's account data if the user as authorized the manipulation of their account information.
 \subsection{Availability}
-The ATM must be able to access the user's account information when the user wishes to use the ATM. If a user wishes to retreive money from their account, the ATM must be able to tender out the money that the user withdrew from their account.
+The ATM must be able to access the user's account information when the user wishes to use the ATM. If a user wishes to retrieve money from their account, the ATM must be able to tender out the money that the user withdrew from their account.
 
 \section{Problem 1.4}
-For each of the following assets, assign a low, moderate, or high impact level for the loss of confidentiality, availability, and integrity, respectively, Justfy your answers.
+For each of the following assets, assign a low, moderate, or high impact level for the loss of confidentiality, availability, and integrity, respectively, Justify your answers.
 \begin{enumerate}[label=(\alph*)]
-\item An organziation managing public information on its Web server\cite{stallings}.
+\item An organization managing public information on its Web server\cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This would be a low impact level. The data is public information, so it's confidentiality is not that cruicial.
-		\item [Availability] This would be a moderate level. The organzation still will have the data on their servers and may be able to setup a new platform to manage the data.
+		\item [Confidentiality] This would be a low impact level. The data is public information, so it's confidentiality is not that crucial.
+		\item [Availability] This would be a moderate level. The organization still will have the data on their servers and may be able to setup a new platform to manage the data.
 		\item [Integrity] This could be a moderate to possibly high level impact. The data that is changed could cause the company to lose money and/or reputation. 
 	\end{description}
 \item A law enforcement organization managing extremely sensitive investigative information \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
 		\item [Confidentiality] This is a High level impact. Leaked sensitive investigative information could be critical to the operation of the law enforcement. 
 		\item [Availability] This is a high level impact. If law enforcement is unable to access the investigation information, it could allow the criminal a chance to escape while the data is being collected. 
-		\item [Integrity] This would be a high level impact. investigative information is often used in trials to convict criminals. but if this data is flawd, then it could cause the trial to be thrown out. 
+		\item [Integrity] This would be a high level impact. investigative information is often used in trials to convict criminals. but if this data is flawed, then it could cause the trial to be thrown out. 
 	\end{description}
 \item A financial organization managing routine administrative information (not privacy- related information) \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This would be a moderate impact. The loose of administrative information could create vulnerabilites that would effect the company in the future.
-		\item [Availability] This would be a low level impact. Inaccessable routine data may cause the company to have to wait until this data can be accessed again.
-		\item [Integrity] This would be a moderate level impact. The company may be using incorrect administrative information, which could cause a range of problems. But due to the information being non-privacy-related, then there is a resonable chance that the data can be re-generate to fix the broken data.
+		\item [Confidentiality] This would be a moderate impact. The loose of administrative information could create vulnerabilities that would effect the company in the future.
+		\item [Availability] This would be a low level impact. Inaccessible routine data may cause the company to have to wait until this data can be accessed again.
+		\item [Integrity] This would be a moderate level impact. The company may be using incorrect administrative information, which could cause a range of problems. But due to the information being non-privacy-related, then there is a reasonable chance that the data can be re-generate to fix the broken data.
 	\end{description}
-\item An information system used for large acquisitions in a contracting organization contains both sensitive, pre-solicatation phase contract information and routine administrative information. Assess the impact for the two data sets separately and the infomation system as a whole \cite{stallings}.
+\item An information system used for large acquisitions in a contracting organization contains both sensitive, pre-solicitation phase contract information and routine administrative information. Assess the impact for the two data sets separately and the information system as a whole \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] The loss of the sensitive contact information could be a moderate impact level due to the information being private to the organization, but not critical to the operations of the organizations. The Routine administrative information would be a moderate impact as well due to the data being semi-private by nature. Overall the loss of confidentiality of the system would result in a hight impact to the organization, since two moderate level impacts would result in a high level of overal impact.  
-		\item [Availability] For an acquisitions organization, being unable to access contract information would cause a dramatic break in the company's work flow. This would create a high level impact on the organization. The inability to access administrative information would create a moderate impact on the organization for a similar reason, but would be less impactful due since the organization would be able to continue running until the administrative information is avalable again. Overall the impact of these two sets of data would result in a high level impact to the organization. 
-		\item [Integrity] The integrity of the contract information is vital to the operations of this organization and would therefore be concidered to be a high impact if it's integrity was compromised. The Administrative information would be a low impact, due to the information having a low 
+		\item [Confidentiality] The loss of the sensitive contact information could be a moderate impact level due to the information being private to the organization, but not critical to the operations of the organizations. The Routine administrative information would be a moderate impact as well due to the data being semi-private by nature. Overall the loss of confidentiality of the system would result in a hight impact to the organization, since two moderate level impacts would result in a high level of overall impact.  
+		\item [Availability] For an acquisitions organization, being unable to access contract information would cause a dramatic break in the company's work flow. This would create a high level impact on the organization. The inability to access administrative information would create a moderate impact on the organization for a similar reason, but would be less impactful due since the organization would be able to continue running until the administrative information is available again. Overall the impact of these two sets of data would result in a high level impact to the organization. 
+		\item [Integrity] The integrity of the contract information is vital to the operations of this organization and would therefore be considered to be a high impact if it's integrity was compromised. The Administrative information would be a moderate impact since it would could cause problems with the company's future operations, but may not effect the company's ability to continue work. 
 	\end{description}
-\item A power plant contains a SCADA (supervisory control and data acquisition) system controlling the distribution of electric power for a large military installation. The SCADA system contains both real-time sensor data and routine administration information. Addess the impact for the two data sets separately and the information systems as a whole \cite{stallings}.
+\item A power plant contains a SCADA (supervisory control and data acquisition) system controlling the distribution of electric power for a large military installation. The SCADA system contains both real-time sensor data and routine administration information. Address the impact for the two data sets separately and the information systems as a whole \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This is why....
-		\item [Availability] This is why...
-		\item [Integrity] This is why...
+		\item [Confidentiality] The real-time sensor data would create a low impact since sensor data of a power plant is often used for monitoring purposes and is normally not considered private data. The administrative information would create a low impact since it would not cause any direct problems with the plant's operations. Overall the loss of confidentiality of these two sets of data would create a high impact due to having multiple moderate impacts would result in a high level impact overall. 
+		\item [Availability] Loosing the access to real-time sensor data would create a high level impact on the operations of the plant and could cause a critical problem inside the plant. The loss of access to administrative data could cause a moderate impact to the operations of the plant, since the routine data would be required to measure what maintenance has been preformed or would still need to be preformed. Overall these would create a high level impact for the plant. 
+		\item [Integrity] The integrity of the real time sensor data is critical to the operation of the power plant and would present a high impact if it was lost. The administrative information would cause a moderate impact since the operations of the plant would require tracking the current status of maintenance on the plant. 
 	\end{description}
 \end{enumerate}
 
 \section{Problem 1.7}
+\tikzstyle{every node}=[draw=black,thick,anchor=west]
+\tikzstyle{selected}=[draw=red,fill=red!30]
+\tikzstyle{ender}=[dashed,fill=gray!50]
+\begin{tikzpicture}[%
+  grow via three points={one child at (0.5,-0.7) and
+  two children at (0.5,-0.7) and (0.5,-1.4)},
+  edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
+  \node {Disclosure of Proprietary Secrets}
+	    child { node {Social Engineering }
+			child { node {Security Guard manipulation}}
+		}		
+		child { node {Technical Attack}
+				child { node {Use Dial up connection}}
+		}
+	    child { node {Physical Attack}
+	      child { node [ender]{Cut through fence}}
+	      child { node {latex}}
+	      child { node {plain}}
+	    }
+	};
+\end{tikzpicture}
+
 
 \newpage
 \bibliographystyle{ACM}
