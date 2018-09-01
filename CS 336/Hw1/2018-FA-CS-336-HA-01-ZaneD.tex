@@ -46,26 +46,26 @@ For each of the following assets, assign a low, moderate, or high impact level f
 \item An organziation managing public information on its Web server\cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
 		\item [Confidentiality] This would be a low impact level. The data is public information, so it's confidentiality is not that cruicial.
-		\item [Availability] This would be a low impact level. Having the data available through a web browser makes it very easily accessable.
-		\item [Integrity] This would be a moderate impact level. Web trafic, if not encrypted, can be very easy to intercept and change.
+		\item [Availability] This would be a moderate level. The organzation still will have the data on their servers and may be able to setup a new platform to manage the data.
+		\item [Integrity] This could be a moderate to possibly high level impact. The data that is changed could cause the company to lose money and/or reputation. 
 	\end{description}
 \item A law enforcement organization managing extremely sensitive investigative information \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This is a Low level of impact. 
-		\item [Availability] This is why...
-		\item [Integrity] This is why...
+		\item [Confidentiality] This is a High level impact. Leaked sensitive investigative information could be critical to the operation of the law enforcement. 
+		\item [Availability] This is a high level impact. If law enforcement is unable to access the investigation information, it could allow the criminal a chance to escape while the data is being collected. 
+		\item [Integrity] This would be a high level impact. investigative information is often used in trials to convict criminals. but if this data is flawd, then it could cause the trial to be thrown out. 
 	\end{description}
-\item A financial organization managing routine administrative information (not privacy. related information) \cite{stallings}.
+\item A financial organization managing routine administrative information (not privacy- related information) \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This is why....
-		\item [Availability] This is why...
-		\item [Integrity] This is why...
+		\item [Confidentiality] This would be a moderate impact. The loose of administrative information could create vulnerabilites that would effect the company in the future.
+		\item [Availability] This would be a low level impact. Inaccessable routine data may cause the company to have to wait until this data can be accessed again.
+		\item [Integrity] This would be a moderate level impact. The company may be using incorrect administrative information, which could cause a range of problems. But due to the information being non-privacy-related, then there is a resonable chance that the data can be re-generate to fix the broken data.
 	\end{description}
-\item An information system used for large acquisitions in a contracting organization contains both sensiteve, pre-solicatation phase contract information and routine administrative information. Assess the impact for the two data sets separately and the infomation system as a whole \cite{stallings}.
+\item An information system used for large acquisitions in a contracting organization contains both sensitive, pre-solicatation phase contract information and routine administrative information. Assess the impact for the two data sets separately and the infomation system as a whole \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
-		\item [Confidentiality] This is why....
-		\item [Availability] This is why...
-		\item [Integrity] This is why...
+		\item [Confidentiality] The loss of the sensitive contact information could be a moderate impact level due to the information being private to the organization, but not critical to the operations of the organizations. The Routine administrative information would be a moderate impact as well due to the data being semi-private by nature. Overall the loss of confidentiality of the system would result in a hight impact to the organization, since two moderate level impacts would result in a high level of overal impact.  
+		\item [Availability] For an acquisitions organization, being unable to access contract information would cause a dramatic break in the company's work flow. This would create a high level impact on the organization. The inability to access administrative information would create a moderate impact on the organization for a similar reason, but would be less impactful due since the organization would be able to continue running until the administrative information is avalable again. Overall the impact of these two sets of data would result in a high level impact to the organization. 
+		\item [Integrity] The integrity of the contract information is vital to the operations of this organization and would therefore be concidered to be a high impact if it's integrity was compromised. The Administrative information would be a low impact, due to the information having a low 
 	\end{description}
 \item A power plant contains a SCADA (supervisory control and data acquisition) system controlling the distribution of electric power for a large military installation. The SCADA system contains both real-time sensor data and routine administration information. Addess the impact for the two data sets separately and the information systems as a whole \cite{stallings}.
 	\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Confidentiality}]
@@ -77,7 +77,7 @@ For each of the following assets, assign a low, moderate, or high impact level f
 
 \section{Problem 1.7}
 
-
+\newpage
 \bibliographystyle{ACM}
 \bibliography{../../citations}
 
