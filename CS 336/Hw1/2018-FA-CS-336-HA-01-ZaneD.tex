@@ -79,27 +79,48 @@ For each of the following assets, assign a low, moderate, or high impact level f
 
 \section{Problem 1.7}
 \tikzstyle{every node}=[draw=black,thick,anchor=west]
-\tikzstyle{selected}=[draw=red,fill=red!30]
-\tikzstyle{ender}=[dashed,fill=gray!50]
+\tikzstyle{ender}=[fill=gray!50]
 \begin{tikzpicture}[%
   grow via three points={one child at (0.5,-0.7) and
   two children at (0.5,-0.7) and (0.5,-1.4)},
   edge from parent path={(\tikzparentnode.south) |- (\tikzchildnode.west)}]
-  \node {Disclosure of Proprietary Secrets}
-	    child { node {Social Engineering }
-			child { node {Security Guard manipulation}}
-		}		
-		child { node {Technical Attack}
-				child { node {Use Dial up connection}}
+\node {\textbf{Disclosure of Proprietary Secrets}}
+	child { node {Social Engineering }
+		child { node [ender]{Security Guard manipulation}}
+		child { node [ender]{Emails with backdoor installation code}}
+	}		
+   	child [missing] {}	
+   	child [missing] {}	
+	child { node {Technical Attack}
+		child { node {Remote Network Access}
+			child { node [ender]{Brute force Dial up connection password}}
+			child { node{Vulnerability exploits}
+				child { node [ender] {Fire wall hole}}
+				child { node [ender] {external facing server}}
+			}
 		}
-	    child { node {Physical Attack}
-	      child { node [ender]{Cut through fence}}
-	      child { node {latex}}
-	      child { node {plain}}
-	    }
+   		child [missing] {}	
+   		child [missing] {}	
+   		child [missing] {}	
+   		child [missing] {}	
+		child { node [ender]{Monitor external network for leaked secrets}}
+	}
+   	child [missing] {}
+   	child [missing] {}	
+   	child [missing] {}	
+   	child [missing] {}		
+   	child [missing] {}			
+   	child [missing] {}	
+	child { node {Physical Attack}
+		child { node{Accessing LAN}
+			child { node [ender]{Cut through fence}}
+			child { node [ender]{Steal identification card from another employee}}
+		}
+	   	child [missing] {}	
+	  	child [missing] {}	
+		child { node [ender]{Theft of hand written notes}}
 	};
 \end{tikzpicture}
-
 
 \newpage
 \bibliographystyle{ACM}
