@@ -1,0 +1,80 @@
+\documentclass[14pt]{article}
+
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Selected Problems from Textbook: Chapter 02 (Stallings and Brown, 2015)}
+
+\author{Zane Durkin\\
+    University of Idaho}
+\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Author(s) Name(s)}]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] HA-03
+\item [Work Name] Selected Problems from Textbook: Chapter 02 (Stallings and Brown, 2015)
+\item [Work Version] Version 1
+\item [Long Date] Sunday, 9 September 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+\begin{abstract}
+In this article I will be going over a few problems from the Textbook \cite{stallings}. I'll be solving 4 problems from the end of Chapter 02, and I'll being going through review questions 2.1 to 2.13.
+\end{abstract}
+
+\section{Problems from the end of Chapter 02}
+\subsection{Problem  1}
+\subsection{Problem  2}
+\subsection{Problem  3}
+\subsection{Problem  4}
+
+\section{Review questions from Chapter 02}
+\subsection{Problem  2.1}
+The essential ingredients of a symmetric cipher are:
+\begin{itemize}
+\item Plaint Text
+\item The Encryption Algorithm
+\item The Secret Key
+\item The Cipher Text
+\item The Decryption Algorithm
+\end{itemize}
+\subsection{Problem  2.2}
+Only a single key is required for two people to communicate via a symmetric cipher.
+\subsection{Problem  2.3}
+The two principal requirements for the secure use of a symmetric encryption are
+\begin{itemize}
+\item The secret key must be shared privately between only the two members before communication.
+\item The algorithum must be strong enought to not be reversed without the key
+\end{itemize}
+\subsection{Problem  2.4}
+The Three approaches to message authentication are:
+\begin{itemize}
+\item The message is sent with a message authentication tag to all machines that need the data. There is one machine on the network that is responsible for authenticating the message using the attached message authentication tag. If there is a problem with the message, the authenticating device will broadcast to all machines that the message was not authenticated.
+\item For systems that have a heavy load and cannot authenticate each message, they can authenticate on a selective basis. So messages are selected at random to be authenticated. 
+\item Authentication with the program in plaintext. To reduce the resources required to decrypt the program every time. The message could contain an additional authentication tag to be used fro integrity checking whenever needed.
+\end{itemize}
+\subsection{Problem  2.5}
+A Message Authentication code is a one way hashing of a message using a secret key that has been shared before hand in a secure fashion. The MAC is attached with the message, and authenticity can be assured by the client by re-hashing the message with the same secret key and then comparing with the MAC. 
+\subsection{Problem  2.6}
+Figure 2.3 is a diagram of the use of a Message Authentication Code. The figure shows that the message is combined with a key 'K' to produce a MAC. The MAC is then attached to the end of the message and transmitted to the reciever. The reciever then sepeates the message from the the MAC and re-generated the MAC with the message and key. After generating the new MAC, it is compared with the given MAC to verify the message's authenticity.
+\subsection{Problem  2.7}
+\subsection{Problem  2.8}
+\subsection{Problem  2.9}
+\subsection{Problem  2.10}
+\subsection{Problem  2.11}
+\subsection{Problem  2.12}
+\subsection{Problem  2.13}
+
+\newpage
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+
+\end{document}
