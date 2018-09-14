@@ -40,7 +40,7 @@ In this article I will be going over a few problems from the Textbook \cite{stal
 \subsection{Problem  2.1}
 The essential ingredients of a symmetric cipher are:
 \begin{itemize}
-\item Plaint Text
+\item Plain Text
 \item The Encryption Algorithm
 \item The Secret Key
 \item The Cipher Text
@@ -52,7 +52,7 @@ Only a single key is required for two people to communicate via a symmetric ciph
 The two principal requirements for the secure use of a symmetric encryption are
 \begin{itemize}
 \item The secret key must be shared privately between only the two members before communication.
-\item The algorithum must be strong enought to not be reversed without the key
+\item The algorithm must be strong enough to not be reversed without the key
 \end{itemize}
 \subsection{Problem  2.4}
 The Three approaches to message authentication are:
@@ -64,11 +64,35 @@ The Three approaches to message authentication are:
 \subsection{Problem  2.5}
 A Message Authentication code is a one way hashing of a message using a secret key that has been shared before hand in a secure fashion. The MAC is attached with the message, and authenticity can be assured by the client by re-hashing the message with the same secret key and then comparing with the MAC. 
 \subsection{Problem  2.6}
-Figure 2.3 is a diagram of the use of a Message Authentication Code. The figure shows that the message is combined with a key 'K' to produce a MAC. The MAC is then attached to the end of the message and transmitted to the reciever. The reciever then sepeates the message from the the MAC and re-generated the MAC with the message and key. After generating the new MAC, it is compared with the given MAC to verify the message's authenticity.
+Figure 2.3 is a diagram of the use of a Message Authentication Code. The figure shows that the message is combined with a key 'K' to produce a MAC. The MAC is then attached to the end of the message and transmitted to the receiver. The receiver then spates the message from the MAC and re-generated the MAC with the message and key. After generating the new MAC, it is compared with the given MAC to verify the message's authenticity.
 \subsection{Problem  2.7}
+In order for a hash function to be useful for message authentication it must have the following functions:
+\being{itemize}
+\item It can be applied to any block size of data.
+\item It produces a fixed length output
+\item H(x) is relatively easy to compute for any x.
+\item It is computationally in feasible to find a value x that will match a given h in H(x)=h
+\item When H(x)=H(y) is computationally in feasible to not have y=x. (second preimage resistant)
+\item For any value of x, it is computationally in feasible to find a value y that will match H(x)=H(y). (collision resistant)
+\end{itemize}
 \subsection{Problem  2.8}
+The principle ingredients of public-key cryptography are 
+\being{itemize}
+\item Plain text
+\item Encryption Algorithm
+\item Public and Private key
+\item Cipher text
+\item Decryption Algorithm 
+\end{itemize} 
 \subsection{Problem  2.9}
+Three uses of a public key cryptosystem are:
+\being{itemize}
+\item Digital Signature. A public key cryptosystem can be used to sign a message to verify that the message came from the person who has the private key. 
+\item Symmetric key Distribution. Public key cryptosystems can be used to confidentially distribute symmetric keys by encrypting the message with the public key, so only the owner of the private key can view the message.
+\item Encryption of Secret keys. The use of the Private key to encrypt a message can be done. The encrypted message can then be decrypted by the public key pair.  
+\end{itemize}
 \subsection{Problem  2.10}
+
 \subsection{Problem  2.11}
 \subsection{Problem  2.12}
 \subsection{Problem  2.13}
