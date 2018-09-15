@@ -31,12 +31,25 @@ In this article I will be going over a few problems from the Textbook \cite{stal
 \end{abstract}
 
 \section{Problems from the end of Chapter 02}
-\subsection{Problem  1}
+
+\subsection{Problem  2.1}
+Although this process would work to verify that both participating parties have the same, or different, secrete key, this process creates a major vulnerability for the security of the secret key. Since the random key, and the XOR of the random key and secret key are being sent across a channel unencrypted, it is possible to determine what the secret key is by preforming an XOR of the random string and the XOR of the random and secret string.
+
 \subsection{Problem  2}
+
+
 \subsection{Problem  3}
+
+
 \subsection{Problem  4}
 
+
+
+\newpage
+
+
 \section{Review questions from Chapter 02}
+
 \subsection{Problem  2.1}
 The essential ingredients of a symmetric cipher are:
 \begin{itemize}
@@ -46,14 +59,17 @@ The essential ingredients of a symmetric cipher are:
 \item The Cipher Text
 \item The Decryption Algorithm
 \end{itemize}
+
 \subsection{Problem  2.2}
 Only a single key is required for two people to communicate via a symmetric cipher.
+
 \subsection{Problem  2.3}
 The two principal requirements for the secure use of a symmetric encryption are
 \begin{itemize}
 \item The secret key must be shared privately between only the two members before communication.
 \item The algorithm must be strong enough to not be reversed without the key
 \end{itemize}
+
 \subsection{Problem  2.4}
 The Three approaches to message authentication are:
 \begin{itemize}
@@ -61,13 +77,16 @@ The Three approaches to message authentication are:
 \item For systems that have a heavy load and cannot authenticate each message, they can authenticate on a selective basis. So messages are selected at random to be authenticated. 
 \item Authentication with the program in plaintext. To reduce the resources required to decrypt the program every time. The message could contain an additional authentication tag to be used fro integrity checking whenever needed.
 \end{itemize}
+
 \subsection{Problem  2.5}
 A Message Authentication code is a one way hashing of a message using a secret key that has been shared before hand in a secure fashion. The MAC is attached with the message, and authenticity can be assured by the client by re-hashing the message with the same secret key and then comparing with the MAC. 
+
 \subsection{Problem  2.6}
 Figure 2.3 is a diagram of the use of a Message Authentication Code. The figure shows that the message is combined with a key 'K' to produce a MAC. The MAC is then attached to the end of the message and transmitted to the receiver. The receiver then spates the message from the MAC and re-generated the MAC with the message and key. After generating the new MAC, it is compared with the given MAC to verify the message's authenticity.
+
 \subsection{Problem  2.7}
 In order for a hash function to be useful for message authentication it must have the following functions:
-\being{itemize}
+\begin{itemize}
 \item It can be applied to any block size of data.
 \item It produces a fixed length output
 \item H(x) is relatively easy to compute for any x.
@@ -75,29 +94,41 @@ In order for a hash function to be useful for message authentication it must hav
 \item When H(x)=H(y) is computationally in feasible to not have y=x. (second preimage resistant)
 \item For any value of x, it is computationally in feasible to find a value y that will match H(x)=H(y). (collision resistant)
 \end{itemize}
+
 \subsection{Problem  2.8}
 The principle ingredients of public-key cryptography are 
-\being{itemize}
+\begin{itemize}
 \item Plain text
 \item Encryption Algorithm
 \item Public and Private key
 \item Cipher text
 \item Decryption Algorithm 
 \end{itemize} 
+
 \subsection{Problem  2.9}
 Three uses of a public key cryptosystem are:
-\being{itemize}
+\begin{itemize}
 \item Digital Signature. A public key cryptosystem can be used to sign a message to verify that the message came from the person who has the private key. 
 \item Symmetric key Distribution. Public key cryptosystems can be used to confidentially distribute symmetric keys by encrypting the message with the public key, so only the owner of the private key can view the message.
 \item Encryption of Secret keys. The use of the Private key to encrypt a message can be done. The encrypted message can then be decrypted by the public key pair.  
 \end{itemize}
+
 \subsection{Problem  2.10}
+The difference between a private key and a secret key is that a private key is used  in asymetric encryptions and is often the counter part to a public key. While a secret key is on a key that is only known by participating parties in a symmetric encryption. 
 
 \subsection{Problem  2.11}
+A digital signature is the use of a private key to encrypt  a hash of a message to prove that the message was created by the owner of the private key. This is useful for verifying that a message has not been forged by a third party, given that the private key has been properly secured. 
+
 \subsection{Problem  2.12}
+A public key certificate is a list of digital signatures that creates a chain of trust. The certificate verifies that a public key is owned by the proper party, because the public key is signed by a third party who has already verified the owner ship of the public key. The certificate is ultimatley trusted if you trust the Certificate authority at the end of the chain, or anyone prior on the chain.
+
 \subsection{Problem  2.13}
+Public key encryption is useful for distributing a secret key because it gives a way for a secret key to be shared without a prior exchange between the two parties. The parties can encrypt a secret key using the other's public key (after verifing the public keys using a certificate authority). This ensures that secret key is kept confidencital while it is being exchanged.
+
 
 \newpage
+
+
 \bibliographystyle{ACM}
 \bibliography{../../citations}
 
