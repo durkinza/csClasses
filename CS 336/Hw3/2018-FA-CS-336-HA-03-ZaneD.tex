@@ -36,7 +36,24 @@ In this article I will be going over a few problems from the Textbook \cite{stal
 Although this process would work to verify that both participating parties have the same, or different, secrete key, this process creates a major vulnerability for the security of the secret key. Since the random key, and the XOR of the random key and secret key are being sent across a channel unencrypted, it is possible to determine what the secret key is by preforming an XOR of the random string and the XOR of the random and secret string.
 
 \subsection{Problem  2}
-
+\begin{enumerate}[label=(\alph*)]
+\item For the encryption of the message using double transposition I will be ignoring spaces and other punctuation on the key works and message, and I will count douplicate letters in the keywords from left to right. 
+\newline
+\begin{tabular}{ l l l l l l l l l l l l l }
+2 & 10 & 13 & 8 & 12 & 7 & 4 & 11 & 1 & 9 & 5 & 6 & 3\\
+\hline
+c & r & y & p & t & o & g & r & a & p & h & i & c\\
+\hline
+b & e & a & t & t & h & e & t & h & i & r & d & p\\
+i & l & l & a & r & f & r & o & m & t & h & e & l\\
+e & f & t & o & u & t & s & i & d & e & t & h & e\\
+l & y & c & e & u & m & t & h & e & a & t & r & e\\
+t & o & n & i & g & h & t & a & t & s & e & v & e\\
+n & i & f & y & o & u & a & r & e & d & i & s & t\\
+r & u & s & t & f & u & l & b & r & i & n & g & t\\
+w & o & f & r & i & e & n & d & s\\
+\end{tabular}
+\end{enumerate}
 
 \subsection{Problem  3}
 
