@@ -35,9 +35,9 @@ In this article I will be going over a few problems from the Textbook \cite{stal
 \subsection{Problem  2.1}
 Although this process would work to verify that both participating parties have the same, or different, secrete key, this process creates a major vulnerability for the security of the secret key. Since the random key, and the XOR of the random key and secret key are being sent across a channel unencrypted, it is possible to determine what the secret key is by preforming an XOR of the random string and the XOR of the random and secret string.
 
-\subsection{Problem  2}
+\subsection{Problem  2.2}
 \begin{enumerate}[label=(\alph*)]
-\item For the encryption of the message using double transposition I will be ignoring spaces and other punctuation on the key works and message, and I will count douplicate letters in the keywords from left to right. 
+\item For the encryption of the message using double transposition I will be ignoring spaces and other punctuation on the key works and message, and I will count douplicate letters in the keywords from left to right. The plaintext string is written horizontally across a matrix, with each column corisponding to a letter in the key word.
 \newline
 \begin{tabular}{ l l l l l l l l l l l l l }
 2 & 10 & 13 & 8 & 12 & 7 & 4 & 11 & 1 & 9 & 5 & 6 & 3\\
@@ -53,13 +53,81 @@ n & i & f & y & o & u & a & r & e & d & i & s & t\\
 r & u & s & t & f & u & l & b & r & i & n & g & t\\
 w & o & f & r & i & e & n & d & s\\
 \end{tabular}
+\newline
+\newline
+ Next is to take the columns and align them horizontally to make a new string of text. This new string will be aligned in the same fasion of the previous set, but with a new keyword to number the columns. 
+\newline
+\newline
+\begin{tabular}{ l l l l l l l l l l l l l l l}
+6 & 2 & 11 & 14 & 7 & 8 & 5 & 10 & 3 & 	1 & 13 & 9 & 4 & 12 & 15\\
+\hline
+n & e & t & w & o & r & k & s & e & c & u & r & i & t & y\\
+\hline
+i & r & e & a & l & t & f & m & p & r & f & i & t & i & b\\
+e & d & t & e & d & s & t & t & v & i & o & u & r & t & i\\
+u & d & r & n & h & w & n & h & r &  o & f & t & e & t & h\\
+a & h & t & e & e & e & u & s & a & c & l & t & r & e & y\\
+u & s & t & n & e & i & b & f & d & l & h & t & t & o & a\\
+n & a & s & y & i & g & e & s & h & o & f & r & e & e & t\\
+m & e & i & l & r & l & g & t & u & o\\
+\end{tabular}
+\newline
+\newline
+Now we can take the text horizontally and send it as our encrypted message. Our encrypted text is:
+\newline
+irealtfmprfitibedtedsttviourtiudrnhwnhroftethahteeeusacltreyustneibfdlhttoanasyigeshofreetmeilrlgtuo
+
+\item Next, to decypt the text, we will follow the procedure in reverse order, as shown.
+\newline
+starting with the encrypted text, we will use the second keyword to align the columns.
+\newline
+\newline
+\begin{tabular}{ l l l l l l l l l l l l l l l}
+6 & 2 & 11 & 14 & 7 & 8 & 5 & 10 & 3 & 	1 & 13 & 9 & 4 & 12 & 15\\
+\hline
+n & e & t & w & o & r & k & s & e & c & u & r & i & t & y\\
+\hline
+i & r & e & a & l & t & f & m & p & r & f & i & t & i & b\\
+e & d & t & e & d & s & t & t & v & i & o & u & r & t & i\\
+u & d & r & n & h & w & n & h & r &  o & f & t & e & t & h\\
+a & h & t & e & e & e & u & s & a & c & l & t & r & e & y\\
+u & s & t & n & e & i & b & f & d & l & h & t & t & o & a\\
+n & a & s & y & i & g & e & s & h & o & f & r & e & e & t\\
+m & e & i & l & r & l & g & t & u & o\\
+\end{tabular}
+\newline
+\newline
+Now we can use the first keyword to finish the decryption
+\newline
+\newline
+\begin{tabular}{ l l l l l l l l l l l l l }
+2 & 10 & 13 & 8 & 12 & 7 & 4 & 11 & 1 & 9 & 5 & 6 & 3\\
+\hline
+c & r & y & p & t & o & g & r & a & p & h & i & c\\
+\hline
+b & e & a & t & t & h & e & t & h & i & r & d & p\\
+i & l & l & a & r & f & r & o & m & t & h & e & l\\
+e & f & t & o & u & t & s & i & d & e & t & h & e\\
+l & y & c & e & u & m & t & h & e & a & t & r & e\\
+t & o & n & i & g & h & t & a & t & s & e & v & e\\
+n & i & f & y & o & u & a & r & e & d & i & s & t\\
+r & u & s & t & f & u & l & b & r & i & n & g & t\\
+w & o & f & r & i & e & n & d & s\\
+\end{tabular}
+\item This technique would be useful when you need to encrypt a message to send over a non-secure network, and when both parties have already securely shared the keywords prior to the encryption of the message.
 \end{enumerate}
 
-\subsection{Problem  3}
+\subsection{Problem  2.6}
+Given a hash function that maps an arbitrary bit length message into an n-bit hash value, it is false that for every x, x' where x $\neq$ x' there will always be H(x) $\neq$ H(x'). This is because an arbitratry bit length message that is larger than the fixed n-bit hash output would require that there is some collisons in hash values. The hashing function must loss some of the data of the longer message inorder to match the fixed length hash output, this loss in data would allow two different messages to have the same hash output after the extra data has been lost. 
 
-
-\subsection{Problem  4}
-
+\subsection{Problem  2.3}
+\begin{enumerate}[label=(\alph*)]
+\item the decryption equation would be an inverse of the encryption equation, as shown below
+\newline
+ P = ( C $\ominus$ $ K_{1}$ ) $\oplus$ $K_{0}$
+\newline
+where P = plaintext, C = ciphertext, K = secret key, $K_{1}$ = rightmost 64 bits of K, $K_{0}$ = leftmost 64 bits of K, $\oplus$ = bitwise exlusive or, and $\ominus$ = subtraction mod $2^{64}$
+\end{enumerate}
 
 
 \newpage
