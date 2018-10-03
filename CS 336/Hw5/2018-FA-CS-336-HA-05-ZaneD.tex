@@ -12,7 +12,7 @@
 
 \begin{document}
 
-\title{Selected Problems from Textbook: Chapter 02 (Stallings and Brown, 2015)}
+\title{Asymmetric Encryption: RSA}
 
 \author{Zane Durkin\\
     University of Idaho}
@@ -40,10 +40,63 @@ For my private key, I will find a value $d$ such that $d*e mod $Euler Totient = 
 My private key is: 12723
 
 Since I do not have a partner, I will encrypt a message with my own public key, and then decrypt it with my private key.
-
+\subsection{Encryption}
 My message to encrypt will be "HELLOHELLOHELLO"
 The conversion process is as follows:
 
+\begin{center}
+    \begin{tabular}{| l | l | l | l |}
+      \hline
+      \multicolumn{2}{|c|}{Plain Text} &
+      \multicolumn{2}{|c|}{Cipher Text} \\
+      \hline
+      Trigraph &
+      Trigraph code &
+      Enciphered Code &
+	  Quadragraph \\
+      \hline
+      HEL & 4847 & 5611 & AIHV\\
+	  LOH & 7807 & 33195 & BXCT\\
+      ELL & 3001 & 11387 & AQVZ\\
+      OHE & 9650 & 31569 & BUSF\\
+      LLO & 7736 & 33322 & BXHQ\\
+      \hline 
+    \end{tabular}
+\end{center}
+The cipher text would then be:
+AIHVBXCTAQVZBUSFBXHQ
+\subsection{decryption}
+Now to decrypt the string using my private key.
+I will be decoding the same string since I do not have a partner to work with. 
+\begin{center}
+    \begin{tabular}{| l | l | l | l |}
+      \hline
+      \multicolumn{2}{|c|}{Cipher Text} &
+      \multicolumn{2}{|c|}{Plain Text} \\
+      \hline
+	  Quadragraph &
+      Quadragraph Code &
+      Deciphered code &
+      Deciphered Trigraph &
+      \hline
+      AIHV & 5611  & 4847 & HEL\\
+      BXCT & 33195 & 7807 & LOH\\
+      AQVZ & 11387 & 3001 & ELL\\
+      BUSF & 31569 & 9650 & OHE\\
+      BXHQ & 33322 & 7736 & LLO\\
+      \hline
+    \end{tabular}
+\end{center}
+So the deciphered text would be:
+HELLOHELLOHELLO
+which matches the original message
+
+\subsection{RSA Questions}
+\begin{itemize}
+  \item Private encryption is a one way encryption that prevents third parties from decoding a message after it has been encrypted. The encoded message can only be decoded by the owner of the private key. Symmetric encryption can be encrypted and decrypted using the same key, so either party is able to create and read messages. 
+  \item The benefit of private encryption is that the public key does not need to be shared prior to the communication to ensure confidentiality. Symmetric encryption has the benefit of a much smaller load to encrypt  
+
+\end{itemize}
 
 \newpage
 
