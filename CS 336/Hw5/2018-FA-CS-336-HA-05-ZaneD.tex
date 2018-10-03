@@ -1,0 +1,63 @@
+\documentclass[14pt]{article}
+
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Selected Problems from Textbook: Chapter 02 (Stallings and Brown, 2015)}
+
+\author{Zane Durkin\\
+    University of Idaho}
+\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Author(s) Name(s)}]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] HA-05
+\item [Work Name] Asymmetric Encryption: RSA
+\item [Work Version] Version 1
+\item [Long Date] Tuesday, 2 October 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+\begin{abstract}
+In this article, since I do not have a partner, I will be completing both sides of the RSA Lab, along with the problems from the textbook and the review questions.
+\end{abstract}
+
+\section{RSA Lab}
+I will be using two prime numbers, $p$=227 and $q$=191.
+Here are the modulus and Euler totient, Modulus: 43357, Euler Totient:42940
+Using these values I can generate a public and private key pair.
+For my public key, I will pick a value $e$ such that it has no common factors (except 1) with the Euler totient
+My $e$ is: 27
+For my private key, I will find a value $d$ such that $d*e mod $Euler Totient = 1
+My private key is: 12723
+
+Since I do not have a partner, I will encrypt a message with my own public key, and then decrypt it with my private key.
+
+My message to encrypt will be "HELLOHELLOHELLO"
+The conversion process is as follows:
+
+
+\newpage
+
+
+\section{Problem 21.6 from the textbook}
+Parts a and c only.
+\newpage
+
+\section{Review Questions}
+21.1 to 21.5
+
+\newpage
+
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+
+\end{document}
