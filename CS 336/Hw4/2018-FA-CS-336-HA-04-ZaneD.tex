@@ -1,0 +1,128 @@
+\documentclass[14pt]{article}
+
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Symmetric Encryption}
+
+\author{Zane Durkin\\
+    University of Idaho}
+\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Author(s) Name(s)}]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] HA-04
+\item [Work Name] Symmetric Encryption
+\item [Work Version] Version 1
+\item [Long Date] Sunday, 16 September 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+\begin{abstract}
+In this article I will be going over the steps of AES, and a few review questions from the book \cite{stallings}.
+\end{abstract}
+
+\section{AES Shift Cipher}
+For this section I will encrypt and decrypt "ZANE" using a shift cipher. The shift cipher I will be using is a more common one known as the Cesare Cipher. For this cipher I will shift each letter down the alphabet (and then looping back around at the end) by a set number of characters.\\
+I will be using the number 15 as my key, so the letter A will become the letter 15 characters down the alphabet: P\\
+So with this cipher, "ZANE" becomes: "OPCT".
+
+to decrypt the cipher, simply shift the letters the opposite direction in the alphabet with the same key. so P becomes A.\\
+so "OPCT" will decrypt to "ZANE".
+\section{AES Round}
+A single round of AES (Not including the first or last round), have four main steps.\\
+\begin{enumerate}
+\item The first setup is Substitute Bytes. This step is a substitution steps since it takes the values found in the S-box and substitutes the data values with the S-box values.\\
+\item The second step is Shit Rows. This step is a permutation step since it doesn't require data to be replaces, but rather moved around in the matrix.\\
+\item The third step is Mix Columns. This step is a permutation since it replaces data in the matrix with values that have been shifted (multiplied) from their original values, but data itself has not been substituted for another value.\\
+\item The fourth and final step is Add Round Key. This step is a substitution since it require the use of an external matrix (the key) to exchange the values in the data matrix. Each value in the data matrix is xORed with the corresponding value in the key matrix, and the result is substituted for the original value in the data matrix. \\
+\end{enumerate}
+\section{AES S-Box}
+Assuming I have the starting state block:\\
+\begin{center}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    A1 & 49 & FF & 00\\
+    \hline
+    56 & 2C & 00 & FF\\
+    \hline
+    C9 & 3B & FF & 00\\
+    \hline
+    3B & 51 & 00 & FF\\
+    \hline
+  \end{tabular}\\
+\end{center}
+I can run it through the Substitute Bytes set of AES, and swap out the data values with their corresponding value in the S-box. This will look like:\\
+\begin{center}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    32 & 3B & 16 & 63\\
+    \hline
+    B1 & 71 & 63 & 16\\
+    \hline
+    DD & BE & 16 & 63\\
+    \hline
+    E2 & D1 & 63 & 16\\
+    \hline
+  \end{tabular}\\
+\end{center}
+\section{AES Add Round Key}
+Assuming I have a Key block as shown:\\
+\begin{center}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    AA & 54 & B1 & 85\\
+    \hline
+    00 & 00 & 00 & 00\\
+    \hline
+    00 & 00 & 00 & 00\\
+    \hline
+    00 & 00 & 00 & 00\\
+    \hline
+  \end{tabular}\\
+\end{center}
+I can apply the Add Round Key method to the Data Block from the previous section. To do this I will XOR each box in the key block with the corresponding box in the data box. The output will look as follows:\\
+\begin{center}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    98 & 6F & A7 & E6\\
+    \hline
+    B1 & 71 & 63 & 16\\
+    \hline
+    DD & BE & 16 & 63\\
+    \hline
+    E2 & D1 & 63 & 16\\
+    \hline
+  \end{tabular}\\
+\end{center}
+\section{Review Questions}
+\subsection{Question 20.1}
+\subsection{Question 20.2}
+\subsection{Question 20.3}
+\subsection{Question 20.4}
+\subsection{Question 20.5}
+\subsection{Question 20.6}
+\subsection{Question 20.7}
+\subsection{Question 20.8}
+\subsection{Question 20.9}
+\subsection{Question 20.10}
+\subsection{Question 20.11}
+\subsection{Question 20.12}
+
+
+
+\newpage
+
+
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+
+\end{document}
