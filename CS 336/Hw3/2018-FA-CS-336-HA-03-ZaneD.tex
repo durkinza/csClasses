@@ -1,4 +1,4 @@
-\documentclass[14pt]{article}
+\documentclass[12pt]{article}
 
 \usepackage{enumitem}
 \usepackage{calc}
@@ -32,10 +32,10 @@ In this article I will be going over a few problems from the Textbook \cite{stal
 
 \section{Problems from the end of Chapter 02}
 
-\subsection{Problem  2.1}
+\subsection{Problem  2.1 \cite[p.~68]{stallings}}
 Although this process would work to verify that both participating parties have the same, or different, secrete key, this process creates a major vulnerability for the security of the secret key. Since the random key, and the XOR of the random key and secret key are being sent across a channel unencrypted, it is possible to determine what the secret key is by preforming an XOR of the random string and the XOR of the random and secret string.
 
-\subsection{Problem  2.2}
+\subsection{Problem  2.2 \cite[p.~68]{stallings}}
 \begin{enumerate}[label=(\alph*)]
 \item For the encryption of the message using double transposition I will be ignoring spaces and other punctuation on the key works and message, and I will count douplicate letters in the keywords from left to right. The plaintext string is written horizontally across a matrix, with each column corisponding to a letter in the key word.
 \newline
@@ -117,10 +117,10 @@ w & o & f & r & i & e & n & d & s\\
 \item This technique would be useful when you need to encrypt a message to send over a non-secure network, and when both parties have already securely shared the keywords prior to the encryption of the message.
 \end{enumerate}
 
-\subsection{Problem  2.6}
+\subsection{Problem  2.6 \cite[p.~69]{stallings}}
 Given a hash function that maps an arbitrary bit length message into an n-bit hash value, it is false that for every x, x' where x $\neq$ x' there will always be H(x) $\neq$ H(x'). This is because an arbitratry bit length message that is larger than the fixed n-bit hash output would require that there is some collisons in hash values. The hashing function must loss some of the data of the longer message inorder to match the fixed length hash output, this loss in data would allow two different messages to have the same hash output after the extra data has been lost. 
 
-\subsection{Problem  2.3}
+\subsection{Problem  2.3 \cite[p.~69]{stallings}}
 \begin{enumerate}[label=(\alph*)]
 \item the decryption equation would be an inverse of the encryption equation, as shown below
 \newline
@@ -135,7 +135,7 @@ where P = plaintext, C = ciphertext, K = secret key, $K_{1}$ = rightmost 64 bits
 
 \section{Review questions from Chapter 02}
 
-\subsection{Problem  2.1}
+\subsection{Problem  2.1 \cite[p.~68]{stallings}}
 The essential ingredients of a symmetric cipher are:
 \begin{itemize}
 \item Plain Text
@@ -145,17 +145,17 @@ The essential ingredients of a symmetric cipher are:
 \item The Decryption Algorithm
 \end{itemize}
 
-\subsection{Problem  2.2}
+\subsection{Problem  2.2 \cite[p.~68]{stallings}}
 Only a single key is required for two people to communicate via a symmetric cipher.
 
-\subsection{Problem  2.3}
+\subsection{Problem  2.3 \cite[p.~68]{stallings}}
 The two principal requirements for the secure use of a symmetric encryption are
 \begin{itemize}
 \item The secret key must be shared privately between only the two members before communication.
 \item The algorithm must be strong enough to not be reversed without the key
 \end{itemize}
 
-\subsection{Problem  2.4}
+\subsection{Problem  2.4 \cite[p.~68]{stallings}}
 The Three approaches to message authentication are:
 \begin{itemize}
 \item The message is sent with a message authentication tag to all machines that need the data. There is one machine on the network that is responsible for authenticating the message using the attached message authentication tag. If there is a problem with the message, the authenticating device will broadcast to all machines that the message was not authenticated.
@@ -163,13 +163,13 @@ The Three approaches to message authentication are:
 \item Authentication with the program in plaintext. To reduce the resources required to decrypt the program every time. The message could contain an additional authentication tag to be used fro integrity checking whenever needed.
 \end{itemize}
 
-\subsection{Problem  2.5}
+\subsection{Problem  2.5 \cite[p.~68]{stallings}}
 A Message Authentication code is a one way hashing of a message using a secret key that has been shared before hand in a secure fashion. The MAC is attached with the message, and authenticity can be assured by the client by re-hashing the message with the same secret key and then comparing with the MAC. 
 
-\subsection{Problem  2.6}
+\subsection{Problem  2.6 \cite[p.~68]{stallings}}
 Figure 2.3 is a diagram of the use of a Message Authentication Code. The figure shows that the message is combined with a key 'K' to produce a MAC. The MAC is then attached to the end of the message and transmitted to the receiver. The receiver then spates the message from the MAC and re-generated the MAC with the message and key. After generating the new MAC, it is compared with the given MAC to verify the message's authenticity.
 
-\subsection{Problem  2.7}
+\subsection{Problem  2.7 \cite[p.~68]{stallings}}
 In order for a hash function to be useful for message authentication it must have the following functions:
 \begin{itemize}
 \item It can be applied to any block size of data.
@@ -180,7 +180,7 @@ In order for a hash function to be useful for message authentication it must hav
 \item For any value of x, it is computationally in feasible to find a value y that will match H(x)=H(y). (collision resistant)
 \end{itemize}
 
-\subsection{Problem  2.8}
+\subsection{Problem  2.8 \cite[p.~68]{stallings}}
 The principle ingredients of public-key cryptography are 
 \begin{itemize}
 \item Plain text
@@ -190,7 +190,7 @@ The principle ingredients of public-key cryptography are
 \item Decryption Algorithm 
 \end{itemize} 
 
-\subsection{Problem  2.9}
+\subsection{Problem  2.9 \cite[p.~68]{stallings}}
 Three uses of a public key cryptosystem are:
 \begin{itemize}
 \item Digital Signature. A public key cryptosystem can be used to sign a message to verify that the message came from the person who has the private key. 
@@ -198,16 +198,16 @@ Three uses of a public key cryptosystem are:
 \item Encryption of Secret keys. The use of the Private key to encrypt a message can be done. The encrypted message can then be decrypted by the public key pair.  
 \end{itemize}
 
-\subsection{Problem  2.10}
+\subsection{Problem  2.10 \cite[p.~68]{stallings}}
 The difference between a private key and a secret key is that a private key is used  in asymetric encryptions and is often the counter part to a public key. While a secret key is on a key that is only known by participating parties in a symmetric encryption. 
 
-\subsection{Problem  2.11}
+\subsection{Problem  2.11 \cite[p.~68]{stallings}}
 A digital signature is the use of a private key to encrypt  a hash of a message to prove that the message was created by the owner of the private key. This is useful for verifying that a message has not been forged by a third party, given that the private key has been properly secured. 
 
-\subsection{Problem  2.12}
+\subsection{Problem  2.12 \cite[p.~68]{stallings}}
 A public key certificate is a list of digital signatures that creates a chain of trust. The certificate verifies that a public key is owned by the proper party, because the public key is signed by a third party who has already verified the owner ship of the public key. The certificate is ultimatley trusted if you trust the Certificate authority at the end of the chain, or anyone prior on the chain.
 
-\subsection{Problem  2.13}
+\subsection{Problem  2.13 \cite[p.~68]{stallings}}
 Public key encryption is useful for distributing a secret key because it gives a way for a secret key to be shared without a prior exchange between the two parties. The parties can encrypt a secret key using the other's public key (after verifing the public keys using a certificate authority). This ensures that secret key is kept confidencital while it is being exchanged.
 
 
