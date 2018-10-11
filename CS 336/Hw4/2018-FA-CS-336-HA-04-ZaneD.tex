@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[14pt]{extarticle}
 
 \usepackage{enumitem}
 \usepackage{calc}
@@ -30,14 +30,14 @@
 In this article I will be going over the steps of AES, and a few review questions from the book \cite{stallings}.
 \end{abstract}
 
-\section{AES Shift Cipher}
+\section{AES Shift Cipher \cite{bblearn}}
 For this section I will encrypt and decrypt "ZANE" using a shift cipher. The shift cipher I will be using is a more common one known as the Cesare Cipher. For this cipher I will shift each letter down the alphabet (and then looping back around at the end) by a set number of characters.\\
 I will be using the number 15 as my key, so the letter A will become the letter 15 characters down the alphabet: P\\
 So with this cipher, "ZANE" becomes: "OPCT".
 
 to decrypt the cipher, simply shift the letters the opposite direction in the alphabet with the same key. so P becomes A.\\
 so "OPCT" will decrypt to "ZANE".
-\section{AES Round}
+\section{AES Round \cite{bblearn}}
 A single round of AES (Not including the first or last round), have four main steps.\\
 \begin{enumerate}
 \item The first setup is Substitute Bytes. This step is a substitution steps since it takes the values found in the S-box and substitutes the data values with the S-box values.\\
@@ -45,7 +45,7 @@ A single round of AES (Not including the first or last round), have four main st
 \item The third step is Mix Columns. This step is a permutation since it replaces data in the matrix with values that have been shifted (multiplied) from their original values, but data itself has not been substituted for another value.\\
 \item The fourth and final step is Add Round Key. This step is a substitution since it require the use of an external matrix (the key) to exchange the values in the data matrix. Each value in the data matrix is xORed with the corresponding value in the key matrix, and the result is substituted for the original value in the data matrix. \\
 \end{enumerate}
-\section{AES S-Box}
+\section{AES S-Box \cite{bblearn}}
 Assuming I have the starting state block:\\
 \begin{center}
   \begin{tabular}{|c|c|c|c|}
@@ -74,7 +74,7 @@ I can run it through the Substitute Bytes set of AES, and swap out the data valu
     \hline
   \end{tabular}\\
 \end{center}
-\section{AES Add Round Key}
+\section{AES Add Round Key \cite{bblearn}}
 Assuming I have a Key block as shown:\\
 \begin{center}
   \begin{tabular}{|c|c|c|c|}
