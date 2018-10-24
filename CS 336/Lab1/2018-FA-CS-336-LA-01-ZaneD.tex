@@ -1,0 +1,104 @@
+\documentclass[14pt]{extarticle}
+
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+	backgroundcolor=\color{lbcolor},
+	tabsize=4,
+	rulecolor=,
+	language=bash,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        %keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+\usetikzlibrary{trees}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Buffer Overflows Classic}
+
+\author{Zane Durkin\\
+    University of Idaho}
+\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Author(s) Name(s)}]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] LA-01
+\item [Work Name] Buffer Overflows Classic
+\item [Work Version] Version 1
+\item [Long Date] Wednesday, 24 October 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+\begin{abstract}
+In this article I will be explaining in detail the Tasks I preformed during the SEED security lab.
+\end{abstract}
+
+\section{Setting up Lab Environment}
+In order to preform the classic stack overflow attack, some of the countermeasures will need to be disabled. These countermeasures (listed in sub sections below) are enabled in the Ubuntu operating system, and many others, by default. These security countermeasures are in place to make stack overflow attacks difficult \cite{seed-bof}.
+
+\subsection{Address Space Randomization}
+Address space Randomization is used to change the starting address of the heap and stack for every run of the program. This security mechanism makes guessing the address of your overflow attack difficult and unpredictable. To make this lab easier, I will disable this using the following command \cite{seed-bof}.
+\begin{lstlisting}[language=bash]
+sudo -w kernel.randomize_va_space=0
+\end{lstlisting}
+This command will remove the randomization of the starting address for the heap and stack. This makes it much easier to figure out the address I need to use for my exploit, since it will be the same address every time I run my code.
+
+\subsection{Non-Executable Stack}
+By default gcc disables execution of code on the stack. However, since I will be placing my exploit code on the stack, I will need to be able to execute code on the stack for the exploit to work. So to allow for execution of things on the stack I will need to add a flag to gcc when compiling my vulnerable code \cite{seed-bof}.
+To Execute code on the stack, my compile command will look like this \cite{seed-bof}:
+\begin{lstlisting}[language=bash]
+   gcc -z execstack -o test test.c
+\end{lstlisting}
+And for non-executable stack I can use the following command (although gcc does this by default) \cite{seed-bof}:
+\begin{lstlisting}[language=bash]
+   gcc -z nonexecstack -o test test.c
+\end{lstlisting}
+
+\subsection{Configuring /bin/sh}
+For the current version of Ubuntu, the /bin/sh command is a symbolic link to the /bin/dash shell. In this newer version of Ubuntu (version 16.04) the dash shell has a measure that prevents running the program from a user id that is different than the one of the user who initially ran the program. This means it will prevent running it as root, if I am not root already (or any other user). In order to make the bufferoverflow useful for switching user accounts, I will need a shell that does not prevent running as a Set-uid program. ZSH is a shell that does not have this countermeasure, so it will make a great substitute for the dash shell. To swith the symbolic link of /bin/sh from dash to zsh, I will first need to remove the current symbolic link to dash \cite{seed-bof}:
+\begin{lstlisting}[language=bash]
+  sudo rm /bin/sh
+\end{lstlisting}
+Now I need to make a new symbolic link from /bin/sh to the zsh shell. This can be done as shown \cite{seed-bof}:
+\begin{lstlisting}[language=bash]
+  sudo ln -s /bin/zsh /bin/sh
+\end{lstlisting}
+So now that the command /bin/sh will create a zsh shell instead of the dash shell, I will be able to run shell as a set-uid program in my exploit.
+
+\section{Task 1}
+\subsection{Running Shellcode}
+  Before I jump into running the attack, I first need to understand how the exploit code works
+
+\newpage
+
+
+
+\newpage
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+\end{document}

@@ -22,7 +22,7 @@
 \item [Course Title] Intro. to Information Assurance
 \item [Work Number] HA-04
 \item [Work Name] Symmetric Encryption
-\item [Work Version] Version 1
+\item [Work Version] Version 2
 \item [Long Date] Sunday, 16 September 2018
 \item [Author(s) Name(s)] Zane Durkin
 \end{description}
@@ -40,10 +40,10 @@ so "OPCT" will decrypt to "ZANE".
 \section{AES Round \cite{bblearn}}
 A single round of AES (Not including the first or last round), have four main steps.\\
 \begin{enumerate}
-\item The first setup is Substitute Bytes. This step is a substitution steps since it takes the values found in the S-box and substitutes the data values with the S-box values.\\
-\item The second step is Shit Rows. This step is a permutation step since it doesn't require data to be replaces, but rather moved around in the matrix.\\
-\item The third step is Mix Columns. This step is a permutation since it replaces data in the matrix with values that have been shifted (multiplied) from their original values, but data itself has not been substituted for another value.\\
-\item The fourth and final step is Add Round Key. This step is a substitution since it require the use of an external matrix (the key) to exchange the values in the data matrix. Each value in the data matrix is xORed with the corresponding value in the key matrix, and the result is substituted for the original value in the data matrix. \\
+\item The first setup is Substitute Bytes. This step is a substitution steps since it takes the values found in the S-box and substitutes the data values with the S-box values \cite[p.~645]{stallings}.\\
+\item The second step is Shit Rows. This step is a permutation step since it doesn't require data to be replaces, but rather moved around in the matrix \cite[p.~645]{stallings}.\\
+\item The third step is Mix Columns. This step is a permutation since it replaces data in the matrix with values that have been shifted (multiplied) from their original values, but data itself has not been substituted for another value \cite[p.~646]{stallings}.\\
+\item The fourth and final step is Add Round Key. This step is a substitution since it require the use of an external matrix (the key) to exchange the values in the data matrix. Each value in the data matrix is xORed with the corresponding value in the key matrix, and the result is substituted for the original value in the data matrix \cite[p.~646]{stallings}. \\
 \end{enumerate}
 \section{AES S-Box \cite{bblearn}}
 Assuming I have the starting state block:\\
@@ -60,7 +60,7 @@ Assuming I have the starting state block:\\
     \hline
   \end{tabular}\\
 \end{center}
-I can run it through the Substitute Bytes set of AES, and swap out the data values with their corresponding value in the S-box. This will look like:\\
+I can run it through the Substitute Bytes set of AES, and swap out the data values with their corresponding value in the S-box \cite[p.~649]{stallings}. This will look like:\\
 \begin{center}
   \begin{tabular}{|c|c|c|c|}
     \hline
@@ -75,7 +75,7 @@ I can run it through the Substitute Bytes set of AES, and swap out the data valu
   \end{tabular}\\
 \end{center}
 \section{AES Add Round Key \cite{bblearn}}
-Assuming I have a Key block as shown:\\
+Assuming I have a Key block as shown:\cite{bblearn}\\
 \begin{center}
   \begin{tabular}{|c|c|c|c|}
     \hline
@@ -89,7 +89,7 @@ Assuming I have a Key block as shown:\\
     \hline
   \end{tabular}\\
 \end{center}
-I can apply the Add Round Key method to the Data Block from the previous section. To do this I will XOR each box in the key block with the corresponding box in the data box. The output will look as follows:\\
+I can apply the Add Round Key method to the Data Block from the previous section. To do this I will XOR each box in the key block with the corresponding box in the data box \cite[p.~651]{stallings}. The output will look as follows:\\
 \begin{center}
   \begin{tabular}{|c|c|c|c|}
     \hline
@@ -105,7 +105,7 @@ I can apply the Add Round Key method to the Data Block from the previous section
 \end{center}
 \section{Review Questions}
 \subsection{Question 20.1 \cite[p.~664]{stallings}}
-A symmetric cipher requires a few main ingredients:
+A symmetric cipher requires a few main ingredients \cite[p.~638]{stallings}:
 \begin{itemize}
   \item plaintext, There must be something that needs to be encrypted.
   \item Encryption Algorithm, The process which will encrypt the plain text.
@@ -114,23 +114,23 @@ A symmetric cipher requires a few main ingredients:
   \item Decryption Algorithm, The reverse of the encryption algorithm.
 \end{itemize}
 \subsection{Question 20.2 \cite[p.~664]{stallings}}
-The two basic functions used in encryption algorithms are substitution and transposition.
+The two basic functions used in encryption algorithms are substitution and transposition \cite[p.~639]{stallings}.
 \subsection{Question 20.3 \cite[p.~664]{stallings}}
-Only one key is required for two people to communicate via a symmetric cipher. The same key is used for the encryption and decryption process.
+Only one key is required for two people to communicate via a symmetric cipher. The same key is used for the encryption and decryption process \cite[p.~639]{stallings}.
 \subsection{Question 20.4 \cite[p.~664]{stallings}}
-Block ciphers and stream ciphers differ by their algorithm, block ciphers encrypt a set amount of bits at a time, while stream ciphers encrypt a continuous stream of bits.
+Block ciphers and stream ciphers differ by their algorithm, block ciphers encrypt a set amount of bits at a time, while stream ciphers encrypt a continuous stream of bits \cite[p.~651]{stallings}.
 \subsection{Question 20.5 \cite[p.~664]{stallings}}
-The two general approaches to attacking a cipher are brute forcing, and cryptanalysis.
+The two general approaches to attacking a cipher are brute forcing, and cryptanalysis \cite[p.~639]{stallings}.
 \subsection{Question 20.6 \cite[p.~664]{stallings}}
-Some block ciphers use encryption and decryption to enhance the security of the algorithm.
+Some block ciphers use encryption and decryption to enhance the security of the algorithm \cite[p.~644]{stallings}.
 \subsection{Question 20.7 \cite[p.~664]{stallings}}
-Triple encryption is running the same algorithm three times on the same string, feeding the output of the first encryption into the input of the second and so on.
+Triple encryption is running the same algorithm three times on the same string, feeding the output of the first encryption into the input of the second and so on \cite[p.~644]{stallings}.
 \subsection{Question 20.8 \cite[p.~664]{stallings}}
-The middle portion of 3DES is decryption to allow for the decryption of the old single encrypted DES.
+The middle portion of 3DES is decryption to allow for the decryption of the old single encrypted DES \cite[p.~644]{stallings}.
 \subsection{Question 20.9 \cite[p.~664]{stallings}}
-Link encryption is used in a network to secure traffic coming from a user to a network relay. Each relay will have it's own encryption for communication to help prevent the tracking of a packet as it moves throughout the network. End-to-End encryption is used to encrypt data from the original send to the intended final receiver, so each relay cannot determine what is in the packet has it is relayed throughout the network.
+Link encryption is used in a network to secure traffic coming from a user to a network relay. Each relay will have it's own encryption for communication to help prevent the tracking of a packet as it moves throughout the network. End-to-End encryption is used to encrypt data from the original send to the intended final receiver, so each relay cannot determine what is in the packet has it is relayed throughout the network \cite[p.~661]{stallings}.
 \subsection{Question 20.10 \cite[p.~664]{stallings}}
-There are many ways in which two parties can share secret keys.
+There are many ways in which two parties can share secret keys \cite[p.~663]{stallings}:
 \begin{itemize}
 \item A key can be selected by the first party, and physically given to the second party
 \item A key can be selected by a third party and physically given to both the first and second party.
@@ -138,9 +138,9 @@ There are many ways in which two parties can share secret keys.
 \item If the two parties have an encrypted connection to a third party, they could share a secret key using the third party as a medium.
 \end{itemize}
 \subsection{Question 20.11 \cite[p.~664]{stallings}}
-The difference between a session key and a master key is that a session key is only used for the current session, while a master key is used to share session keys.
+The difference between a session key and a master key is that a session key is only used for the current session, while a master key is used to share session keys \cite[p.~663]{stallings}.
 \subsection{Question 20.12 \cite[p.~664]{stallings}}
-A Key Distribution Service (KDS) is used as a third party to generate and transmit session keys between two parties.
+A Key Distribution Service (KDS) is used as a third party to generate and transmit session keys between two parties \cite[p.~663]{stallings}.
 
 
 
