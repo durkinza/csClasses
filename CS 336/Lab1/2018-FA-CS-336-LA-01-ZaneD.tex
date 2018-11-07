@@ -69,7 +69,7 @@ sensitive=false
 \item [Course Title] Intro. to Information Assurance
 \item [Work Number] LA-01
 \item [Work Name] Buffer Overflows Classic
-\item [Work Version] Version 1
+\item [Work Version] Version 1.1
 \item [Long Date] Sunday, 28 October 2018
 \item [Author(s) Name(s)] Zane Durkin
 \end{description}
@@ -554,6 +554,51 @@ I will compile the stack.c program with the noexecstack option to prevent the ex
 gcc -o stack -fno-stack-protector -z noexecstack stack.c
 \end{lstlisting}
 With the stack set to be non-executable, I receive a segmentation fault when attempting to execute the program. This option prevents execution of the exploit code that is written to the stack. This can be overcome by putting the executable code elsewhere, like in a register or somewhere else. Note that this does not prevent the buffer overflow, just the execution of the stack\cite{seed-bof}.
+
+\section{Fixing the vulnerability}
+To fix the vulnerabilities in the stack code, I need to change the strcpy function to one that is more secure. The strcpy is vulnerable because it relies on the source string to end with a null byte, and for the null byte to be placed early enough for the buffer that is being copied too to not be overfilled with data. The strncpy attempts to fix this flaw by requiring the maximum number of bytes that should be copied as a parameter to the function. This allows the function to prevent overflowing the destination buffer when a null bytes is not found in the source string. 
+After applying the fix, this is how the vulnerable code will look:
+\begin{lstlisting}[language=c]
+/* Vunlerable program (fixed): stack.c */
+
+// Just as before, These libraries are needd to include the execve system function
+#include <stdlib.h>
+#include <stdio.h>
+// This libarary contains the vulnerable function strcpy.
+// This function will copy a string from one character array to another, and it will only stop when it sees a null value.
+// However, if string it is provided is longer than the desination buffer with no null values to end it, then the strcpy function will continue copying values from the source buffer into the destination, even if it overflows the destination buffer.
+// If the destination buffer is overflown, then the strcpy will continue writing the source values directly onto the stack.
+// This is the vulnerability that will be exploited. If the overflow is long enough, it will be possible to change the return address of the function. And if we place our own assembly code in the stack, I can set the return address to return to the exploit code.
+#include <string.h>
+int bof(char *str)
+{
+   //  This is the target buffer that will be overflown during out exploit
+    char buffer[24];
+    /* The following statement has a buffer overflow problem */
+    // copy up to one less than the full length of the buffer
+    strncpy(buffer, str, 23);
+    // since strncpy doen't add a null byte to the end, be sure to add one here by hand.
+    str[23]='\n';
+    // I added this printf function to let me know where I can expect to find the start of the stack.
+    // I originally planned on finding the location of buffer from gdb, but gdb adds in it's own acm
+    printf("%p\n", buffer );
+    return 1;
+}
+int main(int argc, char **argv)
+{
+    // This buffer is being filled with the value in badfile. And it is much larger than the buffer in bof.
+    char str[517];
+    FILE *badfile;
+    badfile = fopen("badfile", "r");
+    // This will read in the exploit code located in badfile, and place it  in the str variable. later this code will be placed on the stack in the bof function.
+    fread(str, sizeof(char), 517, badfile);
+   // calling the bof function with a parameter that is a char array of 517 bytes ( much larger than the 24 byte buffer in bof)
+    bof(str);
+    // If the bof function returns properly, that means I didn't overwrite the return address correctly. This will let me know that it returned to the main function.
+    printf("Returned Properly\n");
+    return 1;
+}
+\end{lstlisting}\cite{seed-bof}\\
 
 \newpage
 \bibliographystyle{ACM}

@@ -442,6 +442,41 @@ Aborted
 \end{lstlisting}
 This shows that the attack couldn't bypass stack guard's protection. Stack guard places canaries around the return address (along with other place in the stack). These canaries must be overwritten in a buffer overflow attack, and stack guard runs a check to validate these canaries before allow the leave or return commands to execute. This makes it very hard to bypass this mitigation. I was not able to bypass this mitigation, but it could be possible to bypass if you are able to guess the values of the canaries and overwrite them with the same value while doing the buffer overflow. This would convince stack guard that the stack has not been effected, and will allow the return command to execute.
 
+\section{Fixing the vulnerability}
+To fix the vulnerabilities in the retlib code, I need to change the fread function to use the appropriate size for the given buffer. Currently the fread is told to read in one character at a time, 40 times. This means after the function has ended, it will have tried to copy 40 bytes into the buffer (which is only 12 bytes long). This means that the fread function is being told to overflow the buffer. To fix this issue, I will change the function's parameter from 40, to 11 bytes, and then add a null value to the end of the string (since fread does not do this by default). After these adjustments, the relib.c program will look like this:
+\begin{lstlisting}[language=c]
+/* retlib.c (fixed)*/
+// include standard libraries (These will hold the system calls I'll use in the exploit)
+// These libraries are also needed to read in the badfile
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+// This was the vulnerable function
+int bof(FILE *badfile)
+{
+	// This is the buffer that will be overflown.
+	char buffer[12];
+	/* The following statement has a buffer overflow problem */
+	// fread will now only read up to one less than the length of the buffer
+	fread(buffer, sizeof(char), 11, badfile);
+	// to ensure that the buffer ends with a null byte, I will explicitly add one as the last character
+	buffer[11]='\n';
+	// return with a clean exit
+	return 0;
+}
+int main(int argc, char **argv) {
+	// This is the pointer to the badfile
+	FILE *badfile;
+	// The badfile will require read access at minimum.
+	badfile = fopen("badfile", "r");
+	// here is where bof is being called, with the badfile as a parameter
+	bof(badfile);
+	// if this line returns, then the exploit failed.
+	printf("Returned Properly\n");
+	fclose(badfile);
+	return 0;
+}
+\end{lstlisting}
 
 \newpage
 \bibliographystyle{ACM}
