@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+    web:
+        build: .
+        image: cs360
+        ports:
+         - "2323:80"
+        
