@@ -37,12 +37,17 @@ function heading(){
 <?php
 }
 
-function footing(){
+function scripts(){
 ?>
 	</div>
 	<script src="<?php echo(ROOTPATH);?>/static/js/vendor/jquery-3.3.1.min.js"></script>
 	<script src="<?php echo(ROOTPATH);?>/static/js/vendor/bootstrap.min.js"></script>
 	<script src="<?php echo(ROOTPATH);?>/static/js/main.js"></script>
+<?php
+}
+
+function footing(){
+?>
 	</body>
 </html>
 <?php
