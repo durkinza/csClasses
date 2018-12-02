@@ -63,7 +63,7 @@ function footing(){
     <footer class=" text-muted">
 	  <hr/>
 	  <div>
-        <p>Build by Zane Durkin (durk7832)</p>
+        <p>Developed by Zane Durkin (durk7832)</p>
 	  </div>
     </footer>
 	</body>
