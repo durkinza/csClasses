@@ -6,6 +6,7 @@ class Session extends Course{
 
 	// session info
 	public $id;
+	public $courseId;
 	public $room;
 	public $time;
 	public $semester;

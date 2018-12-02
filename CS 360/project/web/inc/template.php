@@ -1,5 +1,10 @@
 <?php
 require_once('config.php');
+header("Expires: Tue, 01 Jan 2000 00:00:00 GMT");
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
 function heading(){
 ?>
@@ -12,28 +17,35 @@ function heading(){
 	</head>
 	<body>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
-	  <a class="navbar-brand" href="<?php echo(ROOTPATH);?>/">CS 360</a>
-	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-	    <span class="navbar-toggler-icon"></span>
-	  </button>
-	  <div class="collapse navbar-collapse" id="navbarNav">
-	    <ul class="navbar-nav">
-	      <li class="nav-item active">
-	        <a class="nav-link" href="<?php echo(ROOTPATH);?>/">Home</a>
-	      </li>
-	      <li class="nav-item">
-	        <a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page2</a>
-	      </li>
-	      <li class="nav-item">
-	        <a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page3</a>
-	      </li>
-	      <li class="nav-item">
-	        <a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page4</a>
-	      </li>
-	    </ul>
-	  </div>
+		<a class="navbar-brand" href="<?php echo(ROOTPATH);?>/">CS 360</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNav">
+			<ul class="nav navbar-nav">
+				<li class="nav-item active">
+					<a class="nav-link" href="/">Home</a>
+				</li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Students
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>add_student.php">Add Student</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>del_student.php">Remove Student</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>edit_student.php">Edit Student</a>
+          </div>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page3</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page4</a>
+				</li>
+			</ul>
+		</div>
 	</nav>
-	<div class="container">
+	<div class="container" style="min-height:90vh;">
 <?php
 }
 
@@ -48,6 +60,12 @@ function scripts(){
 
 function footing(){
 ?>
+    <footer class=" text-muted">
+	  <hr/>
+	  <div>
+        <p>Build by Zane Durkin (durk7832)</p>
+	  </div>
+    </footer>
 	</body>
 </html>
 <?php

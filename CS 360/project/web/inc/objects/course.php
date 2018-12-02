@@ -11,6 +11,7 @@ class Course{
     public $name;
 	public $num_preReqs;
 	public $preReq = array();
+	public $required = array();
  
     // constructor with $db as database connection
     public function __construct($db, $courseId=null){
@@ -76,5 +77,14 @@ class Course{
 		}
 		// return zero preReqs
 		return 0;
+	}
+
+	public function build_required(){
+		if(isset($this->id)){
+			throw new Exception('Course id not set');
+		}
+		foreach($this->preReq as $key => $req){
+			$this->required[$key] = new Course($this->conn, $req['courseId']);
+		}
 	}
 }

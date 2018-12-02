@@ -4,4 +4,4 @@ $DB_PORT = 3306;
 $DB_USER = 'cs360';
 $DB_NAME = 'CS360';
 // the password is generated and set on docker build
-$DB_PASS = '<password_web>';
+$DB_PASS = '82530560e1cb998d2336b5932749fdd278488dbec905e401890e56ef00dceb047cd9ba22be482d68fc9680b14ef125c548f314f6bf571335c15d859f6f357a004803260402bfdf82597864d7ef708c1c9d76ead34016fb0696993884bc442be64f899db1';

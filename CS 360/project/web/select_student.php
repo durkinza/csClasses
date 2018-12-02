@@ -2,18 +2,18 @@
 define('ROOTPATH', '');
 require_once('inc/common.php');
 
-$students = $conn->query('SELECT id,fName,lName FROM Students');
+$forward = isset($_GET['forward'])?$_GET['forward']:'/';
 
-$careers = $conn->query('SELECT id,name FROM Careers');
+$students = $conn->query('SELECT id,fName,lName FROM Students');
 
 heading();
 ?>
 <br/>
-<h1>Schedule Builder</h1>
-<p>Select a student and career path</p>
+<h1>Select a student</h1>
+<p>Select a student</p>
 <div class="row">
 	<div class="col">
-		<form action="build_schedule.php" method="POST">
+		<form action="<?php echo($forward); ?>" method="get">
 		
 			<select name="Student" required onChange="getStudent(this);">
 				<option value="" selected disabled>No Student</option>
@@ -24,16 +24,7 @@ heading();
 				<?php }	?>
 			</select>
 		
-			<select name="Career" required onChange="getCareer(this);">
-				<option value="" selected disabled>No Career</option>
-				<?php while ($career = $careers->fetch_assoc()) { ?>
-				<option value="<?php echo $career["id"];?>">
-					<?php echo $career['name'];?>
-				</option>
-				<?php }	?>
-			</select>
-		
-			<input type="submit" value="Generate Schedule"/>
+			<input type="submit" value="select student"/>
 		</form>
 	</div>
 </div>
@@ -47,17 +38,6 @@ heading();
 				</tr>
 			</thead>
 			<tbody id="StudentCourses">
-			</tbody>
-		</table>
-	</div>
-	<div class="col-6">
-		<table id="Career">
-			<thead>
-				<tr>
-					<th>Courses needed</th>
-				</tr>
-			</thead>
-			<tbody id="CareerCourses">
 			</tbody>
 		</table>
 	</div>
@@ -84,26 +64,6 @@ function getStudent(el){
 		// insert new rows
 		for(var i=0; i<res.length; i++){
 			sc.append('<tr><td>'+res[i].session.courseId+'</td><td>'+res[i].grade+'</td></tr>');
-		}
-	});
-}
-function getCareer(el){
-	var val = $(el).val();
-	$.ajax({
-		url: '<?php echo APIPATH;?>',
-		type: 'POST',
-		data: {
-			call:'careerPath',
-			careerId: val
-		}
-	}).done(function(result){
-		var res = JSON.parse(result);
-		// clear table
-		var cc = $('#CareerCourses');
-		cc.children().remove();
-		// insert new rows
-		for(var i=0; i<res.length; i++){
-			cc.append('<tr><td>'+res[i].courseId+'</td></tr>');
 		}
 	});
 }
