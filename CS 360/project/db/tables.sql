@@ -45,7 +45,7 @@ CREATE TABLE `Offered` (
 	`room`	varchar(100) NOT NULL,
 	`time` varchar(100) NOT NULL,
 	`semester` varchar(7) NOT NULL,
-	`year`	varchar(4) NOT NULL,
+	`year`	varchar(4) NOT NULL check(year > 1900),
 	`profId` int(10) unsigned DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	KEY `courseId` (`courseId`),

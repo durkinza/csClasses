@@ -82,7 +82,7 @@ class Student {
 
     public function create($firstName, $lastName, $gradeLevel, $department){
 		if(isset($this->id)){
-			throw new Exception('Student has alread been created');
+			throw new Exception('Student has already been created');
 		}
 		$query = "INSERT INTO `Students` (`fName`, `lName`, `gradeLevel`, `department`) VALUES (?, ?, ?, ?)";
 		if($stmt = $this->conn->prepare($query)){
@@ -137,6 +137,9 @@ class Student {
 	}
 
 	public function add_taken($sessionId, $grade){
+		if(!isset($this->id)){
+			throw new Exception('Student id not set	');
+		}
 		$query='INSERT INTO `Takes` (`studentId`, `courseId`, `grade`) VALUES (?, ?, ?)';
 		if($stmt = $this->conn->prepare($query)){
 			$stmt->bind_param('iis', $this->id, $sessionId, $grade);
@@ -148,6 +151,9 @@ class Student {
 		}
 	}
 	public function remove_taken($sessionId, $grade){
+		if(!isset($this->id)){
+			throw new Exception('Student id not set');
+		}
 		$query="DELETE FROM `Takes` WHERE `studentId`=? AND `courseId`=? AND `grade`=? LIMIT 1";
 		if($stmt = $this->conn->prepare($query)){
 			$stmt->bind_param('iis', $this->id, $sessionId, $grade);

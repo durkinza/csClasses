@@ -19,8 +19,12 @@ if(isset($_POST['call'])){
 			echo json_encode($student->taken);
 			break;
 
-		case 'coursesAvailable':
-			echo json_encode('Not completed yet');
+		case 'course':
+			if(!isset($_POST['courseId'])){
+				die(json_encode(array('error'=>'courseId needed')));
+			}
+			$course = new Course($conn, $_POST['courseId']);
+			echo json_encode($course);
 			break;
 
 		case 'careerPath':

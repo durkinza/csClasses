@@ -14,7 +14,7 @@ heading();
 ?>
 <br/>
 <h1>Removing Student</h1>
-<p>Select a student and career path</p>
+<p>Select a student to remove</p>
 <div class="row">
 	<div class="col">
 		<form action="del_student.php" method="POST">

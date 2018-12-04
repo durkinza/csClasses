@@ -26,21 +26,35 @@ function heading(){
 				<li class="nav-item active">
 					<a class="nav-link" href="/">Home</a>
 				</li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Students
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+		        <li class="nav-item dropdown">
+		          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			       Students
+				  </a>
+		          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
 				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>add_student.php">Add Student</a>
 				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>del_student.php">Remove Student</a>
 				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>edit_student.php">Edit Student</a>
-          </div>
+		          </div>
 				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page3</a>
+		        <li class="nav-item dropdown">
+		          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			       Courses
+				  </a>
+		          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>add_course.php">Add Course</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>del_course.php">Remove Course</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>edit_course.php">Edit Course</a>
+		          </div>
 				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="<?php echo(ROOTPATH);?>/">Page4</a>
+		        <li class="nav-item dropdown">
+		          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			       Sessions
+				  </a>
+		          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>add_session.php">Add Session</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>del_session.php">Remove Session</a>
+				    <a class="dropdown-item" href="<?php echo(ROOTPATH);?>edit_session.php">Edit Session</a>
+		          </div>
 				</li>
 			</ul>
 		</div>
