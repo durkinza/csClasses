@@ -1,3 +1,15 @@
 .DS_Store
 a.out
 Team-Zero/
+.shrc
+.mshrc
+.ssh
+.profile
+.vim
+.vimrc
+.viminfo
+.vimpgk
+.bash_history
+.bash_profile
+.bashrc
+
