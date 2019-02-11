@@ -11,7 +11,7 @@
  ***********************************************************/
 
  #include <stdio.h>
- #define disks 10
+ #define disks 5
 
 // definitions
 int pop(int peg[disks], int &val);
@@ -46,15 +46,15 @@ int main(){
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg1, peg2);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg1, peg3);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg2, peg3);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 		}
 	}else{
 		// odd
@@ -62,21 +62,21 @@ int main(){
 		// a <--> b
 		// b <--> c
 		while(peg3[disks-1] != 1){
-		//for(int i =0; i<5; i++){
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg1, peg3);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg1, peg2);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 			if(peg3[disks-1] == 1){break;}
 			legal_move(peg2, peg3);
 			steps++;
-			print_pegs(peg1, peg2, peg3);
+			//print_pegs(peg1, peg2, peg3);
 		}
 	}
+	print_pegs(peg1, peg2, peg3);
 	printf("steps:%d\n", steps);
 
 
@@ -157,6 +157,18 @@ RUN:
 
 OUTPUT:
 
-Hello World
+[1] [0] [0]
+[2] [0] [0]
+[3] [0] [0]
+[4] [0] [0]
+[5] [0] [0]
+ p1  p2  p3
+[0] [0] [1]
+[0] [0] [2]
+[0] [0] [3]
+[0] [0] [4]
+[0] [0] [5]
+ p1  p2  p3
+steps:31
 
 ****************************************************/

@@ -25,7 +25,7 @@ int main()
 		}
 	}
 	
-	printf("done building array\n");
+	//printf("done building array\n");
 
 	// Gaussian elimination
 	for(int i = 0; i<ARR_LEN-2; i++){
@@ -33,12 +33,12 @@ int main()
 		for(int j = i+1; j<ARR_LEN-1; j++){
 			printf("2\n");
 			for(int k = i; k<=ARR_LEN; k++){
-				printf("3-%d\n", k);
+				//printf("3-%d\n", k);
 				arr[j][k] = arr[j][k]-arr[i][k]*arr[j][i] / arr[i][i];
 			}
 		}
 	}
-	printf("done\n");
+	//printf("done\n");
 }
 
 /****************************************************
@@ -49,10 +49,12 @@ gcc -Wall -o 3.out 3.cpp
 
 RUN:
 
-./3.out
+time ./3.out
 
 OUTPUT:
 
-Hello World
+real0m0.009s
+user0m0.002s
+sys0m0.000s
 
 ****************************************************/
