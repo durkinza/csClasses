@@ -13,17 +13,22 @@
  #include <stdio.h>
  
  int twon(int n);
+int steps = 0;
 
 int main(){
 	// try a few different n's
 	for(int n=0; n<10; n++){
+		steps = 0;
 		// start recusion
-		printf("2^%d = %d\n", n, twon(n));
+		printf("2^%d = %d", n, twon(n));
+		printf(" nodes=%d\n", steps);
 	}
+	
 }
 
 int twon(int n){
-		// if we are at 2^0 return 1
+	// if we are at 2^0 return 1
+	steps++;
 	if(n == 0){
 		return 1;
 	}else{
