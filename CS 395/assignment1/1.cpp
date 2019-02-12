@@ -19,10 +19,13 @@ int main(){
 	const int ARR_LEN = 25;
 	int arr[ARR_LEN] = {2, 7, 34, 83, 27, 36, 24, 13, 63, 734, 30, 235, 562, 213, 32, 68, 93, 39, 95, 72, 104, 163, 295, 150, 230};
 	int dmin = abs(arr[0]-arr[1]);
-    
+
+	// sort the array before comparison    
 	std::sort(arr, arr+ARR_LEN);
+	// compare each element with the one next to it
 	for(int i =0; i< ARR_LEN-1; i++){
-		if(abs(arr[i]-arr[i+1]) < dmin){
+		if(abs(arr[i]-arr[i+1]) < dmin){	
+			// keep track of the smallest difference
 			dmin = abs(arr[i]-arr[i+1]);
 		}
 	}

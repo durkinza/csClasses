@@ -26,17 +26,22 @@ int main()
 		}
 	}
 
-	// make it non-symetric
+	// (optinal) make it non-symetric
 	//arr[2][3] = 4;
 
+	// for each row
 	for(int i = 0; i < ARR_LEN-1; i++){
+		// for each column
 		for( int j = 1+1; j< ARR_LEN; j++){
+			// check if the value is symetric
 			if(arr[i][j] != arr[j][i]){
+				// if they are different, fail and leave
 				printf("false\n");
 				return 1;//non-zero for failed
 			}
 		}
 	}
+	// if everything was correct, return true
 	printf("true\n");
 	return 0;
 

@@ -15,15 +15,19 @@
  int twon(int n);
 
 int main(){
+	// try a few different n's
 	for(int n=0; n<10; n++){
+		// start recusion
 		printf("2^%d = %d\n", n, twon(n));
 	}
 }
 
 int twon(int n){
+		// if we are at 2^0 return 1
 	if(n == 0){
 		return 1;
 	}else{
+		// return a recusive answer
 		return twon(n-1)+twon(n-1);
 	}
 }

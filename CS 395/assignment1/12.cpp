@@ -16,11 +16,12 @@
 int isLeft(int * pointA, int * pointB, int * pointC);
 
 int main(){
-	// {x, y}
+	// {x, y} points
 	int arr[points][2] = {{1, 3}, {5, 3}, {1, 4}, {2, 7}, {3, 6}, {6, 2}, {5, 2}, {8, 4}, {8, 3}, {4, 9}};
 
 	int location;
 
+	// track if values to the left and/or right and/o collinear are present
 	bool left = false;
 	bool right = false;
 	bool collinear = false;
@@ -28,24 +29,30 @@ int main(){
 	for( int i = 0; i < points; i++ ){
 
 		for( int j = 0; j < points; j++ ){
+			// for each seperate point check
 			if( j == i ){
 				continue;
 			}
-
+			// keep track for each edge if it has values on each side
 			left = false;
 			right = false;
 			collinear = false;
+		
 			for( int k = 0; k < points; k++ ){
 				if( k == j || k == i ){
 					continue;
 				}
+				// for all other values check if it is left or right or colinear to the edge in question
 				location = isLeft(arr[i], arr[j], arr[k]);
 				//printf("points (%d, %d, %d): %d\n",i, j, k, location);
 				if(location > 0){
+					// track if it's left
 					left = true;
 				}else if(location < 0){
+					// track if it's right
 					right = true;
 				}else{
+					// track if it's collinear
 					collinear = true;
 				}
 				
@@ -53,6 +60,7 @@ int main(){
 			//printf("vals: r:%d l:%d c:%d\n", right, left, collinear);
 		
 			if((!left) || (!right)){
+				// if all values are not found on both side of left and right, then it's convex
 				printf("point %d: {%d, %d} is convex\n", i, arr[i][0], arr[i][1]);
 				break;
 			}

@@ -45,11 +45,13 @@ int main(){
 }
 
 void print_board(char board[spaces][spaces]){
+	// print A-Z
 	printf("   ");
 	for(int z=0; z<spaces; z++){
 		printf("%c ", (char)65+z);
 	}
 	printf("\n");
+	// print each row
 	for(int i=0; i<spaces; i++){
 		printf("%2d ", i+1);
 		for(int j=0; j<spaces; j++){
