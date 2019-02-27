@@ -1,7 +1,7 @@
 /***********************************************************
  * NAME: Zane Durkin
  * ID: durk7832
- * QUESTION: Asn2
+ * QUESTION: Asn2.2
  * DESCRIPTION: Write a few different sort algorithms
  ***********************************************************/
 #include <iostream>
@@ -135,9 +135,33 @@ int main(){
     selectionsort(list2, SIZE2);
     selectionsort(list3, SIZE3);
 
-    // print out final arrays
+    // print out final arrays (optional)
     //print(list1, SIZE1);
     //print(list2, SIZE2);
     //print(list3, SIZE3);
 
 }
+/****************************************************
+
+COMPILE:
+
+gcc -Wall -o 2.out 2.cpp
+
+RUN:
+
+./2.cpp
+
+
+for quicksort:
+OUTPUT:
+
+for shellsort:
+OUTPUT:
+
+for insertsort:
+OUTPUT:
+
+for selectionsort:
+OUTPUT:
+
+****************************************************/
