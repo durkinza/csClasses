@@ -116,9 +116,9 @@ void quicksort(int *arr, int left, int right){
 
 int main(){
     // run the quicksort function
-    //quicksort(list1, 0, SIZE1 - 1);
-    //quicksort(list2, 0, SIZE2 - 1);
-    //quicksort(list3, 0, SIZE3 - 1);
+    quicksort(list1, 0, SIZE1 - 1);
+    quicksort(list2, 0, SIZE2 - 1);
+    quicksort(list3, 0, SIZE3 - 1);
 
     // run the shellsort function
     //shellsort(list1, SIZE1);
@@ -131,9 +131,9 @@ int main(){
     //insertsort(list3, SIZE3);
 
     // run the selection sort functions
-    selectionsort(list1, SIZE1);
-    selectionsort(list2, SIZE2);
-    selectionsort(list3, SIZE3);
+    //selectionsort(list1, SIZE1);
+    //selectionsort(list2, SIZE2);
+    //selectionsort(list3, SIZE3);
 
     // print out final arrays (optional)
     //print(list1, SIZE1);
@@ -149,19 +149,31 @@ gcc -Wall -o 2.out 2.cpp
 
 RUN:
 
-./2.cpp
+time ./2.cpp
 
 
 for quicksort:
 OUTPUT:
+real	0m0.006s
+user	0m0.000s
+sys	    0m0.006s
 
 for shellsort:
 OUTPUT:
+real	0m0.004s
+user	0m0.004s
+sys	    0m0.000s
 
 for insertsort:
 OUTPUT:
+real	0m0.081s
+user	0m0.073s
+sys	    0m0.008s
 
 for selectionsort:
 OUTPUT:
+real	0m0.112s
+user	0m0.112s
+sys	    0m0.000s
 
 ****************************************************/
