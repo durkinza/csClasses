@@ -1,0 +1,5 @@
+Zane Durkin (durk7832)
+
+Conclusion: 
+From this attack I can conclude that the slow loris attack proves effective while using GET or POST methods. I recored both attacks in wireshark and I couldn't see a significant difference between the two methods. I would assume this is because wireshark doesn't report the effect that the requests are having on the server, it only monitors the requests on my device.
+I would expect that for servers using SSL, the POST method would prove to be a more effective attack. This is because the server would have to deal with the decryption of the post body, which would not be a significate issue with the GET method. 
