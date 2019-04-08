@@ -10,7 +10,7 @@
 #define ARRSIZE 11
 
 void findClique(int arr[][2], int k, int ret[][2]){
-    if(k < 2 || k > ARRSIZE){
+    if(k < 2 || k >= ARRSIZE){
         return;
     }
     bool cliqueNotFound = false;
@@ -19,9 +19,8 @@ void findClique(int arr[][2], int k, int ret[][2]){
     int steps = 1; // the current number of edges we are using
     // we'll know we have made a loop when curr == start
     while(start != curr){
-        for(int i = 1; i<ARRSIZE; i++){
-            if(arr[i][0] == curr){
-            };
+        for(int i = 1; i<ARRSIZE - 1; i++){
+
         }
     }
 }
