@@ -1,0 +1,3660 @@
+* Markov and Markov Reward Model Examples.
+* For a basic understanding of Markov models see
+* Chapter 8 of Trivedi's text.
+* For a basic understanding of Markov Reward Models
+* see Trivedi, et al; Performance evaluation, 1992.
+* and Muppala et al; IEEE Computer, May 1991.
+
+* Example 1:
+echo Example 1:
+* An example of an irreducible 2-state 
+* Continuous Time Markov Chain (CTMC)
+* Note that labels on the arc of a CTMC are rates, not probabilities;
+* hence they need not be <= 1; they must be > 0.
+* 
+markov m1
+0 1 1
+1 0 2
+end
+
+* We ask for the steady-state probs of being in each state.
+expr prob (m1,0), prob (m1,1)
+
+* Example 2:
+echo  Example 2:
+* A 3-state irreducible CTMC
+markov m2
+0 1 1
+1 2 1
+2 0 1
+end
+
+* We ask for the steady-state probs of being in each state.
+expr prob(m2,0), prob(m2,1), prob(m2,2)
+
+* Example 3:
+echo Example 3:
+* A 3-state model with reward rates 
+* Since the chain is not irreducible,
+* initial state probabilities are required
+markov mp
+1 2 1.0
+2 1 5.0
+2 3 1.0
+reward
+* reward rates for all the states
+1 2.0
+2 1.0
+3 0
+end
+* initial state probabilities
+1 1.0
+2 0.0
+3 0.0
+end
+
+* ask for the prob of being in state 3
+* an absorbing state at times 1 thru 10 in steps of 1
+eval ( mp ) 1  10 1 
+
+* ask for the distribution of accumulated reward
+* until absorption
+eval ( mp ) 1  10 1 reward
+
+* ask for the prob of being in state 3
+* an absorbing state at times 1 thru 10 in steps of 1
+eval ( mp ) 1  10 1 cdf
+
+* ask for expetced accumulated reward  from (0,t)
+* where t varies from 1 to 10 in steps of 1
+eval ( mp ) 1  10 1 cexrt
+
+* ask for expecetd reward rate at time 1.
+expr exrt(1;mp)
+
+* Example 4:
+echo Example 4:
+* Refer to the paper by Kulkarni, Nicola, Smith and Trivedi in
+* Fault-Tolerant Computing Symposium 1986, Vienna.
+* This example if that of an M/M/N/N+b queue with failure/repair
+
+* Example 4a:
+* Model with repair
+markov ex1(b)
+81 71 8*lam
+71 61 7*lam
+61 51 6*lam
+51 41 5*lam
+41 31 4*lam
+31 21 3*lam
+21 11 2*lam
+11 01 lam
+01 11 mu
+11 21 mu
+21 31 mu
+31 41 mu
+41 51 mu
+51 61 mu
+61 71 mu
+71 81 mu
+81 80 b*gam
+80 81 tau
+71 70 b*gam
+70 71 tau
+61 60 b*gam
+60 61 tau
+51 50 b*gam
+50 51 tau
+41 40 b*gam
+40 41 tau
+31 30 b*gam
+30 31 tau
+21 20 b*gam
+20 21 tau
+11 10 b*gam
+10 11 tau
+01 00 b*gam
+00 01 tau
+reward
+81 1
+71 1
+61 1
+51 1
+41 1
+31 1
+21 1
+11 1
+01 0
+80 0
+70 0
+60 0
+50 0
+40 0
+30 0
+20 0
+10 0
+00 0
+end
+
+*the keyword exrss is used to compute the expected steady-state reward
+* rate = \sum r_i \pi_i
+
+func avail1(b) exrss(ex1;b)
+
+* Example 4b:
+* Model with no repair
+markov ex2(b)
+81 71 8*lam
+71 61 7*lam
+61 51 6*lam
+51 41 5*lam
+41 31 4*lam
+31 21 3*lam
+21 11 2*lam
+11 01 lam
+81 80 b*gam
+71 70 b*gam
+61 60 b*gam
+51 50 b*gam
+41 40 b*gam
+31 30 b*gam
+21 20 b*gam
+11 10 b*gam
+reward
+81 1
+71 1
+61 1
+51 1
+41 1
+31 1
+21 1
+11 1
+01 0
+80 0
+70 0
+60 0
+50 0
+40 0
+30 0
+20 0
+10 0
+end
+81 1.0
+end
+
+* Keyword exrt is used to compute the transient reward rate
+* at time t; that is \sum P_i(t) r_i
+* the use of exrt in this way is not legal in sharpe at this time.
+
+* func rel2(t,b) exrt(t;ex2;b)
+
+* Example 4c:
+markov ex3(b)
+81 71 8*lam
+71 61 7*lam
+61 51 6*lam
+51 41 5*lam
+41 31 4*lam
+31 21 3*lam
+21 11 2*lam
+11 01 lam
+01 11 mu
+11 21 mu
+21 31 mu
+31 41 mu
+41 51 mu
+51 61 mu
+61 71 mu
+71 81 mu
+81 80 b*gam
+80 81 tau
+71 70 b*gam
+70 71 tau
+61 60 b*gam
+60 61 tau
+51 50 b*gam
+50 51 tau
+41 40 b*gam
+40 41 tau
+31 30 b*gam
+30 31 tau
+21 20 b*gam
+20 21 tau
+11 10 b*gam
+10 11 tau
+01 00 b*gam
+00 01 tau
+reward
+81 1
+71 1
+61 1
+51 1
+41 1
+31 1
+21 1
+11 1
+01 0
+80 0
+70 0
+60 0
+50 0
+40 0
+30 0
+20 0
+10 0
+00 0
+end
+
+func avail3(b) exrss(ex3;b)
+
+
+* Example 4d:
+markov ex4(b)
+81 71 8*lam
+71 61 7*lam
+61 51 6*lam
+51 41 5*lam
+41 31 4*lam
+31 21 3*lam
+21 11 2*lam
+11 01 lam
+81 80 b*gam
+71 70 b*gam
+61 60 b*gam
+51 50 b*gam
+41 40 b*gam
+31 30 b*gam
+21 20 b*gam
+11 10 b*gam
+reward
+81 1
+71 1
+61 1
+51 1
+41 1
+31 1
+21 1
+11 1
+01 0
+80 0
+70 0
+60 0
+50 0
+40 0
+30 0
+20 0
+10 0
+end
+81 1.0
+end
+
+bind
+lam 0.01/(7*24)
+mu 0.1666
+gam 0.22/(7*24)
+tau 0.1666
+end
+
+loop b,4,16,4
+expr avail1(b),  avail3(b)
+expr mean (ex4;b) 
+* The keyword rvalue is used to compute the distribution of accumulated
+*reward until absorption (counterpart of value)
+expr 1-rvalue (0,ex4;b) 
+expr 1-rvalue (125,ex4;b) 
+expr 1-rvalue (250,ex4;b) 
+expr 1-rvalue (500,ex4;b) 
+expr 1-rvalue (625,ex4;b) 
+expr 1-rvalue (750,ex4;b) 
+expr 1-rvalue (1000,ex4;b) 
+end
+
+eval(ex2;4) 10 10 1 exrt
+eval(ex4;4) 10 10 1 exrt
+
+* Example 5
+echo Example 5
+* Example 5a:
+* Transient and steady-state analysis sf an mm1k queue
+* For details of the model see Chapter 8 of Trivedi's book
+* For a closed-form transient solution as well as the details
+* of the numerical transient solution methods see
+* Reibman and Trivedi; Computers and Operations Research; 1988.
+
+* the keyword readprobs flags to sharpe that the transient analysis
+* is desired and hence even if the Markov chain is irreducible,
+* initial state probs will be specified.
+
+markov mm110 readprobs
+0 1 lam
+1 2 lam
+2 3 lam
+3 4 lam
+4 5 lam
+5 6 lam
+6 7 lam
+7 8 lam
+8 9 lam
+9 10 lam
+10 9 mu
+9 8 mu
+8 7 mu
+7 6 mu
+6 5 mu
+5 4 mu
+4 3 mu
+3 2 mu
+2 1 mu
+1 0 mu
+* Assign to state i a reward rate equal to the number of jobs in the
+* the system in that state
+reward
+0 0
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+7 7
+8 8
+9 9
+10 10
+end
+* Initial state probs.
+0 1.0
+end
+
+bind
+lam 1.0
+mu 10.0
+end
+
+* Steady state prob of being in the buffer full state
+expr prob(mm110,10)
+
+
+* Transient prob of being in the buffer full state at time t
+loop t,10,100,10
+expr tvalue(t;mm110,10)
+
+end
+
+* Compute the server idle prob at time t
+loop t,0,10,1
+expr tvalue (t;mm110,0)
+end
+
+* Compute the server idle prob at steady state
+expr prob(mm110,0)
+
+* Compute the transient average queulength
+loop t,0,10,1
+expr sum(i,0,10,i*tvalue (t;mm110,$i))
+end
+
+* Compute the steady state average queulength
+expr exrss(mm110)
+
+
+* Example 5b:
+* Now if we let k be infinite then the Markov model
+* will be impossible to solve within SHARPE;
+* Fortunately, there is a closed-form solution
+* we can use in this case.
+* This example illustrates the use
+* SHARPE to synthesize some models using
+* functions
+
+* We build a model of an M/M/1 queue
+* Refer to Chapter 8 of Trivedi's book for details
+* lam is the rate of arrivals
+* mu is the service rate
+* utt is the traffic intensity or the server utilization, 
+* the average number of jobs in the system in the steady-state
+* is computed by the function congest
+* while the function resptime computes the average response time.
+* the function resptimedist computes the response time distribution.
+
+func congest(rho) rho/(1-rho)
+func utt(lam,mu) lam/mu
+func meanresptime(lam,mu) congest(lam/mu)/lam
+
+* Now we model the distribution function of the response time
+graph resptimedist(lam,mu)
+1 2
+end
+dist 1 exp(mu*(1-utt(lam,mu)))
+dist 2 zero
+end
+
+
+echo plot 0.0 10.0
+cdf(resptimedist;0.8,1)
+echo plot
+eval (resptimedist;0.8,1) 0 10 1
+
+loop lam,0.1,0.9,0.1
+  expr utt(lam,1), congest(utt(lam,1)), meanresptime(lam,1)
+end
+
+* Example 6:
+echo Example 6:
+* DTMC steady-state analysis using SHARPE
+* This is the example on p. 328 of Trivedi's book.
+* see Figure 7.9 in the cited book
+
+* Note that self loop probs are not entered intentionally
+* By deceiving sharpe into thinking that the chain is
+* CTMC, and omitting self loops, we obtain the correct
+* steady state probs of the DTMC. This can be shown
+* by playing with steady state balance equations
+
+var q2 1-q1
+markov memint
+1-1 0-2 q2^2
+1-1 2-0 q1*q1
+0-2 1-1 q1
+2-0 1-1 q2
+reward default 0
+1-1 2
+2-0 1
+0-2 1
+end
+
+var EB exrss(memint)
+var EBbook (1-q1*q2)/(1-2*q1*q2)
+ 
+loop x1,0.3,0.6,0.1
+   bind q1 x1
+   expr prob(memint,1-1),prob(memint,0-2),prob(memint,2-0)
+   expr EB,EBbook
+end
+
+
+* Example 7:
+echo Example 7:
+* This is an example of a reliability model of a system with 
+* 8 processors.
+* lambda is the failure rate of each processor. Upon the 
+* Ocurrence of a fault, there is a constant time tr required
+* to handle (detect + isolate + reconfigure) that fault. 
+* If during this time, another (near-coicident fault occurs,
+* system fails. The effect of this is taken into account using
+* Behavioral Decomposition and is reflected by means of imperfect
+* coverage 
+
+bind 
+lambda .001
+tr  .0000277777
+end
+
+* Coverage is computed as the Laplace Transform of the fault-hadling
+* time evaluated at the near-coincident fault rate. For details see
+* Trivedi's chapter in the book edited by Iazeolla et al,
+* North-Holland, 1984.
+* Since the LT of a constant time tr is e^{-s*tr}, we have the 
+* coverage expressions (note when we just use the exponent ^ sign, e is
+* implied as the base):
+* For HARP users, we have used a FEHM here.
+var c8  ^ (-7 * lambda * tr )
+var c7  ^ (-6 * lambda * tr)
+var c6  ^ (-5 * lambda * tr)
+var c5  ^ (-4 * lambda * tr)
+var c4  ^ (-3 * lambda * tr)
+var c3  ^ (-2 * lambda * tr)
+var c2  ^ (-1 * lambda * tr)
+
+var fc8 1 - c8
+var fc7 1 - c7
+var fc6 1 - c6
+var fc5 1 - c5
+var fc4 1 - c4
+var fc3 1 - c3
+var fc2 1 - c2
+
+var L8 8 * lambda * c8
+var L7 7 * lambda * c7
+var L6 6 * lambda * c6
+var L5 5 * lambda * c5
+var L4 4 * lambda * c4
+var L3 3 * lambda * c3
+var L2 2 * lambda * c2
+
+var fL8 8 * lambda * fc8
+var fL7 7 * lambda * fc7
+var fL6 6 * lambda * fc6
+var fL5 5 * lambda * fc5
+var fL4 4 * lambda * fc4
+var fL3 3 * lambda * fc3
+var fL2 2 * lambda * fc2
+
+markov  8units
+8 7 L8
+7 6 L7
+6 5 L6
+5 4 L5
+4 3 L4
+3 2 L3
+2 1 L2
+1 ex lambda
+8 ncf fL8
+7 ncf fL7
+6 ncf fL6
+5 ncf fL5
+4 ncf fL4
+3 ncf fL3
+2 ncf fL2
+end
+8 1.0
+end
+
+eval(8units,ncf) 0 10 1
+eval(8units,6) 0 10 1
+
+
+* Example 8a:
+echo Example 8a:
+* Now we consider a system with 8 processors and 3 memory units.
+* Fault-error-handling time is nmow assumed to be exponentially
+* distributed with mean Etr; Near-coincident faults in the same 
+* component type will be catastrophic.
+
+func c(x, k) (1/Etr) / ((1/Etr) + (k-1) * x)
+func L(x, k) k * x * c(x, k)
+func fL(x,k) k * x * (1 - c(x, k))
+
+markov sift
+8-3 7-3 L(lambda, 8)
+7-3 6-3 L(lambda, 7)
+6-3 5-3 L(lambda, 6)
+5-3 4-3 L(lambda, 5)
+4-3 3-3 L(lambda, 4)
+3-3 2-3 L(lambda, 3)
+8-3 F   fL(lambda, 8) + fL(mu, 3)
+7-3 F   fL(lambda, 7) + fL(mu, 3)
+6-3 F   fL(lambda, 6) + fL(mu, 3)
+5-3 F   fL(lambda, 5) + fL(mu, 3)
+4-3 F   fL(lambda, 4) + fL(mu, 3)
+3-3 F   fL(lambda, 3) + fL(mu, 3)
+2-3 F   (2 * lambda)  + fL(mu, 3)
+8-3 8-2 L(mu, 3)
+7-3 7-2 L(mu, 3)
+6-3 6-2 L(mu, 3)
+5-3 5-2 L(mu, 3)
+4-3 4-2 L(mu, 3)
+3-3 3-2 L(mu, 3)
+2-3 2-2 L(mu, 3)
+8-2 7-2 L(lambda, 8)
+7-2 6-2 L(lambda, 7)
+6-2 5-2 L(lambda, 6)
+5-2 4-2 L(lambda, 5)
+4-2 3-2 L(lambda, 4)
+3-2 2-2 L(lambda, 3)
+8-2 F   (2 * mu) + fL(lambda, 8)
+7-2 F   (2 * mu) + fL(lambda, 7)
+6-2 F   (2 * mu) + fL(lambda, 6)
+5-2 F   (2 * mu) + fL(lambda, 5)
+4-2 F   (2 * mu) + fL(lambda, 4)
+3-2 F   (2 * mu) + fL(lambda, 3)
+2-2 F   (2 * mu) + (2 * lambda)
+end
+8-3 1.0
+end
+
+bind 
+lambda .0001
+mu .00001
+Etr 1/360
+end
+
+cdf(sift,F)
+eval (sift) 5 15 1
+
+
+* Example 8b:
+echo Example 8b:
+* We introduce repair in the above example
+* Compare Instantaneous unavailability with unreliability
+markov siftrep readprobs
+8-3 7-3 L(lambda, 8)
+7-3 6-3 L(lambda, 7)
+6-3 5-3 L(lambda, 6)
+5-3 4-3 L(lambda, 5)
+4-3 3-3 L(lambda, 4)
+3-3 2-3 L(lambda, 3)
+8-3 F   fL(lambda, 8) + fL(mu, 3)
+7-3 F   fL(lambda, 7) + fL(mu, 3)
+6-3 F   fL(lambda, 6) + fL(mu, 3)
+5-3 F   fL(lambda, 5) + fL(mu, 3)
+4-3 F   fL(lambda, 4) + fL(mu, 3)
+3-3 F   fL(lambda, 3) + fL(mu, 3)
+2-3 F   (2 * lambda)  + fL(mu, 3)
+8-3 8-2 L(mu, 3)
+7-3 7-2 L(mu, 3)
+6-3 6-2 L(mu, 3)
+5-3 5-2 L(mu, 3)
+4-3 4-2 L(mu, 3)
+3-3 3-2 L(mu, 3)
+2-3 2-2 L(mu, 3)
+8-2 7-2 L(lambda, 8)
+7-2 6-2 L(lambda, 7)
+6-2 5-2 L(lambda, 6)
+5-2 4-2 L(lambda, 5)
+4-2 3-2 L(lambda, 4)
+3-2 2-2 L(lambda, 3)
+8-2 F   (2 * mu) + fL(lambda, 8)
+7-2 F   (2 * mu) + fL(lambda, 7)
+6-2 F   (2 * mu) + fL(lambda, 6)
+5-2 F   (2 * mu) + fL(lambda, 5)
+4-2 F   (2 * mu) + fL(lambda, 4)
+3-2 F   (2 * mu) + fL(lambda, 3)
+2-2 F   (2 * mu) + (2 * lambda)
+F 8-3 1.0
+end
+8-3 1.0
+end
+
+func unrel(t) tvalue(t;sift,F)
+func unavail(t) tvalue(t;siftrep,F)
+
+loop t,0,1000,100
+     expr unrel(t), unavail(t)
+end
+
+* Compare the inst. unavail with the steady-state unavail
+
+expr prob(siftrep,F)
+
+loop t,0,10000,1000
+     expr unrel(t), unavail(t)
+end
+
+
+* Example 9:
+echo Example 9:
+* Example of 3 memmories and two processors
+* see Sahner and Trivedi, IEEE Trans on Education, Feb. 1993
+
+bind
+lambda 0.005
+mu 0.005
+end
+markov 3p2b
+32 22 3*lambda
+22 12 2*lambda
+12 F1 lambda
+32 31 2*mu
+31 F2 mu
+22 21 2*mu
+21 F2 mu
+12 11 2*mu
+11 F2 mu
+31 21 3*lambda
+21 11 2*lambda
+11 F1 lambda
+end
+32 1.0
+end
+eval (3p2b,F1) 10.0 10.0 1.0
+eval (3p2b,F2) 10.0 10.0 1.0
+
+bind epsilon 0.0000000000001
+
+
+bind
+c3222 0.1739
+s3222 0.01975
+r3222 0.80625
+c2212 0.1739
+s2212 0.01975
+r2212 0.80625
+c3121 0.1739
+s3121 0.01975
+r3121 0.80625
+c2111 0.1739
+s2111 0.01975
+r2111 0.80625
+c3231 0.927139
+s3231 0.00007672
+r3231 0.072784
+c2221 0.927139
+s2221 0.00007672
+r2221 0.072784
+c1211 0.927139
+s1211 0.00007672
+r1211 0.072784
+end
+markov 3p2bwithcov
+32 22 3*lambda*c3222
+32 FSPF 3*lambda*s3222
+32 FNCF 3*lambda*(1.0-c3222-s3222-r3222)
+22 12 2*lambda*c2212
+22 FSPF 2*lambda*s2212
+22 FNCF 2*lambda*(1.0-c2212-s2212-r2212)
+12 F1 lambda
+32 31 2*mu*c3231
+32 FSPF 2*mu*s3231
+32 FNCF 2*mu*(1.0-c3231-s3231-r3231)
+31 F2 mu
+22 21 2*mu*c2221
+22 FSPF 2*mu*s2221
+22 FNCF 2*mu*(1.0-c2221-s2221-r2221)
+21 F2 mu
+12 11 2*mu*c1211
+12 FSPF 2*mu*s1211
+12 FNCF 2*mu*(1.0-c1211-s1211-r1211)
+11 F2 mu
+31 21 3*lambda*c3121
+31 FSPF 3*lambda*s3121
+31 FNCF 3*lambda*(1.0-c3121-s3121-r3121)
+21 11 2*lambda*c2111
+21 FSPF 2*lambda*s2111
+21 FNCF 2*lambda*(1.0-c2111-s2111-r2111)
+11 F1 lambda
+end
+32 1.0
+end
+eval (3p2bwithcov,F1) 10.0 10.0 1.0
+eval (3p2bwithcov,F2) 10.0 10.0 1.0
+eval (3p2bwithcov,FSPF) 10.0 10.0 1.0
+eval (3p2bwithcov,FNCF) 10.0 10.0 1.0
+
+* Example 10: Hermann de Meer's model
+echo Example 10:
+markov ml4
+n1 d 0.01
+n2 d 0.02
+n3 d 0.04
+n4 d 0.1
+n5 d 0.2
+n6 d 0.4
+reward
+n1 10
+n2 18
+n3 30
+n4 40
+n5 50
+n6 80
+d 0
+end
+n1 0
+n2 0 
+n3 0
+n4 0
+n5 0.0
+n6 1.0
+d 0
+end
+
+cdf(ml4)
+eval(ml4) 0 100 10
+expr exrt(100;ml4)
+expr cexrt(100;ml4)
+
+
+*Example 11:
+echo Example 11:
+
+bind
+LAM 1.0
+MU 2.0
+end
+
+markov mm1_999
+01   11 LAM
+11   01 MU
+11   21 LAM
+21   11 MU
+21   31 LAM
+31   21 MU
+31   41 LAM
+41   31 MU
+41   51 LAM
+51   41 MU
+51   61 LAM
+61   51 MU
+61   71 LAM
+71   61 MU
+71   81 LAM
+81   71 MU
+81   91 LAM
+91   81 MU
+91   101 LAM
+101   91 MU
+101   111 LAM
+111   101 MU
+111   121 LAM
+121   111 MU
+121   131 LAM
+131   121 MU
+131   141 LAM
+141   131 MU
+141   151 LAM
+151   141 MU
+151   161 LAM
+161   151 MU
+161   171 LAM
+171   161 MU
+171   181 LAM
+181   171 MU
+181   191 LAM
+191   181 MU
+191   201 LAM
+201   191 MU
+201   211 LAM
+211   201 MU
+211   221 LAM
+221   211 MU
+221   231 LAM
+231   221 MU
+231   241 LAM
+241   231 MU
+241   251 LAM
+251   241 MU
+251   261 LAM
+261   251 MU
+261   271 LAM
+271   261 MU
+271   281 LAM
+281   271 MU
+281   291 LAM
+291   281 MU
+291   301 LAM
+301   291 MU
+301   311 LAM
+311   301 MU
+311   321 LAM
+321   311 MU
+321   331 LAM
+331   321 MU
+331   341 LAM
+341   331 MU
+341   351 LAM
+351   341 MU
+351   361 LAM
+361   351 MU
+361   371 LAM
+371   361 MU
+371   381 LAM
+381   371 MU
+381   391 LAM
+391   381 MU
+391   401 LAM
+401   391 MU
+401   411 LAM
+411   401 MU
+411   421 LAM
+421   411 MU
+421   431 LAM
+431   421 MU
+431   441 LAM
+441   431 MU
+441   451 LAM
+451   441 MU
+451   461 LAM
+461   451 MU
+461   471 LAM
+471   461 MU
+471   481 LAM
+481   471 MU
+481   491 LAM
+491   481 MU
+491   501 LAM
+501   491 MU
+501   511 LAM
+511   501 MU
+511   521 LAM
+521   511 MU
+521   531 LAM
+531   521 MU
+531   541 LAM
+541   531 MU
+541   551 LAM
+551   541 MU
+551   561 LAM
+561   551 MU
+561   571 LAM
+571   561 MU
+571   581 LAM
+581   571 MU
+581   591 LAM
+591   581 MU
+591   601 LAM
+601   591 MU
+601   611 LAM
+611   601 MU
+611   621 LAM
+621   611 MU
+621   631 LAM
+631   621 MU
+631   641 LAM
+641   631 MU
+641   651 LAM
+651   641 MU
+651   661 LAM
+661   651 MU
+661   671 LAM
+671   661 MU
+671   681 LAM
+681   671 MU
+681   691 LAM
+691   681 MU
+691   701 LAM
+701   691 MU
+701   711 LAM
+711   701 MU
+711   721 LAM
+721   711 MU
+721   731 LAM
+731   721 MU
+731   741 LAM
+741   731 MU
+741   751 LAM
+751   741 MU
+751   761 LAM
+761   751 MU
+761   771 LAM
+771   761 MU
+771   781 LAM
+781   771 MU
+781   791 LAM
+791   781 MU
+791   801 LAM
+801   791 MU
+801   811 LAM
+811   801 MU
+811   821 LAM
+821   811 MU
+821   831 LAM
+831   821 MU
+831   841 LAM
+841   831 MU
+841   851 LAM
+851   841 MU
+851   861 LAM
+861   851 MU
+861   871 LAM
+871   861 MU
+871   881 LAM
+881   871 MU
+881   891 LAM
+891   881 MU
+891   901 LAM
+901   891 MU
+901   911 LAM
+911   901 MU
+911   921 LAM
+921   911 MU
+921   931 LAM
+931   921 MU
+931   941 LAM
+941   931 MU
+941   951 LAM
+951   941 MU
+951   961 LAM
+961   951 MU
+961   971 LAM
+971   961 MU
+971   981 LAM
+981   971 MU
+981   991 LAM
+991   981 MU
+991   1001 LAM
+1001   991 MU
+1001   1011 LAM
+1011   1001 MU
+1011   1021 LAM
+1021   1011 MU
+1021   1031 LAM
+1031   1021 MU
+1031   1041 LAM
+1041   1031 MU
+1041   1051 LAM
+1051   1041 MU
+1051   1061 LAM
+1061   1051 MU
+1061   1071 LAM
+1071   1061 MU
+1071   1081 LAM
+1081   1071 MU
+1081   1091 LAM
+1091   1081 MU
+1091   1101 LAM
+1101   1091 MU
+1101   1111 LAM
+1111   1101 MU
+1111   1121 LAM
+1121   1111 MU
+1121   1131 LAM
+1131   1121 MU
+1131   1141 LAM
+1141   1131 MU
+1141   1151 LAM
+1151   1141 MU
+1151   1161 LAM
+1161   1151 MU
+1161   1171 LAM
+1171   1161 MU
+1171   1181 LAM
+1181   1171 MU
+1181   1191 LAM
+1191   1181 MU
+1191   1201 LAM
+1201   1191 MU
+1201   1211 LAM
+1211   1201 MU
+1211   1221 LAM
+1221   1211 MU
+1221   1231 LAM
+1231   1221 MU
+1231   1241 LAM
+1241   1231 MU
+1241   1251 LAM
+1251   1241 MU
+1251   1261 LAM
+1261   1251 MU
+1261   1271 LAM
+1271   1261 MU
+1271   1281 LAM
+1281   1271 MU
+1281   1291 LAM
+1291   1281 MU
+1291   1301 LAM
+1301   1291 MU
+1301   1311 LAM
+1311   1301 MU
+1311   1321 LAM
+1321   1311 MU
+1321   1331 LAM
+1331   1321 MU
+1331   1341 LAM
+1341   1331 MU
+1341   1351 LAM
+1351   1341 MU
+1351   1361 LAM
+1361   1351 MU
+1361   1371 LAM
+1371   1361 MU
+1371   1381 LAM
+1381   1371 MU
+1381   1391 LAM
+1391   1381 MU
+1391   1401 LAM
+1401   1391 MU
+1401   1411 LAM
+1411   1401 MU
+1411   1421 LAM
+1421   1411 MU
+1421   1431 LAM
+1431   1421 MU
+1431   1441 LAM
+1441   1431 MU
+1441   1451 LAM
+1451   1441 MU
+1451   1461 LAM
+1461   1451 MU
+1461   1471 LAM
+1471   1461 MU
+1471   1481 LAM
+1481   1471 MU
+1481   1491 LAM
+1491   1481 MU
+1491   1501 LAM
+1501   1491 MU
+1501   1511 LAM
+1511   1501 MU
+1511   1521 LAM
+1521   1511 MU
+1521   1531 LAM
+1531   1521 MU
+1531   1541 LAM
+1541   1531 MU
+1541   1551 LAM
+1551   1541 MU
+1551   1561 LAM
+1561   1551 MU
+1561   1571 LAM
+1571   1561 MU
+1571   1581 LAM
+1581   1571 MU
+1581   1591 LAM
+1591   1581 MU
+1591   1601 LAM
+1601   1591 MU
+1601   1611 LAM
+1611   1601 MU
+1611   1621 LAM
+1621   1611 MU
+1621   1631 LAM
+1631   1621 MU
+1631   1641 LAM
+1641   1631 MU
+1641   1651 LAM
+1651   1641 MU
+1651   1661 LAM
+1661   1651 MU
+1661   1671 LAM
+1671   1661 MU
+1671   1681 LAM
+1681   1671 MU
+1681   1691 LAM
+1691   1681 MU
+1691   1701 LAM
+1701   1691 MU
+1701   1711 LAM
+1711   1701 MU
+1711   1721 LAM
+1721   1711 MU
+1721   1731 LAM
+1731   1721 MU
+1731   1741 LAM
+1741   1731 MU
+1741   1751 LAM
+1751   1741 MU
+1751   1761 LAM
+1761   1751 MU
+1761   1771 LAM
+1771   1761 MU
+1771   1781 LAM
+1781   1771 MU
+1781   1791 LAM
+1791   1781 MU
+1791   1801 LAM
+1801   1791 MU
+1801   1811 LAM
+1811   1801 MU
+1811   1821 LAM
+1821   1811 MU
+1821   1831 LAM
+1831   1821 MU
+1831   1841 LAM
+1841   1831 MU
+1841   1851 LAM
+1851   1841 MU
+1851   1861 LAM
+1861   1851 MU
+1861   1871 LAM
+1871   1861 MU
+1871   1881 LAM
+1881   1871 MU
+1881   1891 LAM
+1891   1881 MU
+1891   1901 LAM
+1901   1891 MU
+1901   1911 LAM
+1911   1901 MU
+1911   1921 LAM
+1921   1911 MU
+1921   1931 LAM
+1931   1921 MU
+1931   1941 LAM
+1941   1931 MU
+1941   1951 LAM
+1951   1941 MU
+1951   1961 LAM
+1961   1951 MU
+1961   1971 LAM
+1971   1961 MU
+1971   1981 LAM
+1981   1971 MU
+1981   1991 LAM
+1991   1981 MU
+1991   2001 LAM
+2001   1991 MU
+2001   2011 LAM
+2011   2001 MU
+2011   2021 LAM
+2021   2011 MU
+2021   2031 LAM
+2031   2021 MU
+2031   2041 LAM
+2041   2031 MU
+2041   2051 LAM
+2051   2041 MU
+2051   2061 LAM
+2061   2051 MU
+2061   2071 LAM
+2071   2061 MU
+2071   2081 LAM
+2081   2071 MU
+2081   2091 LAM
+2091   2081 MU
+2091   2101 LAM
+2101   2091 MU
+2101   2111 LAM
+2111   2101 MU
+2111   2121 LAM
+2121   2111 MU
+2121   2131 LAM
+2131   2121 MU
+2131   2141 LAM
+2141   2131 MU
+2141   2151 LAM
+2151   2141 MU
+2151   2161 LAM
+2161   2151 MU
+2161   2171 LAM
+2171   2161 MU
+2171   2181 LAM
+2181   2171 MU
+2181   2191 LAM
+2191   2181 MU
+2191   2201 LAM
+2201   2191 MU
+2201   2211 LAM
+2211   2201 MU
+2211   2221 LAM
+2221   2211 MU
+2221   2231 LAM
+2231   2221 MU
+2231   2241 LAM
+2241   2231 MU
+2241   2251 LAM
+2251   2241 MU
+2251   2261 LAM
+2261   2251 MU
+2261   2271 LAM
+2271   2261 MU
+2271   2281 LAM
+2281   2271 MU
+2281   2291 LAM
+2291   2281 MU
+2291   2301 LAM
+2301   2291 MU
+2301   2311 LAM
+2311   2301 MU
+2311   2321 LAM
+2321   2311 MU
+2321   2331 LAM
+2331   2321 MU
+2331   2341 LAM
+2341   2331 MU
+2341   2351 LAM
+2351   2341 MU
+2351   2361 LAM
+2361   2351 MU
+2361   2371 LAM
+2371   2361 MU
+2371   2381 LAM
+2381   2371 MU
+2381   2391 LAM
+2391   2381 MU
+2391   2401 LAM
+2401   2391 MU
+2401   2411 LAM
+2411   2401 MU
+2411   2421 LAM
+2421   2411 MU
+2421   2431 LAM
+2431   2421 MU
+2431   2441 LAM
+2441   2431 MU
+2441   2451 LAM
+2451   2441 MU
+2451   2461 LAM
+2461   2451 MU
+2461   2471 LAM
+2471   2461 MU
+2471   2481 LAM
+2481   2471 MU
+2481   2491 LAM
+2491   2481 MU
+2491   2501 LAM
+2501   2491 MU
+2501   2511 LAM
+2511   2501 MU
+2511   2521 LAM
+2521   2511 MU
+2521   2531 LAM
+2531   2521 MU
+2531   2541 LAM
+2541   2531 MU
+2541   2551 LAM
+2551   2541 MU
+2551   2561 LAM
+2561   2551 MU
+2561   2571 LAM
+2571   2561 MU
+2571   2581 LAM
+2581   2571 MU
+2581   2591 LAM
+2591   2581 MU
+2591   2601 LAM
+2601   2591 MU
+2601   2611 LAM
+2611   2601 MU
+2611   2621 LAM
+2621   2611 MU
+2621   2631 LAM
+2631   2621 MU
+2631   2641 LAM
+2641   2631 MU
+2641   2651 LAM
+2651   2641 MU
+2651   2661 LAM
+2661   2651 MU
+2661   2671 LAM
+2671   2661 MU
+2671   2681 LAM
+2681   2671 MU
+2681   2691 LAM
+2691   2681 MU
+2691   2701 LAM
+2701   2691 MU
+2701   2711 LAM
+2711   2701 MU
+2711   2721 LAM
+2721   2711 MU
+2721   2731 LAM
+2731   2721 MU
+2731   2741 LAM
+2741   2731 MU
+2741   2751 LAM
+2751   2741 MU
+2751   2761 LAM
+2761   2751 MU
+2761   2771 LAM
+2771   2761 MU
+2771   2781 LAM
+2781   2771 MU
+2781   2791 LAM
+2791   2781 MU
+2791   2801 LAM
+2801   2791 MU
+2801   2811 LAM
+2811   2801 MU
+2811   2821 LAM
+2821   2811 MU
+2821   2831 LAM
+2831   2821 MU
+2831   2841 LAM
+2841   2831 MU
+2841   2851 LAM
+2851   2841 MU
+2851   2861 LAM
+2861   2851 MU
+2861   2871 LAM
+2871   2861 MU
+2871   2881 LAM
+2881   2871 MU
+2881   2891 LAM
+2891   2881 MU
+2891   2901 LAM
+2901   2891 MU
+2901   2911 LAM
+2911   2901 MU
+2911   2921 LAM
+2921   2911 MU
+2921   2931 LAM
+2931   2921 MU
+2931   2941 LAM
+2941   2931 MU
+2941   2951 LAM
+2951   2941 MU
+2951   2961 LAM
+2961   2951 MU
+2961   2971 LAM
+2971   2961 MU
+2971   2981 LAM
+2981   2971 MU
+2981   2991 LAM
+2991   2981 MU
+2991   3001 LAM
+3001   2991 MU
+3001   3011 LAM
+3011   3001 MU
+3011   3021 LAM
+3021   3011 MU
+3021   3031 LAM
+3031   3021 MU
+3031   3041 LAM
+3041   3031 MU
+3041   3051 LAM
+3051   3041 MU
+3051   3061 LAM
+3061   3051 MU
+3061   3071 LAM
+3071   3061 MU
+3071   3081 LAM
+3081   3071 MU
+3081   3091 LAM
+3091   3081 MU
+3091   3101 LAM
+3101   3091 MU
+3101   3111 LAM
+3111   3101 MU
+3111   3121 LAM
+3121   3111 MU
+3121   3131 LAM
+3131   3121 MU
+3131   3141 LAM
+3141   3131 MU
+3141   3151 LAM
+3151   3141 MU
+3151   3161 LAM
+3161   3151 MU
+3161   3171 LAM
+3171   3161 MU
+3171   3181 LAM
+3181   3171 MU
+3181   3191 LAM
+3191   3181 MU
+3191   3201 LAM
+3201   3191 MU
+3201   3211 LAM
+3211   3201 MU
+3211   3221 LAM
+3221   3211 MU
+3221   3231 LAM
+3231   3221 MU
+3231   3241 LAM
+3241   3231 MU
+3241   3251 LAM
+3251   3241 MU
+3251   3261 LAM
+3261   3251 MU
+3261   3271 LAM
+3271   3261 MU
+3271   3281 LAM
+3281   3271 MU
+3281   3291 LAM
+3291   3281 MU
+3291   3301 LAM
+3301   3291 MU
+3301   3311 LAM
+3311   3301 MU
+3311   3321 LAM
+3321   3311 MU
+3321   3331 LAM
+3331   3321 MU
+3331   3341 LAM
+3341   3331 MU
+3341   3351 LAM
+3351   3341 MU
+3351   3361 LAM
+3361   3351 MU
+3361   3371 LAM
+3371   3361 MU
+3371   3381 LAM
+3381   3371 MU
+3381   3391 LAM
+3391   3381 MU
+3391   3401 LAM
+3401   3391 MU
+3401   3411 LAM
+3411   3401 MU
+3411   3421 LAM
+3421   3411 MU
+3421   3431 LAM
+3431   3421 MU
+3431   3441 LAM
+3441   3431 MU
+3441   3451 LAM
+3451   3441 MU
+3451   3461 LAM
+3461   3451 MU
+3461   3471 LAM
+3471   3461 MU
+3471   3481 LAM
+3481   3471 MU
+3481   3491 LAM
+3491   3481 MU
+3491   3501 LAM
+3501   3491 MU
+3501   3511 LAM
+3511   3501 MU
+3511   3521 LAM
+3521   3511 MU
+3521   3531 LAM
+3531   3521 MU
+3531   3541 LAM
+3541   3531 MU
+3541   3551 LAM
+3551   3541 MU
+3551   3561 LAM
+3561   3551 MU
+3561   3571 LAM
+3571   3561 MU
+3571   3581 LAM
+3581   3571 MU
+3581   3591 LAM
+3591   3581 MU
+3591   3601 LAM
+3601   3591 MU
+3601   3611 LAM
+3611   3601 MU
+3611   3621 LAM
+3621   3611 MU
+3621   3631 LAM
+3631   3621 MU
+3631   3641 LAM
+3641   3631 MU
+3641   3651 LAM
+3651   3641 MU
+3651   3661 LAM
+3661   3651 MU
+3661   3671 LAM
+3671   3661 MU
+3671   3681 LAM
+3681   3671 MU
+3681   3691 LAM
+3691   3681 MU
+3691   3701 LAM
+3701   3691 MU
+3701   3711 LAM
+3711   3701 MU
+3711   3721 LAM
+3721   3711 MU
+3721   3731 LAM
+3731   3721 MU
+3731   3741 LAM
+3741   3731 MU
+3741   3751 LAM
+3751   3741 MU
+3751   3761 LAM
+3761   3751 MU
+3761   3771 LAM
+3771   3761 MU
+3771   3781 LAM
+3781   3771 MU
+3781   3791 LAM
+3791   3781 MU
+3791   3801 LAM
+3801   3791 MU
+3801   3811 LAM
+3811   3801 MU
+3811   3821 LAM
+3821   3811 MU
+3821   3831 LAM
+3831   3821 MU
+3831   3841 LAM
+3841   3831 MU
+3841   3851 LAM
+3851   3841 MU
+3851   3861 LAM
+3861   3851 MU
+3861   3871 LAM
+3871   3861 MU
+3871   3881 LAM
+3881   3871 MU
+3881   3891 LAM
+3891   3881 MU
+3891   3901 LAM
+3901   3891 MU
+3901   3911 LAM
+3911   3901 MU
+3911   3921 LAM
+3921   3911 MU
+3921   3931 LAM
+3931   3921 MU
+3931   3941 LAM
+3941   3931 MU
+3941   3951 LAM
+3951   3941 MU
+3951   3961 LAM
+3961   3951 MU
+3961   3971 LAM
+3971   3961 MU
+3971   3981 LAM
+3981   3971 MU
+3981   3991 LAM
+3991   3981 MU
+3991   4001 LAM
+4001   3991 MU
+4001   4011 LAM
+4011   4001 MU
+4011   4021 LAM
+4021   4011 MU
+4021   4031 LAM
+4031   4021 MU
+4031   4041 LAM
+4041   4031 MU
+4041   4051 LAM
+4051   4041 MU
+4051   4061 LAM
+4061   4051 MU
+4061   4071 LAM
+4071   4061 MU
+4071   4081 LAM
+4081   4071 MU
+4081   4091 LAM
+4091   4081 MU
+4091   4101 LAM
+4101   4091 MU
+4101   4111 LAM
+4111   4101 MU
+4111   4121 LAM
+4121   4111 MU
+4121   4131 LAM
+4131   4121 MU
+4131   4141 LAM
+4141   4131 MU
+4141   4151 LAM
+4151   4141 MU
+4151   4161 LAM
+4161   4151 MU
+4161   4171 LAM
+4171   4161 MU
+4171   4181 LAM
+4181   4171 MU
+4181   4191 LAM
+4191   4181 MU
+4191   4201 LAM
+4201   4191 MU
+4201   4211 LAM
+4211   4201 MU
+4211   4221 LAM
+4221   4211 MU
+4221   4231 LAM
+4231   4221 MU
+4231   4241 LAM
+4241   4231 MU
+4241   4251 LAM
+4251   4241 MU
+4251   4261 LAM
+4261   4251 MU
+4261   4271 LAM
+4271   4261 MU
+4271   4281 LAM
+4281   4271 MU
+4281   4291 LAM
+4291   4281 MU
+4291   4301 LAM
+4301   4291 MU
+4301   4311 LAM
+4311   4301 MU
+4311   4321 LAM
+4321   4311 MU
+4321   4331 LAM
+4331   4321 MU
+4331   4341 LAM
+4341   4331 MU
+4341   4351 LAM
+4351   4341 MU
+4351   4361 LAM
+4361   4351 MU
+4361   4371 LAM
+4371   4361 MU
+4371   4381 LAM
+4381   4371 MU
+4381   4391 LAM
+4391   4381 MU
+4391   4401 LAM
+4401   4391 MU
+4401   4411 LAM
+4411   4401 MU
+4411   4421 LAM
+4421   4411 MU
+4421   4431 LAM
+4431   4421 MU
+4431   4441 LAM
+4441   4431 MU
+4441   4451 LAM
+4451   4441 MU
+4451   4461 LAM
+4461   4451 MU
+4461   4471 LAM
+4471   4461 MU
+4471   4481 LAM
+4481   4471 MU
+4481   4491 LAM
+4491   4481 MU
+4491   4501 LAM
+4501   4491 MU
+4501   4511 LAM
+4511   4501 MU
+4511   4521 LAM
+4521   4511 MU
+4521   4531 LAM
+4531   4521 MU
+4531   4541 LAM
+4541   4531 MU
+4541   4551 LAM
+4551   4541 MU
+4551   4561 LAM
+4561   4551 MU
+4561   4571 LAM
+4571   4561 MU
+4571   4581 LAM
+4581   4571 MU
+4581   4591 LAM
+4591   4581 MU
+4591   4601 LAM
+4601   4591 MU
+4601   4611 LAM
+4611   4601 MU
+4611   4621 LAM
+4621   4611 MU
+4621   4631 LAM
+4631   4621 MU
+4631   4641 LAM
+4641   4631 MU
+4641   4651 LAM
+4651   4641 MU
+4651   4661 LAM
+4661   4651 MU
+4661   4671 LAM
+4671   4661 MU
+4671   4681 LAM
+4681   4671 MU
+4681   4691 LAM
+4691   4681 MU
+4691   4701 LAM
+4701   4691 MU
+4701   4711 LAM
+4711   4701 MU
+4711   4721 LAM
+4721   4711 MU
+4721   4731 LAM
+4731   4721 MU
+4731   4741 LAM
+4741   4731 MU
+4741   4751 LAM
+4751   4741 MU
+4751   4761 LAM
+4761   4751 MU
+4761   4771 LAM
+4771   4761 MU
+4771   4781 LAM
+4781   4771 MU
+4781   4791 LAM
+4791   4781 MU
+4791   4801 LAM
+4801   4791 MU
+4801   4811 LAM
+4811   4801 MU
+4811   4821 LAM
+4821   4811 MU
+4821   4831 LAM
+4831   4821 MU
+4831   4841 LAM
+4841   4831 MU
+4841   4851 LAM
+4851   4841 MU
+4851   4861 LAM
+4861   4851 MU
+4861   4871 LAM
+4871   4861 MU
+4871   4881 LAM
+4881   4871 MU
+4881   4891 LAM
+4891   4881 MU
+4891   4901 LAM
+4901   4891 MU
+4901   4911 LAM
+4911   4901 MU
+4911   4921 LAM
+4921   4911 MU
+4921   4931 LAM
+4931   4921 MU
+4931   4941 LAM
+4941   4931 MU
+4941   4951 LAM
+4951   4941 MU
+4951   4961 LAM
+4961   4951 MU
+4961   4971 LAM
+4971   4961 MU
+4971   4981 LAM
+4981   4971 MU
+4981   4991 LAM
+4991   4981 MU
+4991   5001 LAM
+5001   4991 MU
+5001   5011 LAM
+5011   5001 MU
+5011   5021 LAM
+5021   5011 MU
+5021   5031 LAM
+5031   5021 MU
+5031   5041 LAM
+5041   5031 MU
+5041   5051 LAM
+5051   5041 MU
+5051   5061 LAM
+5061   5051 MU
+5061   5071 LAM
+5071   5061 MU
+5071   5081 LAM
+5081   5071 MU
+5081   5091 LAM
+5091   5081 MU
+5091   5101 LAM
+5101   5091 MU
+5101   5111 LAM
+5111   5101 MU
+5111   5121 LAM
+5121   5111 MU
+5121   5131 LAM
+5131   5121 MU
+5131   5141 LAM
+5141   5131 MU
+5141   5151 LAM
+5151   5141 MU
+5151   5161 LAM
+5161   5151 MU
+5161   5171 LAM
+5171   5161 MU
+5171   5181 LAM
+5181   5171 MU
+5181   5191 LAM
+5191   5181 MU
+5191   5201 LAM
+5201   5191 MU
+5201   5211 LAM
+5211   5201 MU
+5211   5221 LAM
+5221   5211 MU
+5221   5231 LAM
+5231   5221 MU
+5231   5241 LAM
+5241   5231 MU
+5241   5251 LAM
+5251   5241 MU
+5251   5261 LAM
+5261   5251 MU
+5261   5271 LAM
+5271   5261 MU
+5271   5281 LAM
+5281   5271 MU
+5281   5291 LAM
+5291   5281 MU
+5291   5301 LAM
+5301   5291 MU
+5301   5311 LAM
+5311   5301 MU
+5311   5321 LAM
+5321   5311 MU
+5321   5331 LAM
+5331   5321 MU
+5331   5341 LAM
+5341   5331 MU
+5341   5351 LAM
+5351   5341 MU
+5351   5361 LAM
+5361   5351 MU
+5361   5371 LAM
+5371   5361 MU
+5371   5381 LAM
+5381   5371 MU
+5381   5391 LAM
+5391   5381 MU
+5391   5401 LAM
+5401   5391 MU
+5401   5411 LAM
+5411   5401 MU
+5411   5421 LAM
+5421   5411 MU
+5421   5431 LAM
+5431   5421 MU
+5431   5441 LAM
+5441   5431 MU
+5441   5451 LAM
+5451   5441 MU
+5451   5461 LAM
+5461   5451 MU
+5461   5471 LAM
+5471   5461 MU
+5471   5481 LAM
+5481   5471 MU
+5481   5491 LAM
+5491   5481 MU
+5491   5501 LAM
+5501   5491 MU
+5501   5511 LAM
+5511   5501 MU
+5511   5521 LAM
+5521   5511 MU
+5521   5531 LAM
+5531   5521 MU
+5531   5541 LAM
+5541   5531 MU
+5541   5551 LAM
+5551   5541 MU
+5551   5561 LAM
+5561   5551 MU
+5561   5571 LAM
+5571   5561 MU
+5571   5581 LAM
+5581   5571 MU
+5581   5591 LAM
+5591   5581 MU
+5591   5601 LAM
+5601   5591 MU
+5601   5611 LAM
+5611   5601 MU
+5611   5621 LAM
+5621   5611 MU
+5621   5631 LAM
+5631   5621 MU
+5631   5641 LAM
+5641   5631 MU
+5641   5651 LAM
+5651   5641 MU
+5651   5661 LAM
+5661   5651 MU
+5661   5671 LAM
+5671   5661 MU
+5671   5681 LAM
+5681   5671 MU
+5681   5691 LAM
+5691   5681 MU
+5691   5701 LAM
+5701   5691 MU
+5701   5711 LAM
+5711   5701 MU
+5711   5721 LAM
+5721   5711 MU
+5721   5731 LAM
+5731   5721 MU
+5731   5741 LAM
+5741   5731 MU
+5741   5751 LAM
+5751   5741 MU
+5751   5761 LAM
+5761   5751 MU
+5761   5771 LAM
+5771   5761 MU
+5771   5781 LAM
+5781   5771 MU
+5781   5791 LAM
+5791   5781 MU
+5791   5801 LAM
+5801   5791 MU
+5801   5811 LAM
+5811   5801 MU
+5811   5821 LAM
+5821   5811 MU
+5821   5831 LAM
+5831   5821 MU
+5831   5841 LAM
+5841   5831 MU
+5841   5851 LAM
+5851   5841 MU
+5851   5861 LAM
+5861   5851 MU
+5861   5871 LAM
+5871   5861 MU
+5871   5881 LAM
+5881   5871 MU
+5881   5891 LAM
+5891   5881 MU
+5891   5901 LAM
+5901   5891 MU
+5901   5911 LAM
+5911   5901 MU
+5911   5921 LAM
+5921   5911 MU
+5921   5931 LAM
+5931   5921 MU
+5931   5941 LAM
+5941   5931 MU
+5941   5951 LAM
+5951   5941 MU
+5951   5961 LAM
+5961   5951 MU
+5961   5971 LAM
+5971   5961 MU
+5971   5981 LAM
+5981   5971 MU
+5981   5991 LAM
+5991   5981 MU
+5991   6001 LAM
+6001   5991 MU
+6001   6011 LAM
+6011   6001 MU
+6011   6021 LAM
+6021   6011 MU
+6021   6031 LAM
+6031   6021 MU
+6031   6041 LAM
+6041   6031 MU
+6041   6051 LAM
+6051   6041 MU
+6051   6061 LAM
+6061   6051 MU
+6061   6071 LAM
+6071   6061 MU
+6071   6081 LAM
+6081   6071 MU
+6081   6091 LAM
+6091   6081 MU
+6091   6101 LAM
+6101   6091 MU
+6101   6111 LAM
+6111   6101 MU
+6111   6121 LAM
+6121   6111 MU
+6121   6131 LAM
+6131   6121 MU
+6131   6141 LAM
+6141   6131 MU
+6141   6151 LAM
+6151   6141 MU
+6151   6161 LAM
+6161   6151 MU
+6161   6171 LAM
+6171   6161 MU
+6171   6181 LAM
+6181   6171 MU
+6181   6191 LAM
+6191   6181 MU
+6191   6201 LAM
+6201   6191 MU
+6201   6211 LAM
+6211   6201 MU
+6211   6221 LAM
+6221   6211 MU
+6221   6231 LAM
+6231   6221 MU
+6231   6241 LAM
+6241   6231 MU
+6241   6251 LAM
+6251   6241 MU
+6251   6261 LAM
+6261   6251 MU
+6261   6271 LAM
+6271   6261 MU
+6271   6281 LAM
+6281   6271 MU
+6281   6291 LAM
+6291   6281 MU
+6291   6301 LAM
+6301   6291 MU
+6301   6311 LAM
+6311   6301 MU
+6311   6321 LAM
+6321   6311 MU
+6321   6331 LAM
+6331   6321 MU
+6331   6341 LAM
+6341   6331 MU
+6341   6351 LAM
+6351   6341 MU
+6351   6361 LAM
+6361   6351 MU
+6361   6371 LAM
+6371   6361 MU
+6371   6381 LAM
+6381   6371 MU
+6381   6391 LAM
+6391   6381 MU
+6391   6401 LAM
+6401   6391 MU
+6401   6411 LAM
+6411   6401 MU
+6411   6421 LAM
+6421   6411 MU
+6421   6431 LAM
+6431   6421 MU
+6431   6441 LAM
+6441   6431 MU
+6441   6451 LAM
+6451   6441 MU
+6451   6461 LAM
+6461   6451 MU
+6461   6471 LAM
+6471   6461 MU
+6471   6481 LAM
+6481   6471 MU
+6481   6491 LAM
+6491   6481 MU
+6491   6501 LAM
+6501   6491 MU
+6501   6511 LAM
+6511   6501 MU
+6511   6521 LAM
+6521   6511 MU
+6521   6531 LAM
+6531   6521 MU
+6531   6541 LAM
+6541   6531 MU
+6541   6551 LAM
+6551   6541 MU
+6551   6561 LAM
+6561   6551 MU
+6561   6571 LAM
+6571   6561 MU
+6571   6581 LAM
+6581   6571 MU
+6581   6591 LAM
+6591   6581 MU
+6591   6601 LAM
+6601   6591 MU
+6601   6611 LAM
+6611   6601 MU
+6611   6621 LAM
+6621   6611 MU
+6621   6631 LAM
+6631   6621 MU
+6631   6641 LAM
+6641   6631 MU
+6641   6651 LAM
+6651   6641 MU
+6651   6661 LAM
+6661   6651 MU
+6661   6671 LAM
+6671   6661 MU
+6671   6681 LAM
+6681   6671 MU
+6681   6691 LAM
+6691   6681 MU
+6691   6701 LAM
+6701   6691 MU
+6701   6711 LAM
+6711   6701 MU
+6711   6721 LAM
+6721   6711 MU
+6721   6731 LAM
+6731   6721 MU
+6731   6741 LAM
+6741   6731 MU
+6741   6751 LAM
+6751   6741 MU
+6751   6761 LAM
+6761   6751 MU
+6761   6771 LAM
+6771   6761 MU
+6771   6781 LAM
+6781   6771 MU
+6781   6791 LAM
+6791   6781 MU
+6791   6801 LAM
+6801   6791 MU
+6801   6811 LAM
+6811   6801 MU
+6811   6821 LAM
+6821   6811 MU
+6821   6831 LAM
+6831   6821 MU
+6831   6841 LAM
+6841   6831 MU
+6841   6851 LAM
+6851   6841 MU
+6851   6861 LAM
+6861   6851 MU
+6861   6871 LAM
+6871   6861 MU
+6871   6881 LAM
+6881   6871 MU
+6881   6891 LAM
+6891   6881 MU
+6891   6901 LAM
+6901   6891 MU
+6901   6911 LAM
+6911   6901 MU
+6911   6921 LAM
+6921   6911 MU
+6921   6931 LAM
+6931   6921 MU
+6931   6941 LAM
+6941   6931 MU
+6941   6951 LAM
+6951   6941 MU
+6951   6961 LAM
+6961   6951 MU
+6961   6971 LAM
+6971   6961 MU
+6971   6981 LAM
+6981   6971 MU
+6981   6991 LAM
+6991   6981 MU
+6991   7001 LAM
+7001   6991 MU
+7001   7011 LAM
+7011   7001 MU
+7011   7021 LAM
+7021   7011 MU
+7021   7031 LAM
+7031   7021 MU
+7031   7041 LAM
+7041   7031 MU
+7041   7051 LAM
+7051   7041 MU
+7051   7061 LAM
+7061   7051 MU
+7061   7071 LAM
+7071   7061 MU
+7071   7081 LAM
+7081   7071 MU
+7081   7091 LAM
+7091   7081 MU
+7091   7101 LAM
+7101   7091 MU
+7101   7111 LAM
+7111   7101 MU
+7111   7121 LAM
+7121   7111 MU
+7121   7131 LAM
+7131   7121 MU
+7131   7141 LAM
+7141   7131 MU
+7141   7151 LAM
+7151   7141 MU
+7151   7161 LAM
+7161   7151 MU
+7161   7171 LAM
+7171   7161 MU
+7171   7181 LAM
+7181   7171 MU
+7181   7191 LAM
+7191   7181 MU
+7191   7201 LAM
+7201   7191 MU
+7201   7211 LAM
+7211   7201 MU
+7211   7221 LAM
+7221   7211 MU
+7221   7231 LAM
+7231   7221 MU
+7231   7241 LAM
+7241   7231 MU
+7241   7251 LAM
+7251   7241 MU
+7251   7261 LAM
+7261   7251 MU
+7261   7271 LAM
+7271   7261 MU
+7271   7281 LAM
+7281   7271 MU
+7281   7291 LAM
+7291   7281 MU
+7291   7301 LAM
+7301   7291 MU
+7301   7311 LAM
+7311   7301 MU
+7311   7321 LAM
+7321   7311 MU
+7321   7331 LAM
+7331   7321 MU
+7331   7341 LAM
+7341   7331 MU
+7341   7351 LAM
+7351   7341 MU
+7351   7361 LAM
+7361   7351 MU
+7361   7371 LAM
+7371   7361 MU
+7371   7381 LAM
+7381   7371 MU
+7381   7391 LAM
+7391   7381 MU
+7391   7401 LAM
+7401   7391 MU
+7401   7411 LAM
+7411   7401 MU
+7411   7421 LAM
+7421   7411 MU
+7421   7431 LAM
+7431   7421 MU
+7431   7441 LAM
+7441   7431 MU
+7441   7451 LAM
+7451   7441 MU
+7451   7461 LAM
+7461   7451 MU
+7461   7471 LAM
+7471   7461 MU
+7471   7481 LAM
+7481   7471 MU
+7481   7491 LAM
+7491   7481 MU
+7491   7501 LAM
+7501   7491 MU
+7501   7511 LAM
+7511   7501 MU
+7511   7521 LAM
+7521   7511 MU
+7521   7531 LAM
+7531   7521 MU
+7531   7541 LAM
+7541   7531 MU
+7541   7551 LAM
+7551   7541 MU
+7551   7561 LAM
+7561   7551 MU
+7561   7571 LAM
+7571   7561 MU
+7571   7581 LAM
+7581   7571 MU
+7581   7591 LAM
+7591   7581 MU
+7591   7601 LAM
+7601   7591 MU
+7601   7611 LAM
+7611   7601 MU
+7611   7621 LAM
+7621   7611 MU
+7621   7631 LAM
+7631   7621 MU
+7631   7641 LAM
+7641   7631 MU
+7641   7651 LAM
+7651   7641 MU
+7651   7661 LAM
+7661   7651 MU
+7661   7671 LAM
+7671   7661 MU
+7671   7681 LAM
+7681   7671 MU
+7681   7691 LAM
+7691   7681 MU
+7691   7701 LAM
+7701   7691 MU
+7701   7711 LAM
+7711   7701 MU
+7711   7721 LAM
+7721   7711 MU
+7721   7731 LAM
+7731   7721 MU
+7731   7741 LAM
+7741   7731 MU
+7741   7751 LAM
+7751   7741 MU
+7751   7761 LAM
+7761   7751 MU
+7761   7771 LAM
+7771   7761 MU
+7771   7781 LAM
+7781   7771 MU
+7781   7791 LAM
+7791   7781 MU
+7791   7801 LAM
+7801   7791 MU
+7801   7811 LAM
+7811   7801 MU
+7811   7821 LAM
+7821   7811 MU
+7821   7831 LAM
+7831   7821 MU
+7831   7841 LAM
+7841   7831 MU
+7841   7851 LAM
+7851   7841 MU
+7851   7861 LAM
+7861   7851 MU
+7861   7871 LAM
+7871   7861 MU
+7871   7881 LAM
+7881   7871 MU
+7881   7891 LAM
+7891   7881 MU
+7891   7901 LAM
+7901   7891 MU
+7901   7911 LAM
+7911   7901 MU
+7911   7921 LAM
+7921   7911 MU
+7921   7931 LAM
+7931   7921 MU
+7931   7941 LAM
+7941   7931 MU
+7941   7951 LAM
+7951   7941 MU
+7951   7961 LAM
+7961   7951 MU
+7961   7971 LAM
+7971   7961 MU
+7971   7981 LAM
+7981   7971 MU
+7981   7991 LAM
+7991   7981 MU
+7991   8001 LAM
+8001   7991 MU
+8001   8011 LAM
+8011   8001 MU
+8011   8021 LAM
+8021   8011 MU
+8021   8031 LAM
+8031   8021 MU
+8031   8041 LAM
+8041   8031 MU
+8041   8051 LAM
+8051   8041 MU
+8051   8061 LAM
+8061   8051 MU
+8061   8071 LAM
+8071   8061 MU
+8071   8081 LAM
+8081   8071 MU
+8081   8091 LAM
+8091   8081 MU
+8091   8101 LAM
+8101   8091 MU
+8101   8111 LAM
+8111   8101 MU
+8111   8121 LAM
+8121   8111 MU
+8121   8131 LAM
+8131   8121 MU
+8131   8141 LAM
+8141   8131 MU
+8141   8151 LAM
+8151   8141 MU
+8151   8161 LAM
+8161   8151 MU
+8161   8171 LAM
+8171   8161 MU
+8171   8181 LAM
+8181   8171 MU
+8181   8191 LAM
+8191   8181 MU
+8191   8201 LAM
+8201   8191 MU
+8201   8211 LAM
+8211   8201 MU
+8211   8221 LAM
+8221   8211 MU
+8221   8231 LAM
+8231   8221 MU
+8231   8241 LAM
+8241   8231 MU
+8241   8251 LAM
+8251   8241 MU
+8251   8261 LAM
+8261   8251 MU
+8261   8271 LAM
+8271   8261 MU
+8271   8281 LAM
+8281   8271 MU
+8281   8291 LAM
+8291   8281 MU
+8291   8301 LAM
+8301   8291 MU
+8301   8311 LAM
+8311   8301 MU
+8311   8321 LAM
+8321   8311 MU
+8321   8331 LAM
+8331   8321 MU
+8331   8341 LAM
+8341   8331 MU
+8341   8351 LAM
+8351   8341 MU
+8351   8361 LAM
+8361   8351 MU
+8361   8371 LAM
+8371   8361 MU
+8371   8381 LAM
+8381   8371 MU
+8381   8391 LAM
+8391   8381 MU
+8391   8401 LAM
+8401   8391 MU
+8401   8411 LAM
+8411   8401 MU
+8411   8421 LAM
+8421   8411 MU
+8421   8431 LAM
+8431   8421 MU
+8431   8441 LAM
+8441   8431 MU
+8441   8451 LAM
+8451   8441 MU
+8451   8461 LAM
+8461   8451 MU
+8461   8471 LAM
+8471   8461 MU
+8471   8481 LAM
+8481   8471 MU
+8481   8491 LAM
+8491   8481 MU
+8491   8501 LAM
+8501   8491 MU
+8501   8511 LAM
+8511   8501 MU
+8511   8521 LAM
+8521   8511 MU
+8521   8531 LAM
+8531   8521 MU
+8531   8541 LAM
+8541   8531 MU
+8541   8551 LAM
+8551   8541 MU
+8551   8561 LAM
+8561   8551 MU
+8561   8571 LAM
+8571   8561 MU
+8571   8581 LAM
+8581   8571 MU
+8581   8591 LAM
+8591   8581 MU
+8591   8601 LAM
+8601   8591 MU
+8601   8611 LAM
+8611   8601 MU
+8611   8621 LAM
+8621   8611 MU
+8621   8631 LAM
+8631   8621 MU
+8631   8641 LAM
+8641   8631 MU
+8641   8651 LAM
+8651   8641 MU
+8651   8661 LAM
+8661   8651 MU
+8661   8671 LAM
+8671   8661 MU
+8671   8681 LAM
+8681   8671 MU
+8681   8691 LAM
+8691   8681 MU
+8691   8701 LAM
+8701   8691 MU
+8701   8711 LAM
+8711   8701 MU
+8711   8721 LAM
+8721   8711 MU
+8721   8731 LAM
+8731   8721 MU
+8731   8741 LAM
+8741   8731 MU
+8741   8751 LAM
+8751   8741 MU
+8751   8761 LAM
+8761   8751 MU
+8761   8771 LAM
+8771   8761 MU
+8771   8781 LAM
+8781   8771 MU
+8781   8791 LAM
+8791   8781 MU
+8791   8801 LAM
+8801   8791 MU
+8801   8811 LAM
+8811   8801 MU
+8811   8821 LAM
+8821   8811 MU
+8821   8831 LAM
+8831   8821 MU
+8831   8841 LAM
+8841   8831 MU
+8841   8851 LAM
+8851   8841 MU
+8851   8861 LAM
+8861   8851 MU
+8861   8871 LAM
+8871   8861 MU
+8871   8881 LAM
+8881   8871 MU
+8881   8891 LAM
+8891   8881 MU
+8891   8901 LAM
+8901   8891 MU
+8901   8911 LAM
+8911   8901 MU
+8911   8921 LAM
+8921   8911 MU
+8921   8931 LAM
+8931   8921 MU
+8931   8941 LAM
+8941   8931 MU
+8941   8951 LAM
+8951   8941 MU
+8951   8961 LAM
+8961   8951 MU
+8961   8971 LAM
+8971   8961 MU
+8971   8981 LAM
+8981   8971 MU
+8981   8991 LAM
+8991   8981 MU
+8991   9001 LAM
+9001   8991 MU
+9001   9011 LAM
+9011   9001 MU
+9011   9021 LAM
+9021   9011 MU
+9021   9031 LAM
+9031   9021 MU
+9031   9041 LAM
+9041   9031 MU
+9041   9051 LAM
+9051   9041 MU
+9051   9061 LAM
+9061   9051 MU
+9061   9071 LAM
+9071   9061 MU
+9071   9081 LAM
+9081   9071 MU
+9081   9091 LAM
+9091   9081 MU
+9091   9101 LAM
+9101   9091 MU
+9101   9111 LAM
+9111   9101 MU
+9111   9121 LAM
+9121   9111 MU
+9121   9131 LAM
+9131   9121 MU
+9131   9141 LAM
+9141   9131 MU
+9141   9151 LAM
+9151   9141 MU
+9151   9161 LAM
+9161   9151 MU
+9161   9171 LAM
+9171   9161 MU
+9171   9181 LAM
+9181   9171 MU
+9181   9191 LAM
+9191   9181 MU
+9191   9201 LAM
+9201   9191 MU
+9201   9211 LAM
+9211   9201 MU
+9211   9221 LAM
+9221   9211 MU
+9221   9231 LAM
+9231   9221 MU
+9231   9241 LAM
+9241   9231 MU
+9241   9251 LAM
+9251   9241 MU
+9251   9261 LAM
+9261   9251 MU
+9261   9271 LAM
+9271   9261 MU
+9271   9281 LAM
+9281   9271 MU
+9281   9291 LAM
+9291   9281 MU
+9291   9301 LAM
+9301   9291 MU
+9301   9311 LAM
+9311   9301 MU
+9311   9321 LAM
+9321   9311 MU
+9321   9331 LAM
+9331   9321 MU
+9331   9341 LAM
+9341   9331 MU
+9341   9351 LAM
+9351   9341 MU
+9351   9361 LAM
+9361   9351 MU
+9361   9371 LAM
+9371   9361 MU
+9371   9381 LAM
+9381   9371 MU
+9381   9391 LAM
+9391   9381 MU
+9391   9401 LAM
+9401   9391 MU
+9401   9411 LAM
+9411   9401 MU
+9411   9421 LAM
+9421   9411 MU
+9421   9431 LAM
+9431   9421 MU
+9431   9441 LAM
+9441   9431 MU
+9441   9451 LAM
+9451   9441 MU
+9451   9461 LAM
+9461   9451 MU
+9461   9471 LAM
+9471   9461 MU
+9471   9481 LAM
+9481   9471 MU
+9481   9491 LAM
+9491   9481 MU
+9491   9501 LAM
+9501   9491 MU
+9501   9511 LAM
+9511   9501 MU
+9511   9521 LAM
+9521   9511 MU
+9521   9531 LAM
+9531   9521 MU
+9531   9541 LAM
+9541   9531 MU
+9541   9551 LAM
+9551   9541 MU
+9551   9561 LAM
+9561   9551 MU
+9561   9571 LAM
+9571   9561 MU
+9571   9581 LAM
+9581   9571 MU
+9581   9591 LAM
+9591   9581 MU
+9591   9601 LAM
+9601   9591 MU
+9601   9611 LAM
+9611   9601 MU
+9611   9621 LAM
+9621   9611 MU
+9621   9631 LAM
+9631   9621 MU
+9631   9641 LAM
+9641   9631 MU
+9641   9651 LAM
+9651   9641 MU
+9651   9661 LAM
+9661   9651 MU
+9661   9671 LAM
+9671   9661 MU
+9671   9681 LAM
+9681   9671 MU
+9681   9691 LAM
+9691   9681 MU
+9691   9701 LAM
+9701   9691 MU
+9701   9711 LAM
+9711   9701 MU
+9711   9721 LAM
+9721   9711 MU
+9721   9731 LAM
+9731   9721 MU
+9731   9741 LAM
+9741   9731 MU
+9741   9751 LAM
+9751   9741 MU
+9751   9761 LAM
+9761   9751 MU
+9761   9771 LAM
+9771   9761 MU
+9771   9781 LAM
+9781   9771 MU
+9781   9791 LAM
+9791   9781 MU
+9791   9801 LAM
+9801   9791 MU
+9801   9811 LAM
+9811   9801 MU
+9811   9821 LAM
+9821   9811 MU
+9821   9831 LAM
+9831   9821 MU
+9831   9841 LAM
+9841   9831 MU
+9841   9851 LAM
+9851   9841 MU
+9851   9861 LAM
+9861   9851 MU
+9861   9871 LAM
+9871   9861 MU
+9871   9881 LAM
+9881   9871 MU
+9881   9891 LAM
+9891   9881 MU
+9891   9901 LAM
+9901   9891 MU
+9901   9911 LAM
+9911   9901 MU
+9911   9921 LAM
+9921   9911 MU
+9921   9931 LAM
+9931   9921 MU
+9931   9941 LAM
+9941   9931 MU
+9941   9951 LAM
+9951   9941 MU
+9951   9961 LAM
+9961   9951 MU
+9961   9971 LAM
+9971   9961 MU
+9971   9981 LAM
+9981   9971 MU
+9981   9991 LAM
+9991   9981 MU
+end
+
+expr prob(mm1_999,01)
+expr prob(mm1_999,9991)
+
+*Example 12:
+echo Example 12
+bind
+LAM 1.0
+MU 1.2
+end
+format 8
+markov mm5
+0   1 LAM
+1   0 MU
+1   2 LAM
+2   1 2*MU
+2   3 LAM
+3   2 3*MU
+3   4 LAM
+4   3 4*MU
+4   5 LAM
+5   4 5*MU
+5   6 LAM
+6   5 5*MU
+6   7 LAM
+7   6 5*MU
+7   8 LAM
+8   7 5*MU
+8   9 LAM
+9   8 5*MU
+9   10 LAM
+10   9 5*MU
+10   11 LAM
+11   10 5*MU
+11   12 LAM
+12   11 5*MU
+12   13 LAM
+13   12 5*MU
+13   14 LAM
+14   13 5*MU
+14   15 LAM
+15   14 5*MU
+15   16 LAM
+16   15 5*MU
+16   17 LAM
+17   16 5*MU
+17   18 LAM
+18   17 5*MU
+18   19 LAM
+19   18 5*MU
+19   20 LAM
+20   19 5*MU
+20   21 LAM
+21   20 5*MU
+21   22 LAM
+22   21 5*MU
+22   23 LAM
+23   22 5*MU
+23   24 LAM
+24   23 5*MU
+24   25 LAM
+25   24 5*MU
+25   26 LAM
+26   25 5*MU
+26   27 LAM
+27   26 5*MU
+27   28 LAM
+28   27 5*MU
+28   29 LAM
+29   28 5*MU
+29   30 LAM
+30   29 5*MU
+30   31 LAM
+31   30 5*MU
+31   32 LAM
+32   31 5*MU
+32   33 LAM
+33   32 5*MU
+33   34 LAM
+34   33 5*MU
+34   35 LAM
+35   34 5*MU
+35   36 LAM
+36   35 5*MU
+36   37 LAM
+37   36 5*MU
+37   38 LAM
+38   37 5*MU
+38   39 LAM
+39   38 5*MU
+39   40 LAM
+40   39 5*MU
+40   41 LAM
+41   40 5*MU
+41   42 LAM
+42   41 5*MU
+42   43 LAM
+43   42 5*MU
+43   44 LAM
+44   43 5*MU
+44   45 LAM
+45   44 5*MU
+45   46 LAM
+46   45 5*MU
+46   47 LAM
+47   46 5*MU
+47   48 LAM
+48   47 5*MU
+48   49 LAM
+49   48 5*MU
+49   50 LAM
+50   49 5*MU
+50   51 LAM
+51   50 5*MU
+51   52 LAM
+52   51 5*MU
+52   53 LAM
+53   52 5*MU
+53   54 LAM
+54   53 5*MU
+54   55 LAM
+55   54 5*MU
+55   56 LAM
+56   55 5*MU
+56   57 LAM
+57   56 5*MU
+57   58 LAM
+58   57 5*MU
+58   59 LAM
+59   58 5*MU
+59   60 LAM
+60   59 5*MU
+60   61 LAM
+61   60 5*MU
+61   62 LAM
+62   61 5*MU
+62   63 LAM
+63   62 5*MU
+63   64 LAM
+64   63 5*MU
+64   65 LAM
+65   64 5*MU
+65   66 LAM
+66   65 5*MU
+66   67 LAM
+67   66 5*MU
+67   68 LAM
+68   67 5*MU
+68   69 LAM
+69   68 5*MU
+69   70 LAM
+70   69 5*MU
+70   71 LAM
+71   70 5*MU
+71   72 LAM
+72   71 5*MU
+72   73 LAM
+73   72 5*MU
+73   74 LAM
+74   73 5*MU
+74   75 LAM
+75   74 5*MU
+75   76 LAM
+76   75 5*MU
+76   77 LAM
+77   76 5*MU
+77   78 LAM
+78   77 5*MU
+78   79 LAM
+79   78 5*MU
+79   80 LAM
+80   79 5*MU
+80   81 LAM
+81   80 5*MU
+81   82 LAM
+82   81 5*MU
+82   83 LAM
+83   82 5*MU
+83   84 LAM
+84   83 5*MU
+84   85 LAM
+85   84 5*MU
+85   86 LAM
+86   85 5*MU
+86   87 LAM
+87   86 5*MU
+87   88 LAM
+88   87 5*MU
+88   89 LAM
+89   88 5*MU
+89   90 LAM
+90   89 5*MU
+90   91 LAM
+91   90 5*MU
+91   92 LAM
+92   91 5*MU
+92   93 LAM
+93   92 5*MU
+93   94 LAM
+94   93 5*MU
+94   95 LAM
+95   94 5*MU
+95   96 LAM
+96   95 5*MU
+96   97 LAM
+97   96 5*MU
+97   98 LAM
+98   97 5*MU
+98   99 LAM
+99   98 5*MU
+99   100 LAM
+100   99 5*MU
+end
+expr prob(mm5,0)
+expr LAM*prob(mm5,100)
+bind 
+LAM 3.0
+end
+expr prob(mm5,0)
+expr LAM*prob(mm5,100)
+
+* Example 13:
+echo Example 13:
+
+format 8
+
+markov cycletime
+3 2 3*lam
+2 3 mu
+2 F 2*lam
+end
+2 1.0
+end
+
+bind
+lam 0.0001
+mu 1.0
+end
+
+expr 1/mean (cycletime), 6*mu*(lam/(lam+mu))*(lam/(lam+mu))*(mu/(lam+mu))
+
+* Example 14:
+echo Example 14:
+* irreducible chain, using algorithm from phase-type chains to
+* find transient probability function for states.
+* make sure value (evaluation of the funcons at t) and tvalue
+* (use uniformization algorithm to find transient proaility)
+* give the same answer.
+
+markov m readprobs
+1 2 10
+2 1 4
+end
+1 1
+end
+
+phnew
+cdf (m,1)
+cdf (m,2)
+expr prob (m,1), prob(m,2)
+
+loop t,0,1,.2
+    expr value(t;m,1), tvalue (t;m,1), value(t;m,2), tvalue (t;m,2)
+end
+
+* Example 15:
+echo Example 15:
+format 8
+* Running a HARP-like model.
+* We use the behavioral decomp with moments fehm (only the first moment)
+* Near coincident fault rate is lam
+var c1 1-mom*lam/3600
+var n mom*lam/3600
+
+bind
+* epsilon is used to control errors in computations
+*epsilon 0.00000000000000001
+lam .0001
+mu .00001
+mom .36
+end
+
+expr c1,n
+expr 2*lam*c1,2*lam*n
+
+markov 3st
+2 1 2*lam*c1
+2 fncf 2*lam*n
+1 0 mu
+end
+2 1
+end
+
+cdf(3st)
+expr mean(3st)
+* We compute the failure prob in two diffeernt ways;
+* value computes using the eigenvalue approach
+* while tvalue computes it using the randomization(uniformization)
+loop i,-5,5,1
+bind t 10^i
+expr value(t;3st), tvalue(t;3st)
+end
+
+*Example 16:
+echo Example 16:
+* This a reliability model of a TMR system with
+* a spare. First we use the spdag (graph) model
+* See Figure 8.24 (p. 406) 
+* of Trivedi's book
+
+format 8
+
+* lam is the failure rate of an active unit and
+* mu is the failure rate of a spare
+* c is the coverage probability
+
+graph phasetype(lam,mu,c)
+31 30
+31 Z
+30 20
+end
+exit 31 prob
+prob 31 30 (3*lam*c+mu)/(3*lam+mu)
+dist  31 exp(3*lam+mu)
+dist  30 exp(3*lam)
+dist  20 exp(2*lam)
+dist  Z  zero
+end
+
+
+* Now solve the same problem using a Markov model
+* This is a special case of the model in Figure 8.23
+* in Trivedi's book (p. 405)
+
+markov markovian(lam,mu,c)
+31 30 3*lam*c+mu
+31 F  3*lam*(1-c)
+30 20 3*lam
+20 F 2*lam
+end
+31 1.0
+end
+
+* df is the dormancy factor: mu/lam
+bind df 0.0
+expr df
+cdf(phasetype;1.0,df,0.9)
+cdf(markovian;1.0,df,0.9)
+cdf(phasetype;0.0001,df*0.0001,0.9)
+cdf(markovian;0.0001,df*0.0001,0.9)
+cdf(phasetype;1000,df*1000,0.9)
+cdf(markovian;1000,df*1000,0.9)
+
+bind df 0.5
+expr df
+cdf(phasetype;1.0,df,0.9)
+cdf(markovian;1.0,df,0.9)
+cdf(phasetype;0.0001,df*0.0001,0.9)
+cdf(markovian;0.0001,df*0.0001,0.9)
+cdf(phasetype;1000,df*1000,0.9)
+cdf(markovian;1000,df*1000,0.9)
+
+bind df 1.0
+expr df
+cdf(phasetype;1.0,df,0.9)
+cdf(markovian;1.0,df,0.9)
+cdf(phasetype;0.0001,df*0.0001,0.9)
+cdf(markovian;0.0001,df*0.0001,0.9)
+cdf(phasetype;1000,df*1000,0.9)
+cdf(markovian;1000,df*1000,0.9)
+
+loop c,0.9,1.0,.1
+  loop i,0,10,5
+    bind df 0.1*i
+    * mean time to failure
+    expr mean(phasetype;.0001,df*.0001,c)
+    expr mean(markovian;.0001,df*.0001,c)
+    * fail prob at time 10 hours
+    expr value(10;phasetype;0.0001,df*.0001,c)
+    expr value(10;markovian;0.0001,df*.0001,c)
+    expr tvalue(10;markovian;0.0001,df*.0001,c)
+  end
+end
+
+*Example 17:
+echo Example 17:
+* Now consider a reliability model of a multiprocessor
+* with two diffrent approaches
+* Approach 1: 
+* a block diagram model of a system with
+* 16 processors, 16 memories and a switch.
+
+format 8
+
+  bind 
+  lambda 0.0001
+  mu    0.005
+  gamma  0.001
+  end
+
+block procs
+comp processor exp(lambda)
+* req is the minimum number of procs needed for system to remain operational
+kofn procs req,16, processor
+end
+
+block mems
+comp memory exp(mu)
+* req is the minimum number of mems needed for system to remain operational
+kofn mems req, 16 , memory
+end
+
+block sys1
+comp switch exp(gamma)
+comp procs  cdf(procs)
+comp mems   cdf(mems)
+series TOP switch procs mems
+end
+
+
+* Alternative is a markov model
+ 
+markov mark readprobs 
+  577     543        16*lambda         
+  577     575        16*mu             
+  577   580        gamma          
+  543     509        15*lambda         
+  543     541        16*mu             
+  543   580        gamma          
+  575     541        16*lambda         
+  575     573        15*mu             
+  575   580        gamma          
+  509     475        14*lambda         
+  509     507        16*mu             
+  509   580        gamma          
+  541     507        15*lambda         
+  541     539        15*mu             
+  541   580        gamma          
+  573     539        16*lambda         
+  573     571        14*mu             
+  573   580        gamma          
+  475     441        13*lambda         
+  475     473        16*mu             
+  475   580        gamma          
+  507     473        14*lambda         
+  507     505        15*mu             
+  507   580        gamma          
+  539     505        15*lambda         
+  539     537        14*mu             
+  539   580        gamma          
+  571     537        16*lambda         
+  571     569        13*mu             
+  571   580        gamma          
+  441     407        12*lambda         
+  441     439        16*mu             
+  441   580        gamma          
+  473     439        13*lambda         
+  473     471        15*mu             
+  473   580        gamma          
+  505     471        14*lambda         
+  505     503        14*mu             
+  505   580        gamma          
+  537     503        15*lambda         
+  537     535        13*mu             
+  537   580        gamma          
+  569     535        16*lambda         
+  569     567        12*mu             
+  569   580        gamma          
+  407     373        11*lambda         
+  407     405        16*mu             
+  407   580        gamma          
+  439     405        12*lambda         
+  439     437        15*mu             
+  439   580        gamma          
+  471     437        13*lambda         
+  471     469        14*mu             
+  471   580        gamma          
+  503     469        14*lambda         
+  503     501        13*mu             
+  503   580        gamma          
+  535     501        15*lambda         
+  535     533        12*mu             
+  535   580        gamma          
+  567     533        16*lambda         
+  567     565        11*mu             
+  567   580        gamma          
+  373     339        10*lambda         
+  373     371        16*mu             
+  373   580        gamma          
+  405     371        11*lambda         
+  405     403        15*mu             
+  405   580        gamma          
+  437     403        12*lambda         
+  437     435        14*mu             
+  437   580        gamma          
+  469     435        13*lambda         
+  469     467        13*mu             
+  469   580        gamma          
+  501     467        14*lambda         
+  501     499        12*mu             
+  501   580        gamma          
+  533     499        15*lambda         
+  533     531        11*mu             
+  533   580        gamma          
+  565     531        16*lambda         
+  565     563        10*mu             
+  565   580        gamma          
+  339     305        9*lambda         
+  339     337        16*mu             
+  339   580        gamma          
+  371     337        10*lambda         
+  371     369        15*mu             
+  371   580        gamma          
+  403     369        11*lambda         
+  403     401        14*mu             
+  403   580        gamma          
+  435     401        12*lambda         
+  435     433        13*mu             
+  435   580        gamma          
+  467     433        13*lambda         
+  467     465        12*mu             
+  467   580        gamma          
+  499     465        14*lambda         
+  499     497        11*mu             
+  499   580        gamma          
+  531     497        15*lambda         
+  531     529        10*mu             
+  531   580        gamma          
+  563     529        16*lambda         
+  563     561        9*mu             
+  563   580        gamma          
+  305     271        8*lambda         
+  305     303        16*mu             
+  305   580        gamma          
+  337     303        9*lambda         
+  337     335        15*mu             
+  337   580        gamma          
+  369     335        10*lambda         
+  369     367        14*mu             
+  369   580        gamma          
+  401     367        11*lambda         
+  401     399        13*mu             
+  401   580        gamma          
+  433     399        12*lambda         
+  433     431        12*mu             
+  433   580        gamma          
+  465     431        13*lambda         
+  465     463        11*mu             
+  465   580        gamma          
+  497     463        14*lambda         
+  497     495        10*mu             
+  497   580        gamma          
+  529     495        15*lambda         
+  529     527        9*mu             
+  529   580        gamma          
+  561     527        16*lambda         
+  561     559        8*mu             
+  561   580        gamma          
+  271   578        7*lambda         
+  271     269        16*mu             
+  271   580        gamma          
+  303     269        8*lambda         
+  303     301        15*mu             
+  303   580        gamma          
+  335     301        9*lambda         
+  335     333        14*mu             
+  335   580        gamma          
+  367     333        10*lambda         
+  367     365        13*mu             
+  367   580        gamma          
+  399     365        11*lambda         
+  399     397        12*mu             
+  399   580        gamma          
+  431     397        12*lambda         
+  431     429        11*mu             
+  431   580        gamma          
+  463     429        13*lambda         
+  463     461        10*mu             
+  463   580        gamma          
+  495     461        14*lambda         
+  495     493        9*mu             
+  495   580        gamma          
+  527     493        15*lambda         
+  527     525        8*mu             
+  527   580        gamma          
+  559     525        16*lambda         
+  559   579        7*mu             
+  559   580        gamma          
+  269   578        7*lambda         
+  269     267        15*mu             
+  269   580        gamma          
+  301     267        8*lambda         
+  301     299        14*mu             
+  301   580        gamma          
+  333     299        9*lambda         
+  333     331        13*mu             
+  333   580        gamma          
+  365     331        10*lambda         
+  365     363        12*mu             
+  365   580        gamma          
+  397     363        11*lambda         
+  397     395        11*mu             
+  397   580        gamma          
+  429     395        12*lambda         
+  429     427        10*mu             
+  429   580        gamma          
+  461     427        13*lambda         
+  461     459        9*mu             
+  461   580        gamma          
+  493     459        14*lambda         
+  493     491        8*mu             
+  493   580        gamma          
+  525     491        15*lambda         
+  525   579        7*mu             
+  525   580        gamma          
+  267   578        7*lambda         
+  267     265        14*mu             
+  267   580        gamma          
+  299     265        8*lambda         
+  299     297        13*mu             
+  299   580        gamma          
+  331     297        9*lambda         
+  331     329        12*mu             
+  331   580        gamma          
+  363     329        10*lambda         
+  363     361        11*mu             
+  363   580        gamma          
+  395     361        11*lambda         
+  395     393        10*mu             
+  395   580        gamma          
+  427     393        12*lambda         
+  427     425        9*mu             
+  427   580        gamma          
+  459     425        13*lambda         
+  459     457        8*mu             
+  459   580        gamma          
+  491     457        14*lambda         
+  491   579        7*mu             
+  491   580        gamma          
+  265   578        7*lambda         
+  265     263        13*mu             
+  265   580        gamma          
+  297     263        8*lambda         
+  297     295        12*mu             
+  297   580        gamma          
+  329     295        9*lambda         
+  329     327        11*mu             
+  329   580        gamma          
+  361     327        10*lambda         
+  361     359        10*mu             
+  361   580        gamma          
+  393     359        11*lambda         
+  393     391        9*mu             
+  393   580        gamma          
+  425     391        12*lambda         
+  425     423        8*mu             
+  425   580        gamma          
+  457     423        13*lambda         
+  457   579        7*mu             
+  457   580        gamma          
+  263   578        7*lambda         
+  263     261        12*mu             
+  263   580        gamma          
+  295     261        8*lambda         
+  295     293        11*mu             
+  295   580        gamma          
+  327     293        9*lambda         
+  327     325        10*mu             
+  327   580        gamma          
+  359     325        10*lambda         
+  359     357        9*mu             
+  359   580        gamma          
+  391     357        11*lambda         
+  391     389        8*mu             
+  391   580        gamma          
+  423     389        12*lambda         
+  423   579        7*mu             
+  423   580        gamma          
+  261   578        7*lambda         
+  261     259        11*mu             
+  261   580        gamma          
+  293     259        8*lambda         
+  293     291        10*mu             
+  293   580        gamma          
+  325     291        9*lambda         
+  325     323        9*mu             
+  325   580        gamma          
+  357     323        10*lambda         
+  357     355        8*mu             
+  357   580        gamma          
+  389     355        11*lambda         
+  389   579        7*mu             
+  389   580        gamma          
+  259   578        7*lambda         
+  259     257        10*mu             
+  259   580        gamma          
+  291     257        8*lambda         
+  291     289        9*mu             
+  291   580        gamma          
+  323     289        9*lambda         
+  323     321        8*mu             
+  323   580        gamma          
+  355     321        10*lambda         
+  355   579        7*mu             
+  355   580        gamma          
+  257   578        7*lambda         
+  257     255        9*mu             
+  257   580        gamma          
+  289     255        8*lambda         
+  289     287        8*mu             
+  289   580        gamma          
+  321     287        9*lambda         
+  321   579        7*mu             
+  321   580        gamma          
+  255   578        7*lambda         
+  255     253        8*mu             
+  255   580        gamma          
+  287     253        8*lambda         
+  287   579        7*mu             
+  287   580        gamma          
+  253   578        7*lambda         
+  253   579        7*mu             
+  253   580        gamma          
+  end
+  577 1.0
+  end
+
+  bind req 7
+
+
+* Compare Markov model results with those from RBD.
+  loop t,0,10,1
+    expr tvalue(t;mark), tvalue(t;sys1)
+  end
+  loop t,10,100,10
+    expr tvalue(t;mark), tvalue(t;sys1)
+  end
+  loop t,100,1000,100
+    expr tvalue(t;mark), tvalue(t;sys1)
+  end
+  loop t,1000,10000,1000
+    expr tvalue(t;mark), tvalue(t;sys1)
+  end
+
+*Example 18:
+echo Example 18:
+
+* Model of an isdn protocol in which voice packets arrive at rate lam1
+* and data packets arrive at lam2; respective service rates are mu1 and mu2
+* Voice packets are not buffered while the total number data packets in
+* the system is limited to 10.
+* For a reference see Tom Robertazzi's book: Computer Networks and Systems,
+* 1990
+markov isdn10 readprobs 
+00 10 lam2
+10 20 lam2
+20 30 lam2
+30 40 lam2
+40 50 lam2
+50 60 lam2
+60 70 lam2
+70 80 lam2
+80 90 lam2
+90 100 lam2
+100 90 mu2
+90 80 mu2
+80 70 mu2
+70 60 mu2
+60 50 mu2
+50 40 mu2
+40 30 mu2
+30 20 mu2
+20 10 mu2
+10 00 mu2
+00 01 lam1
+01 00 mu1
+01 11 lam2
+11 21 lam2
+21 31 lam2
+31 41 lam2
+41 51 lam2
+51 61 lam2
+61 71 lam2
+71 81 lam2
+81 91 lam2
+91 101 lam2
+101 100 mu1
+91 90 mu1
+81 80 mu1
+71 70 mu1
+61 60 mu1
+51 50 mu1
+41 40 mu1
+31 30 mu1
+21 20 mu1
+11 10 mu1
+* Assign to state i0 a reward rate equal to the number of data packets in the
+* the system in that state
+reward
+00 0
+10 1
+20 2
+30 3
+40 4
+50 5
+60 6
+70 7
+80 8
+90 9
+100 10
+end
+00 1.0
+end
+
+bind
+lam1 1.0
+mu1 10.0
+lam2 2.0
+mu2  20.0
+end
+
+echo Steady state rejection prob for data packets
+expr prob(isdn10,100)+prob(isdn10,101)
+
+echo Steady state rejection prob for voice packets
+expr 1.0 - prob(isdn10,00)
+
+echo Transient rejection probabilities 
+loop t,0.1,1,0.1
+expr tvalue(t;isdn10,100) + tvalue(t;isdn10,101)
+expr 1.0 - tvalue(t;isdn10,00)
+
+end
+
+echo Compute the channel idle prob at time t
+loop t,0,10,1
+expr tvalue (t;isdn10,00)
+end
+
+echo Compute the channel idle prob at steady state
+expr prob(isdn10,00)
+
+
+echo Compute the steady state average queulength of data packets
+expr exrss(isdn10)
+var tput1 lam1*prob(isdn10,00)
+var tput2 lam2*(1.0 - prob(isdn10,100) -prob(isdn10,101))
+var resp1 prob(isdn10,01)/tput1
+var resp2 exrss(isdn10)/tput2
+
+echo thruputs of voice and data packets
+expr tput1, tput2
+echo mean response times of voice and data packets
+expr resp1, resp2
+end
+
+

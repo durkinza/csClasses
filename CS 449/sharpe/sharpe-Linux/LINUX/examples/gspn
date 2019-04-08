@@ -1,0 +1,436 @@
+* This file contains SHARPE examples of the gspn
+* (generalized stochastic Petri net) model type.
+
+* Example 1: An example of a gspn model that translates into an
+* irreducible Markov chain. Steady-state analysis is then 
+* carried out.
+bind
+tok1 1
+tok0 0
+rat1 1.0
+rat2 100.0
+rat3 10000.0
+pr1 0.3
+pr2 0.7
+mult1 1
+end
+
+gspn test
+* places
+p0 tok1
+p1 tok0
+p2 tok0
+p3 tok0
+end
+* timed trans
+t0 ind rat1
+t3 ind rat2
+t4 ind rat3
+end
+* immed trans
+t1 ind pr1
+t2 ind pr2
+end
+* input arcs
+p0 t0 mult1
+p1 t1 mult1
+p1 t2 mult1
+p2 t3 mult1
+p3 t4 mult1
+end
+* output arcs
+t0 p1 mult1
+t1 p2 mult1
+t2 p3 mult1
+t3 p1 mult1
+t4 p0 mult1
+end
+* inhibit arcs
+end
+expr etok(test,p0)
+expr etok(test,p1)
+expr etok(test,p2)
+expr etok(test,p3)
+expr prempty(test,p0)
+expr tput(test,t0)
+expr util(test,t3)
+
+* Example 2: Another example of steady-state analysis of a gspn model
+gspn g1(p1,p2)
+* places
+p1 1
+p2 0
+p3 0
+end
+* timed transitions
+t21 ind 5
+t31 ind 10
+end
+* immediate transitions
+t12 ind p1
+t13 ind p2
+end
+* places to transitions
+p1 t12 1
+p1 t13 1
+p2 t21 1
+p3 t31 1
+end
+* transitions to places
+t12 p2 1
+t13 p3 1
+t21 p1 1
+t31 p1 1
+end
+end
+
+expr prempty (g1, p1; .5,.5), prempty (g1, p2; .5,.5), prempty (g1,p3; .5,.5)
+expr prempty (g1, p1; 1,1), prempty (g1, p2; 1,1), prempty (g1,p3; 1,1)
+expr prempty (g1, p1; 2,2), prempty (g1, p2; 2,2), prempty (g1,p3; 2,2)
+
+* Example 3:
+* The following is a simple example of a task graph with a cycle.
+* A GSPN model is used. The CTMC generated is not irreducible
+* Hence a transient analysis is carried out
+
+* Using the following line makes sharpe print more internal info
+verbose on
+
+bind
+p 0.9
+end
+
+gspn cycle
+* places
+p1 1
+p2 0
+p3 0
+p4 0
+pt4 0
+p5 0
+pfin 0
+end
+* timed trans
+t1 ind 1
+t2 ind 0.5
+t3 ind 1
+t4 ind 0.25
+t5 ind 0.25
+end
+* immed trans
+ti1 ind p
+ti2 ind 1.0 - p
+end
+* input arcs
+p1 t1 1
+p2 t2 1
+p3 t3 1
+p4 t4 1
+pt4 ti1 1
+pt4 ti2 1
+p5 t5 2
+end
+* output arcs
+t1 p2 1
+t1 p3 1
+t2 p5 1
+t3 p4 1
+t4 pt4 1
+ti1 p3 1
+ti2 p5 1
+t5 pfin 1
+end
+* inhib arcs
+end
+
+
+* The distribution of time to reach absorption
+cdf(cycle)
+expr 1.0 - value(25;cycle)
+* Mean time to completion
+expr mean(cycle)
+* Expected number of tokens at time 25 in model cycle in place pfin
+expr etokt(25;cycle,pfin)
+
+* Example 4:
+* yet another example of transient analysis using gspn.
+
+gspn gi(n)
+* places
+p1 n
+p2 0
+end
+* timed trans
+t12 ind 2
+end
+* immed trans
+end
+* input arcs
+p1 t12 1
+end
+* output arcs
+t12 p2 1
+end
+* inhib arcs
+end
+
+expr premptyt(1;gi,p1;1)
+expr etokt (1;gi,p1;1)
+
+* Example 5:
+* The following are staochastic Petri Net 
+* models of task execution graphs from 
+* Veeraraghvan and Trivedi paper 
+* ``Hierarchical Modeling for Reliability and Performance Measures,''
+* Concurrent Computations: Algorithms, Architecture and
+* Technology,
+* S. K. Tewksbury, B. W. Dickson and S. C. Schwartz (eds.), 
+* Plenum Press, New York, 1988.
+* The two models used here are for single processor
+* and three processors 
+
+gspn proc1
+* places
+p1 1
+p2 0
+p3 0
+p4 0
+p5 0
+p6 0
+p7 0
+p8 0
+p9 0
+p10 0
+end
+* timed trans
+t1 ind 1
+t2 ind 0.5
+t3 ind 1
+t4 ind 0.25
+t5 ind 0.25
+t6 ind 1/3
+t7 ind 1/7
+t8 ind 1/8
+t9 ind 1
+end
+* immed trans
+end
+* input arcs
+p1 t1 1
+p2 t2 1
+p3 t3 1
+p4 t4 1
+p5 t5 1
+p6 t6 1
+p7 t7 1
+p8 t8 1
+p9 t9 1
+end
+* output arcs
+t1 p2 1
+t2 p3 1
+t3 p4 1
+t4 p5 1
+t5 p6 1
+t6 p7 1
+t7 p8 1
+t8 p9 1
+t9 p10 1
+end
+* inhib arcs
+end
+
+gspn proc3
+* places
+p1 1
+p2 0
+p3 0
+p4 0
+p5 0
+p6 0
+p7 0
+p8 0
+p9 0
+p10 0
+end
+* timed trans
+t1 ind 1
+t2 ind 0.5
+t3 ind 1
+t4 ind 0.25
+t5 ind 0.25
+t6 ind 1/3
+t7 ind 1/7
+t8 ind 1/8
+t9 ind 1
+end
+* immed trans
+end
+* input arcs
+p1 t1 1
+p2 t2 1
+p3 t3 1
+p4 t4 1
+p5 t5 1
+p6 t6 1
+p7 t7 2
+p8 t8 2
+p9 t9 3
+end
+* output arcs
+t1 p2 1
+t1 p3 1
+t2 p4 1
+t2 p5 1
+t3 p6 1
+t4 p7 1
+t4 p8 1
+t5 p7 1
+t5 p8 1
+t6 p9 1
+t7 p9 1
+t8 p9 1
+t9 p10 1
+end
+* inhib arcs
+end
+
+* The effect of multiple processors is to provide speedup
+var speedup mean(proc1) / mean(proc3)
+
+* But even more important, is the reduction in the probability
+* to fail to complete on time. dfp (dynamic failure probability)
+* is definded to be the prob that a program fails to complete
+* before its deadline.
+func dfp1(d) 1.0 - value(d;proc1)
+func dfp3(d) 1.0 - value(d;proc3)
+
+expr speedup
+
+loop deadline,5,35,5
+ expr dfp1(deadline), dfp3(deadline)
+end
+
+* Example 6:
+* This is a test program
+*  a C.vmp processor gspn 
+*  Steve Woolet   12/8/89
+* verbose on
+
+bind
+mPROC 	.000299 
+mMEM	.000694 
+mVOT	.000131
+end
+
+gspn cvmp
+* Places and Markings
+plcpuup	3
+plmemup	3
+plvotup	1
+plcpudn	0
+plmemdn	0
+plvotdn	0
+plsysup	1
+plsysdn	0
+end
+
+*Timed Transitions
+tcpu dep plcpuup mPROC
+tmem dep plmemup mMEM
+tvot ind mVOT
+end
+*Immediate Transitions
+ticpu ind 1
+timem ind 1
+tisyscpu ind 1
+tisysmem ind 1
+tisysvot ind 1
+end
+*Input Arcs
+plcpuup tcpu 1
+plmemup tmem 1
+plvotup tvot 1
+plcpuup ticpu 1
+plcpudn ticpu 2
+plmemup timem 1
+plmemdn timem 2
+plsysup tisyscpu 1
+plsysup tisysmem 1
+plsysup tisysvot 1
+end
+*output Arcs
+tcpu plcpudn 1
+tmem plmemdn 1
+tvot plvotdn 1
+ticpu plcpudn 3
+timem plmemdn 3
+tisyscpu plsysdn 1
+tisysmem plsysdn 1
+tisysvot plsysdn 1
+end
+*Inhibit Arcs
+plcpuup tisyscpu 1
+plmemup tisysmem 1
+plvotup tisysvot 1
+plsysdn tcpu 1
+plsysdn tmem 1
+plsysdn tvot 1
+plsysdn ticpu 1
+plsysdn timem 1
+end
+
+expr mean(cvmp)
+expr value(100;cvmp)
+expr premptyt(100;cvmp,plsysup)
+expr etokt(100;cvmp,plsysup)
+expr etokt(100;cvmp,plvotup)
+
+markov mcvmp
+1 2 3*mPROC
+1 3 3*mMEM
+1 5 mVOT
+2 4 3*mMEM
+2 6 mVOT
+2 8 2*mPROC
+3 4 3*mPROC
+3 7 mVOT
+3 10 2*mMEM
+4 9 mVOT
+4 11 2*mPROC
+4 12 2*mMEM
+end
+1 1
+end
+
+expr value(100;mcvmp)
+
+var pup sum (i,1,4,value(100;mcvmp,$i)) 
+var pfail sum (i,5,12,value(100;mcvmp,$i)) 
+expr pfail
+expr pup
+loop i,4,12
+expr value(100;mcvmp,$i)
+end
+var p5 value(100;mcvmp,5)
+expr p5
+var p6 p5 + value(100;mcvmp,6)
+expr p6
+var p7 p6 + value(100;mcvmp,7)
+expr p7
+var p8 p7 + value(100;mcvmp,8)
+expr p8
+var p9 p8 + value(100;mcvmp,9)
+expr p9
+var p10 p9 + value(100;mcvmp,10)
+expr p10
+var p11 p10 + value(100;mcvmp,11)
+expr p11
+var p12 p11 + value(100;mcvmp,12)
+expr p12
+
+var votup sum (i,1,4,value(100;mcvmp,$i)) + value(100;mcvmp,8) +\ 
+          sum (i,10,12,value(100;mcvmp,$i)) 
+expr votup
+
+end

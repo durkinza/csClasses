@@ -1,0 +1,1413 @@
+* Example 1:
+* A problem from the paper by Geist & Trivedi, IEEE Computer, June 1990 
+
+* Specify that 8 digits should be printed out (default being 4 digits)
+format 8
+
+* three level hierarchical model of a fault-tolerant system
+*
+* bottom level is the coverage model (FEHM)
+markov bottom
+A C delta
+A S sigma
+end
+* Now specify the initial state probabilities
+A 1.0
+end
+
+* Define c to be the prob that the coverage model bottom reaches the
+* Covered state C. This is the usual notion of coverage
+var chat prob(bottom,C)
+
+* middle level imposes the effect of near-coincident fault
+semimark middle(k)
+fault second exp(k*lam)
+fault resolve cdf(bottom)
+end
+* Now specify the initial state probabilities
+fault 1.0
+end
+
+* Define c(k) to be coverage including the effect of second fault 
+func c(k)\
+prob(middle,resolve;k)*prob(bottom,C)
+
+* Before solving a model, we need to give values to symbolic parameters
+bind
+lam 0.0001
+delta 1000.0
+sigma 1.0
+end
+
+* Now compare the value of c obtained ignoring near-coincident faults
+* and those considering it. In the latter case, two different near
+* coincident fault rates are considered
+expr chat, c(2), c(1)
+
+* top level
+markov top
+3 2 3*lam*c(2)
+3 cf 3*lam*(1-c(2))
+2 1 2*lam*c(1)
+2 cf 2*lam*(1-c(1))
+1 rf lam
+* Now assign reward rates to the states of the Markov chain
+reward
+3 r3
+2 r2
+1 r1
+cf r0c
+rf r0r
+end
+* Now specify the initial state probabilities
+3 1.0
+end
+
+bind
+r3 3
+r2 2
+r1 1
+r0r 0
+r0c 0
+end
+
+* ask for a symbolic expresssion for the time to failure CDF for
+* Overall Markov model top.
+cdf(top)
+
+* ask for a symbolic expresssion for the CDF of the time to uncovered
+* failure state cf for Overall Markov model top.
+cdf(top,cf)
+
+* ask for a symbolic expresssion for the CDF of the time to exhaustion
+* of components failure state rf for Overall Markov model top.
+cdf(top,rf)
+
+* ask for the numerical evaluation of the CDF of the time to reach the
+* uncovered failure state; at mission times 0 to 10 in steps of 1 unit
+expr value(10;top,cf) 
+
+* ask for the expected reward rate at time t, E[X(t)]
+eval (top) 10.0 10.0 1.0 exrt
+
+* ask for the expected accumulated reward rate in the interval (0, t)
+* that is, E[Y(t)]
+eval(top) 0.0 10.0 1.0 cexrt
+
+* ask for the CDF of  accumulated reward until system failure
+* That is, the distribution function of Y(infinity)
+reward (top) 
+
+
+* Example 2:
+* This example is from the IEEE-Trans. on Reliab.; Apr. 1989 paper by
+* Ibe, Howe & Trivedi.
+* It is a two-level hierarchical model
+* The lower model is a 9-state ctmc
+* The upper level is a network of n diodes in parallel
+
+markov oneproc
+1   2  LP*cp
+2   3  MUT
+3   4  MUP
+4   1  MUT
+1   5  LP*(1-cp)
+5   3  MUSB
+1   9  LI*(1-k)
+9   1  MUSB
+9   5  LP
+1   6  LI*k
+6   7  MUT
+7   8  MUPB
+7   3  LP
+8   1  MUT
+end
+
+
+* Probs of three super states obtained by a steadystate analysis
+* of the Markov model oneproc
+var pX prob(oneproc,1)
+var pZ prob(oneproc,3) + prob(oneproc,7)
+var pY 1 - pX - pZ
+
+* This is the formula on p. 49 of Trivedi's book.
+var unavail 1 -(pX+pZ)^ n + pZ^ n
+var avail   1-unavail
+var dtime unavail*365*24*60
+
+* example 1 in the paper
+
+bind
+LP   1/5000
+MUP   1/2
+LI   1/2000
+MUT   120
+MUSB  6
+MUPB  10
+end
+
+format 8
+loop j,0,4,1
+bind cp 0.9+j*.01
+bind k cp
+expr pX,pY,pZ
+loop i,1,3
+bind n i
+expr avail,unavail,dtime
+end
+end
+
+* example 2 in the paper
+
+bind
+LP   1/7000
+MUP   1/2
+LI   1/4000
+MUT   240
+MUSB  12
+MUPB  20
+end
+
+
+expr pX,pY,pZ
+
+loop i,2,3,1
+bind n i
+loop j,0,4,1
+bind cp 0.9+j*.01
+bind k cp
+expr cp,k,n
+expr avail,unavail,dtime
+end
+end
+
+var unavailnm1 1 -(pX+pZ)^ n + pZ^ n + n* pX * pZ ^ (n-1)
+var availnm1   1-unavailnm1
+
+loop i,1,10
+bind n i
+expr n
+expr availnm1,unavailnm1
+end
+
+
+* Example 3
+
+* Late m1 be the mttf of a single disk. Consider a duplex configuration
+* with the mean repair time being R hours.
+format 8
+
+bind m1 6
+bind R  5/8760 
+
+markov dup
+2 1 2/m1
+1 2 1/R
+1 F 1/m1
+end
+2 1.0
+end
+
+expr
+echo mean time to failure of a duplex disk
+expr mean(dup)
+
+* Since this value is a lot larger than the one observed
+* in the field; we introduce imperfect coverage.
+
+markov dupc(C)
+2 1 2*C/m1
+1 2 1/R
+1 F 1/m1
+2 FC 2*(1-C)/m1
+end
+2 1.0
+end
+
+expr
+echo mean time to failure of a duplex disk with imperfect coverage
+loop C,0.9977,0.998,.0001
+ expr(mean(dupc;C))
+end
+
+* Based on these results we conclude that for an experimentally
+* measured value of 1300 year MTTF, C = 0.9978.
+
+* Use this to carry out availability analysis
+
+markov dupa 
+2 1 2*C/m1
+1 2 1/R
+1 F 1/m1
+F 1 1/R
+2 FC 2*(1-C)/m1
+FC 1 1/beta
+reward default 0.0
+F 8760*60
+FC 8760*60
+end
+
+markov simpa 
+1 F 1/m1
+F 1 1/R
+reward default 0.0
+F 8760*60
+end
+
+bind beta 0.5/8760
+bind C 0.9978
+
+var dtdup exrss(dupa)
+var dtsimp exrss(simpa)
+
+expr
+echo downtime in minutes per year
+expr dtdup
+expr dtsimp
+expr
+
+
+* Now consider performance
+
+* mean time to complete a disk I/O request in ms
+bind D 10
+
+* probability of a read request
+bind pr 0.7
+
+* Time to complete a disk request modeled by
+graph io
+readorwrite read
+readorwrite write
+read  rdisk1
+read  rdisk2
+rdisk1 compl
+rdisk2 compl
+write disk1
+write disk2
+disk1 compl
+disk2 compl
+end
+exit readorwrite prob
+prob readorwrite read pr
+exit read min
+exit write max
+dist readorwrite zero
+dist read zero
+dist write zero
+dist compl zero
+dist rdisk1 exp(1/D)
+dist rdisk2 exp(1/D)
+dist disk1 exp(1/D)
+dist disk2 exp(1/D)
+end
+
+expr
+echo mean time to complete a disk request
+echo on a duplex disk as a function or prob of read
+loop i,0.0,1.0,0.1
+  bind pr i
+  expr mean(io)
+end
+
+* Now we combine performance and availability
+
+markov duppa
+2 1 2*C/m1
+1 2 1/R
+1 F 1/m1
+F 1 1/R
+2 FC 2*(1-C)/m1
+FC 1 1/beta
+reward default 0.0
+2 D/mean(io)
+1 1
+end
+
+var pa exrss(duppa)
+var dupavail prob(duppa,2) + prob(duppa,1)
+
+expr
+echo comparing performance availability with ordinary availability
+loop i,0.0,1.0,0.1
+  bind pr i
+  expr pa, dupavail
+end
+
+
+* Now add a single CPU
+
+markov dupacpu readprobs
+2-1 1-1 2*C/m1
+2-1 2-0 lamcpu
+2-0 2-1 mucpu
+1-1 2-1 1/R
+1-1 1-0 lamcpu
+1-0 1-1 mucpu
+1-1 F-1 1/m1
+F-1 1-1 1/R
+2-1 FC-1 2*(1-C)/m1
+FC-1 1-1 1/beta
+reward default 0.0
+2-0 1.0
+1-0 1.0
+F-1 1.0
+FC-1 1.0
+end
+2-1 1.0
+end
+
+bind beta 0.5/8760
+bind C 0.9978
+
+var unavailcpu exrss(dupacpu)
+
+func instunavailcpu(t) tvalue(t;dupacpu,F-1) + tvalue(t;dupacpu,FC-1)\
+ + tvalue(t;dupacpu,2-0) + tvalue(t;dupacpu,1-0)
+bind lamcpu 1/600
+bind mucpu  8760/5
+expr
+echo steady state unavailability
+expr unavailcpu
+expr
+
+echo Instantaneous unavailability
+echo at hourly intervals during a day
+loop t,0,1/365,1/(24*365)
+   expr instunavailcpu(t)
+end
+
+
+*Example 4
+format 8
+
+bind
+gamma 1/6000
+del 360
+beta 12
+C 0.9
+tau 1.0
+lam 80
+mu 100
+deadline 0.002
+end
+
+
+var p01 1/(1+(lam/mu)*(mu/(mu-lam)))
+
+var p02 1/(1+lam/mu+(lam/mu)*(lam/mu)*(mu/(2*mu-lam)))
+
+var p03 1/(1+lam/mu+(lam/mu)*(lam/(2*mu))+\
+        (1/2)*(lam/mu)*(lam/mu)*(lam/mu)*(mu/(3*mu-lam)))
+
+var p04 1/(1+lam/mu+(lam/mu)*(lam/(2*mu))+\
+          ((lam/mu)*(lam/mu)*(lam/(6*mu)))+\
+      (1/6)*(lam/mu)*(lam/mu)*(lam/mu)*(lam/mu)*(mu/(4*mu-lam)))
+
+var wq01 1-((lam/mu)/(1-(lam/mu)))*p01
+
+var wq02 1-((lam/mu)*(lam/mu)/(2-(lam/mu)))*p02
+
+var wq03 1-((lam/mu)*(lam/mu)*(lam/mu)/(3-(lam/mu)))*p03/2
+
+var wq04 1-((lam/mu)*(lam/mu)*(lam/mu)*(lam/mu)/(4-(lam/mu)))*p04/6
+
+poly resp(p0,wq0,C,lam,mu) gen\
+     1,0,0\
+     ((C*mu-lam-mu*wq0)/(lam-(C-1)*mu)),0,-mu\
+     -((mu*(1-wq0))/(lam-(C-1)*mu)),0,-(C*mu-lam)
+
+graph response4
+1 2
+end
+dist 1 resp(p04,wq04,4,lam,mu)
+dist 2 zero
+end
+
+graph response3
+1 2
+end
+dist 1 resp(p03,wq03,3,lam,mu)
+dist 2 zero
+end
+
+graph response2
+1 2
+end
+dist 1 resp(p02,wq02,2,lam,mu)
+dist 2 zero
+end
+
+graph response1
+1 2
+end
+dist 1 resp(p01,wq01,1,lam,mu)
+dist 2 zero
+end
+
+eval(response1) 0.001 0.01 0.001
+eval(response1) 0.01  0.1  0.01
+eval(response1) 0.1   1.0  0.1
+eval(response1) 1.0   10.0 1.0
+
+eval(response2) 0.001 0.01 0.001
+eval(response2) 0.01  0.1  0.01
+eval(response2) 0.1   1.0  0.1
+eval(response2) 1.0   10.0 1.0
+
+eval(response3) 0.001 0.01 0.001
+eval(response3) 0.01  0.1  0.01
+eval(response3) 0.1   1.0  0.1
+eval(response3) 1.0   10.0 1.0
+
+eval(response4) 0.001 0.01 0.001
+eval(response4) 0.01  0.1  0.01
+eval(response4) 0.1   1.0  0.1
+eval(response4) 1.0   10.0 1.0
+
+
+var R1 lam-lam*value(deadline;response1)
+
+var R2 lam-lam*value(deadline;response2)
+
+var R3 lam-lam*value(deadline;response3)
+
+var R4 lam-lam*value(deadline;response4)
+
+markov oness
+1 0 gamma
+0 1 tau
+reward
+1 R1
+0 lam
+end
+
+
+markov twoss
+2 x2 2* gamma*C
+2 y2 2* gamma*(1-C)
+x2 1 del
+y2 1 beta
+1 2 tau
+1 0  gamma
+0 1 tau
+reward
+2 R2
+x2 0
+y2 0
+1 R1
+0 0
+end
+
+markov mm23
+0 1 lam
+1 0 mu
+1 2 lam
+2 1 2*mu
+2 3 lam
+3 2 2*mu
+end
+
+var q0 prob(mm23,0)
+var q1 prob(mm23,1)
+var q2 prob(mm23,2)
+var q3 prob(mm23,3)
+
+var comp1 (q0+q1+2*q2)*(^(-1)) 
+var comp2 q2* (^(-2))
+var comp (comp1-comp2)/(1-q3)
+
+expr comp
+
+
+
+markov threess
+3 x3 3* gamma*C
+3 y3 3* gamma*(1-C)
+x3 2 del
+y3 2 beta
+2 3 tau
+2 x2 2* gamma*C
+2 y2 2* gamma*(1-C)
+x2 1 del
+y2 1 beta
+1 2 tau
+1 0  gamma
+0 1 tau
+reward
+3 R3
+x3 0
+y3 0
+2 R2
+x2 0
+y2 0
+1 R1
+0 0
+end
+
+markov fourss
+4 x4 4* gamma*C
+4 y4 4* gamma*(1-C)
+x4 3 del
+y4 3 beta
+3 4 tau
+3 x3 3* gamma*C
+3 y3 3* gamma*(1-C)
+x3 2 del
+y3 2 beta
+2 3 tau
+2 x2 2* gamma*C
+2 y2 2* gamma*(1-C)
+x2 1 del
+y2 1 beta
+1 2 tau
+1 0  gamma
+0 1 tau
+reward
+4 R4
+x4 0
+y4 0
+3 R3
+x3 0
+y3 0
+2 R2
+x2 0
+y2 0
+1 R1
+0 0
+end
+
+expr p01,p02,p03,p04
+
+expr wq01,wq02,wq03,wq04
+
+expr R1,R2,R3,R4
+
+expr lam,exrss(oness),exrss(twoss),exrss(threess),exrss(fourss)
+
+bind
+deadline 0.002/3600
+end
+
+
+expr p01,p02,p03,p04
+
+expr wq01,wq02,wq03,wq04
+
+expr R1,R2,R3,R4
+
+expr lam,exrss(oness),exrss(twoss),exrss(threess),exrss(fourss)
+
+
+bind
+deadline 0.1/3600
+end
+
+
+expr p01,p02,p03,p04
+
+expr wq01,wq02,wq03,wq04
+
+expr R1,R2,R3,R4
+
+expr lam,exrss(oness),exrss(twoss),exrss(threess),exrss(fourss)
+
+* Example 5
+* This file contains examples discussed in 
+* W. Earl Smith and Kishor Trivedi, ``Dependability Evaluation of a Class
+* of Mult-Loop Toplogies for a Local Area Network,''
+* IBM Journal of Research and Development, Sept. 1989.
+
+* First consider a ring with N nodes, without a bypass.
+* The number of links is also N. We use a block diagram.
+* 
+
+block nobypass
+comp node exp(lamN)
+comp link exp(lamL)
+kofn nodes N,N,node
+kofn links N,N,link
+series top nodes links
+end
+
+
+bind lamL 0.000001
+bind lamN 0.000001
+
+bind
+N 16
+end
+
+func nobypassunrel(t) tvalue(t;nobypass)
+
+loop j,0,5,1
+bind t 10^j
+expr nobypassunrel(t)
+end
+expr mean(nobypass)
+
+* Next we allow a bypass around a faulty node but assume that the
+* Bypass mechanism is perfect. A node fault will be bypassed but a
+* link fault will still bring down the ring
+* Further assume that at least M out of N nodes 
+* must be functioning properly.
+
+block perfectbypass(M)
+comp node exp(lamN)
+comp link exp(lamL)
+kofn nodes M,N,node
+kofn links N,N,link
+series top nodes links
+end
+
+func perfectbypassunrel(t,M) tvalue(t;perfectbypass;M)
+
+loop i,1,16,3
+bind M i
+loop j,0,5,1
+bind t 10^j
+expr perfectbypassunrel(t,M), nobypassunrel(t)
+end
+expr mean(nobypass), mean(perfectbypass;M)
+end
+
+* In order to allow for imperfect bypass mechanism,
+* we resort to a Markov model.
+* We assume that the bypass mechanism fails to
+* function correctly with prob. F.
+* For simplicity, we assume that M =1.
+
+markov ringrel
+0   1    N*lamN*(1-F)
+1   2    (N-1)*lamN*(1-F)
+2   3    (N-2)*lamN*(1-F)
+3   4    (N-3)*lamN*(1-F)
+4   5    (N-4)*lamN*(1-F)
+5   6    (N-5)*lamN*(1-F)
+6   7    (N-6)*lamN*(1-F)
+7   8    (N-7)*lamN*(1-F)
+8   9    (N-8)*lamN*(1-F)
+9   10   (N-9)*lamN*(1-F)
+10  11   (N-10)*lamN*(1-F)
+11  12   (N-11)*lamN*(1-F)
+12  13   (N-12)*lamN*(1-F)
+13  14   (N-13)*lamN*(1-F)
+14  15   (N-14)*lamN*(1-F)
+15  16   (N-15)*lamN*(1-F)
+16  FN   N*lamN
+0   FC   N*lamN*F
+1   FC   (N-1)*lamN*F
+2   FC   (N-2)*lamN*F
+3   FC   (N-3)*lamN*F
+4   FC   (N-4)*lamN*F
+5   FC   (N-5)*lamN*F
+6   FC   (N-6)*lamN*F
+7   FC   (N-7)*lamN*F
+8   FC   (N-8)*lamN*F
+9   FC   (N-9)*lamN*F
+10  FC   (N-10)*lamN*F
+11  FC   (N-11)*lamN*F
+12  FC   (N-12)*lamN*F
+13  FC   (N-13)*lamN*F
+14  FC   (N-14)*lamN*F
+15  FC   (N-15)*lamN*F
+0   FL   N*lamL
+1   FL   N*lamL
+2   FL   N*lamL
+3   FL   N*lamL
+4   FL   N*lamL
+5   FL   N*lamL
+6   FL   N*lamL
+7   FL   N*lamL
+8   FL   N*lamL
+9   FL   N*lamL
+10  FL   N*lamL
+11  FL   N*lamL
+12  FL   N*lamL
+13  FL   N*lamL
+14  FL   N*lamL
+15  FL   N*lamL
+16  FL   N*lamL
+end
+0   1.0
+end
+
+func ringunrel(t) tvalue(t;ringrel)
+
+loop i,0.1,0.2,0.1
+bind F i
+loop j,0,5,1
+bind t 10^j
+expr ringunrel(t)
+end
+expr mean(ringrel)
+end
+
+* Noting the size of the Markov chain, we use a
+* stochastic Petri net model to specify and automatically
+* generate/solve the Markov chain.
+
+gspn ringrelg(N)
+* places
+pnodesup N
+pnodedown 0
+plinksup 1
+pringfail 0
+plinkdown 0
+pcov 0
+end
+* timed trans
+tnfail dep pnodesup lamN 
+tlfail ind lamL*N 
+end
+* immed trans
+tcov ind 1-F
+tuncov ind F
+end
+* input arcs
+pnodesup tnfail 1
+plinksup tlfail 1
+pnodedown tcov 1
+pnodedown tuncov 1
+end
+* output arcs
+tnfail pnodedown 1
+tlfail pringfail 1
+tcov  pcov  1
+tuncov  pringfail  1
+end
+* inhib arcs
+pringfail tnfail 1
+pringfail tlfail 1
+end
+
+func ringunrelg(t,M) 1-premptyu(t;ringrelg,pringfail;M)
+
+loop i,0.1,0.2,0.1
+bind F i
+loop j,0,5,1
+bind t 10^j
+expr ringunrelg(t,16)
+end
+end
+
+* Example 6:
+* Next we consider the FLBH network
+
+func F2L(N) 2/(2*N-1)
+
+func F3L(N) (8*N-14)/((2*N-2)*(2*N-3))
+
+func F4L(N) (24*N*N-120*N+150)/((2*N-3)*(4*N*N-18*N+20))
+
+func F5L(N) F4L(N) + 1/N + 3/(2*N*N) + 3/(4*N*N*N)
+
+func F6L(N) F5L(N) + 1/N + 3/(2*N*N) + 3/(4*N*N*N)
+
+
+markov flbhrel
+0   1    2*N*lamL
+1   2    (2*N-1)*lamL*(1-F2L(N))
+2   3    (2*N-2)*lamL*(1-F3L(N))
+3   4    (2*N-3)*lamL*(1-F4L(N))
+4   5    (2*N-4)*lamL*(1-F5L(N))
+5   6    (2*N-5)*lamL*(1-F6L(N))
+6   7    (2*N-6)*lamL*(1-F6L(N))
+7   8    (2*N-7)*lamL*(1-F6L(N))
+8   9    (2*N-8)*lamL*(1-F6L(N))
+9   10   (2*N-9)*lamL*(1-F6L(N))
+10  11   (2*N-10)*lamL*(1-F6L(N))
+11  12   (2*N-11)*lamL*(1-F6L(N))
+12  13   (2*N-12)*lamL*(1-F6L(N))
+13  14   (2*N-13)*lamL*(1-F6L(N))
+14  15   (2*N-14)*lamL*(1-F6L(N))
+15  16   (2*N-15)*lamL*(1-F6L(N))
+16  FL   N*lamL
+1   FC   (2*N-1)*lamL*(F2L(N))
+2   FC   (2*N-2)*lamL*(F3L(N))
+3   FC   (2*N-3)*lamL*(F4L(N))
+4   FC   (2*N-4)*lamL*(F5L(N))
+5   FC   (2*N-5)*lamL*(F6L(N))
+6   FC   (2*N-6)*lamL*(F6L(N))
+7   FC   (2*N-7)*lamL*(F6L(N))
+8   FC   (2*N-8)*lamL*(F6L(N))
+9   FC   (2*N-9)*lamL*(F6L(N))
+10  FC   (2*N-10)*lamL*(F6L(N))
+11  FC   (2*N-11)*lamL*(F6L(N))
+12  FC   (2*N-12)*lamL*(F6L(N))
+13  FC   (2*N-13)*lamL*(F6L(N))
+14  FC   (2*N-14)*lamL*(F6L(N))
+15  FC   (2*N-15)*lamL*(F6L(N))
+0   FN   N*lamN
+1   FN   N*lamN
+2   FN   N*lamN
+3   FN   N*lamN
+4   FN   N*lamN
+5   FN   N*lamN
+6   FN   N*lamN
+7   FN   N*lamN
+8   FN   N*lamN
+9   FN   N*lamN
+10  FN   N*lamN
+11  FN   N*lamN
+12  FN   N*lamN
+13  FN   N*lamN
+14  FN   N*lamN
+15  FN   N*lamN
+16  FN   N*lamN
+end
+0   1.0
+end
+
+func flbhunrel(t) tvalue(t;flbhrel)
+
+loop j,0,5,1
+bind t 10^j
+expr flbhunrel(t)
+end
+
+expr mean(flbhrel)
+
+markov flbhavail(mu)
+0   1    2*N*lamL
+1   2    (2*N-1)*lamL*(1-F2L(N))
+2   3    (2*N-2)*lamL*(1-F3L(N))
+3   4    (2*N-3)*lamL*(1-F4L(N))
+4   5    (2*N-4)*lamL*(1-F5L(N))
+5   6    (2*N-5)*lamL*(1-F6L(N))
+6   7    (2*N-6)*lamL*(1-F6L(N))
+7   8    (2*N-7)*lamL*(1-F6L(N))
+8   9    (2*N-8)*lamL*(1-F6L(N))
+9   10   (2*N-9)*lamL*(1-F6L(N))
+10  11   (2*N-10)*lamL*(1-F6L(N))
+11  12   (2*N-11)*lamL*(1-F6L(N))
+12  13   (2*N-12)*lamL*(1-F6L(N))
+13  14   (2*N-13)*lamL*(1-F6L(N))
+14  15   (2*N-14)*lamL*(1-F6L(N))
+15  16   (2*N-15)*lamL*(1-F6L(N))
+0   F0   N*lamN
+1   F1   (2*N-1)*lamL*(F2L(N))+N*lamN
+2   F2   (2*N-2)*lamL*(F3L(N))+N*lamN
+3   F3   (2*N-3)*lamL*(F4L(N))+N*lamN
+4   F4   (2*N-4)*lamL*(F5L(N))+N*lamN
+5   F5   (2*N-5)*lamL*(F6L(N))+N*lamN
+6   F6   (2*N-6)*lamL*(F6L(N))+N*lamN
+7   F7   (2*N-7)*lamL*(F6L(N))+N*lamN
+8   F8   (2*N-8)*lamL*(F6L(N))+N*lamN
+9   F9   (2*N-9)*lamL*(F6L(N))+N*lamN
+10  F10  (2*N-10)*lamL*(F6L(N))+N*lamN
+11  F11  (2*N-11)*lamL*(F6L(N))+N*lamN
+12  F12  (2*N-12)*lamL*(F6L(N))+N*lamN
+13  F13  (2*N-13)*lamL*(F6L(N))+N*lamN
+14  F14  (2*N-14)*lamL*(F6L(N))+N*lamN
+15  F15  (2*N-15)*lamL*(F6L(N))+N*lamN
+16  F16  N*lamL+N*lamN
+16  15   mu
+15  14   mu
+14  13   mu
+13  12   mu
+12  11   mu
+11  10   mu
+10  9    mu
+9   8    mu
+8   7    mu
+7   6    mu
+6   5    mu
+5   4    mu
+4   3    mu
+3   2    mu
+2   1    mu
+1   0    mu
+F16 16   mu
+F15 15   mu
+F14 14   mu
+F13 13   mu
+F12 12   mu
+F11 11   mu
+F10 10   mu
+F9  9    mu
+F8  8    mu
+F7  7    mu
+F6  6    mu
+F5  5    mu
+F4  4    mu
+F3  3    mu
+F2  2    mu
+F1  1    mu
+F0  0    mu
+reward default 1.0
+0   0.0
+1   0.0
+2   0.0
+3   0.0
+4   0.0
+5   0.0
+6   0.0
+7   0.0
+8   0.0
+9   0.0
+10  0.0
+11  0.0
+12  0.0
+13  0.0
+14  0.0
+15  0.0
+16  0.0
+end
+
+func flbhunavail(mu) exrss(flbhavail;mu)
+
+loop rept,2,24,2
+bind mu 1/rept
+expr flbhunavail(mu)
+end
+
+* Example 7:
+* Example of a decomposition model based on
+* the paper by Bobbio and Trivedi; IEEE-TC, Sept. 1986
+format 5
+
+markov full
+01 11 lam
+11 01 mu
+11 21 lam
+21 11 mu
+21 31 lam
+31 21 mu
+01 00 gam
+00 01 tau
+00 10 lam
+11 10 gam
+10 11 tau
+10 20 lam
+21 20 gam
+20 21 tau
+20 30 lam
+31 30 gam
+30 31 tau
+end
+
+bind
+lam 100
+mu  1000
+gam 0.0001
+tau 0.1
+end
+
+expr prob (full,01)
+expr prob (full,11)
+expr prob (full,00)
+expr prob (full,10)
+expr prob (full,21)
+expr prob (full,31)
+expr prob (full,20)
+expr prob (full,30)
+
+markov frc
+01 11 lam
+11 01 mu
+11 21 lam
+21 11 mu
+21 31 lam
+31 21 mu
+end
+
+var x10 prob(frc,01)
+var x11 prob(frc,11)
+var x12 prob(frc,21)
+var x13 prob(frc,31)
+
+markov approx1
+1 00 gam*x10
+00 1 tau
+00 10 lam
+1 10 gam*x11
+10 1 tau
+10 20 lam
+1 20 gam*x12
+20 1 tau
+20 30 lam
+1 30 gam*x13
+30 1 tau
+end
+markov ftc (q0,q1,q2)
+00 1 tau
+00 10 lam
+10 1 tau
+10 20 lam
+20 1 tau
+20 30 lam
+end
+00 q0
+10 q1
+20 q2
+end
+
+
+
+var Beta gam*(prob(frc,01)*prob(ftc,30;1,0,0) + prob(frc,11)*prob(ftc,30;0,1,0) + prob(frc,21)*prob(ftc,30;0,0,1) + prob(frc,31))
+
+markov approx2
+1 0 Beta
+0 1 tau
+end
+
+
+
+var p1bar prob(approx2,1)
+var p30bar prob(approx2,0)
+var fmult gam*p1bar/(gam+lam+tau)
+var Delta lam/(lam+tau)
+var sum0 x10
+var sum1 x10*Delta+x11
+var sum2 Delta*sum1+x12
+var p00bar fmult*sum0
+var p10bar fmult*sum1
+var p20bar fmult*sum2
+var snor 1+p00bar+p10bar+p20bar
+var p00star p00bar/snor
+var p10star p10bar/snor
+var p20star p20bar/snor
+var p30star p30bar/snor
+var p1star p1bar/snor
+var p01star p1star * x10
+var p11star p1star * x11
+var p21star p1star * x12
+var p31star p1star * x13
+expr prob (full,01)
+expr prob (approx1,1)*x10
+expr p01star
+expr prob (full,11)
+expr prob (approx1,1)*x11
+expr p11star
+expr prob (full,21)
+expr prob (approx1,1)*x12
+expr p21star
+expr prob (full,31)
+expr prob (approx1,1)*x13
+expr p31star
+expr prob (full,00)
+expr prob (approx1,00)
+expr p00star
+expr prob (full,10)
+expr prob (approx1,10)
+expr p10star
+expr prob (full,20)
+expr prob (approx1,20)
+expr p20star
+expr prob (full,30)
+expr prob (approx1,30)
+expr p30star
+
+expr prob (approx2,1)*prob(frc,01)
+expr prob (approx2,1)*prob(frc,11)
+expr prob (approx2,1)*prob(frc,21)
+expr prob (approx2,1)*prob(frc,31)
+
+* Example 8:
+* This example is from Balbo Bruello Ghanta paper IEEE-TC Oct 1988
+
+* Model a simultaneous resource possesion system.
+
+* Upper level model is PFQN
+
+mpfqn upper
+chain c1
+cpu io_subsystem 1.0
+io_subsystem cpu 1.0
+end
+
+end
+cpu fcfs 1/3
+end
+
+io_subsystem  lds  iorate1,iorate2,iorate3,iorate4,iorate5,iorate6,iorate7,iorate8, iorate9,iorate10
+
+end
+
+end
+
+c1 10 
+end
+
+bind iorate10   0.2602840   	
+bind iorate9	0.2555502 
+bind iorate8	0.2497749  
+bind iorate7	0.2425907
+bind iorate6	0.2334431  
+bind iorate5  0.2214639
+bind iorate4  0.2052278
+bind iorate3  0.1822708
+bind iorate2  0.1480883
+bind iorate1  0.090909091
+bind  cpurate 1/3
+
+
+gspn io_subsystem
+p1 pop
+p2 0
+p3 0
+p4 0
+p5 0
+p6 0
+p7 0
+p8 1
+p9 1
+p10 1
+p11 0
+p12 0
+p13 0
+p14 1
+end
+
+t4 ind  1/8
+t5 ind 1/8
+t6 ind 1/8
+t10 ind 1/3
+t11 ind 1/3
+t12 ind 1/3
+end
+
+t1 ind 1/3
+t2 ind 1/3
+t3 ind 1/3
+t7 ind 1
+t8 ind 1
+t9 ind 1
+end
+
+p1 t1 1
+p1 t2 1
+p1 t3 1
+p2 t4 1
+p3 t5 1
+p4 t6 1
+p5 t7 1
+p6 t8 1
+p7 t9 1
+p8 t4 1
+p9 t5 1
+p10 t6 1
+p11 t10 1
+p12 t11 1
+p13 t12 1
+p14 t7 1
+p14 t8 1
+p14 t9 1
+end
+
+t1 p2 1
+t2 p3 1
+t3 p4 1
+t4 p5 1
+t5 p6 1
+t6 p7 1
+t7 p11 1
+t8 p12 1
+t9 p13 1
+t10 p14 1
+t10 p8 1
+t10 p1 1
+t11 p14 1
+t11 p9 1
+t11 p1 1
+t12 p14 1
+t12 p10 1
+t12 p1 1
+end
+
+end
+loop i ,1,10
+bind pop i
+expr tput(io_subsystem, t10) +tput(io_subsystem, t11) + tput(io_subsystem, t12)
+end
+expr mqlength(upper, cpu)
+
+* Example 9:
+
+* Iterative solution for 
+* queuing network 
+* with priority discipline.
+* Hierarchical model 
+
+* Lower level model
+pfqn only2nd
+
+term cpu 1.0
+cpu disk1 5/31
+cpu disk2 15/31
+cpu disk3  10/31
+disk1 cpu 29/30
+disk1 term 1/30
+disk2 cpu 29/30
+disk2 term 1/30
+disk3 cpu 29/30
+disk3 term 1/30
+end
+
+term is  1/7000
+cpu ps 1/6
+disk1 ps 1/30
+disk2 ps 1/30
+disk3 ps 1/30
+end
+
+second  4
+end
+
+*Upper level model
+mpfqn both
+
+chain second
+term2 cpu 1.0
+cpu disk1 5/31
+cpu disk2 15/31
+cpu disk3  10/31
+disk1 cpu 29/30
+disk1 term2 1/30
+disk2 cpu 29/30
+disk2 term2 1/30
+disk3 cpu 29/30
+disk3 term2 1/30
+end
+
+chain first
+term1 cpu 1.0
+cpu disk1 8/15
+cpu disk2 5/15
+cpu disk3  1/15
+disk1 cpu 13/14
+disk1 term1 1/14
+disk2 cpu 13/14
+disk2 term1 1/14
+disk3 cpu 13/14
+disk3 term1 1/14
+end
+end
+
+term1 is 
+first  1/12000
+second  1/7000
+end
+term2 is
+first  1/12000
+second  1/7000
+end
+cpu ms 2
+first (1 - cpuutil2) / 100
+second 1/6
+end
+disk1 ps
+first (1- disk1util2) / 30
+second  1/30
+end
+disk2 ps
+first (1-disk2util2) / 30
+second  1/30
+end
+disk3 ps
+first (1-disk3util2) / 30
+second  1/30
+end
+end
+
+first 3
+second 4
+end
+*initial solution
+bind 
+cpuutil2 util(only2nd,cpu)
+disk1util2 util(only2nd,disk1)
+disk2util2 util(only2nd,disk1)
+disk3util2 util(only2nd,disk1)
+end
+
+loop i,1,3
+expr i
+expr mutil(both,cpu,first)
+expr mutil(both,disk1,first)
+expr mutil(both,disk2,first)
+expr mutil(both,disk3,first)
+
+bind cpuutil2 mutil(both,cpu,second)
+bind disk1util2 mutil(both,disk1,second)
+bind disk2util2 mutil(both,disk2,second)
+bind disk3util2 mutil(both,disk3,second)
+end
+
+* Example 10:
+*	This is a simple example illustrating the
+*       the use of UBG-Based Performance model.
+* 	Refer to the paper by Carlzarossa, Marie and Trivedi
+*       Performance Evaluation,
+*       Vol. 11, No. 3, Sept. 1990, pp. 155-164.
+
+
+bind
+   p11 0.63
+   p12 0.29
+   p13 0.08
+   p21 0.63
+   p22 0.29
+   p23 0.08
+   p31 0.63
+   p32 0.29
+   p33 0.08
+
+   v1cpu 1
+   v2cpu 1
+   v3cpu 1
+   v1disk 1
+   v2disk 1
+   v3disk 1
+   s1cpu 1
+   s2cpu 1/3
+   s3cpu 1/7
+   s1disk 1/5
+   s2disk 1
+   s3disk 1/3
+end
+
+* Commands 1 2 and 3 are issued b users in a Markov sequence.
+* This Markov model is a DTMC. By an interesting twist, we
+* solve the DTMC steady-state probs using the CTMC Markov model
+* of SHARPE. Make sure not to put in the slef loops explicitly.
+markov ubg
+   1 2 p12
+   1 3 p13
+   2 1 p21
+   2 3 p23
+   3 1 p31
+   3 2 p32
+end
+
+* etai is the prob of issuing command i next
+   var  eta1 prob(ubg, 1)
+   var  eta2 prob(ubg, 2)
+   var  eta3 prob(ubg, 3)
+
+* scpu is the average demand on the cpu over all commands
+* we are performing an aggregation here yet getting the exact
+* results provided the original network is of BCMP type.
+   var scpu eta1 * v1cpu * s1cpu + eta2 * v2cpu * s2cpu + eta3 * v3cpu * s3cpu
+   var sdisk eta1 * v1disk * s1disk + eta2 * v2disk * s2disk \
+	   + eta3 * v3disk * s3disk
+
+* Now we solve a simple pfqn with the aggregated command type.
+pfqn outer (n)
+   cpu disk 1
+   disk cpu 1
+end
+
+   cpu fcfs 1/scpu
+   disk fcfs 1/sdisk
+end
+
+   population n
+end
+
+   loop n, 1, 10, 1
+      expr util(outer, cpu; n)
+      expr util(outer, disk; n)
+   end
+end

@@ -1,0 +1,384 @@
+* Block diagram examples
+
+* Example 1:
+echo Example 1:
+* A very simple reliability block diagram example 
+* Each component type has a prob of failure attached to it rather
+* than a distribution of time to failure.
+* Example 1.11 from p. 32 of Trivedi's book.
+
+block example1
+comp 1 prob(0.05)
+* thus component labelled 1 has a failure prob of 0.05
+comp 2 prob(0.01)
+comp 3 prob(0.3)
+comp 4 prob(0.25)
+comp 5 prob(0.1)
+parallel three 3 3 3
+parallel four 4 4
+series sys1 1 2 three four 5
+end
+
+* system unreliability can be computed as 
+var sysunrel sysprob(example1)
+expr sysunrel
+
+* Example 1a:
+* Now we attach a distribution of time to failure
+* to each component type. The distributions are
+* assumed to be exponential for convenience.
+* the failure rate assigned to a component is such
+* that its unrelaibility at 10 hours is the one in the
+* above example 1.
+
+block example1a
+comp 1 exp(0.005129)
+comp 2 exp(0.001005)
+comp 3 exp(0.003045)
+comp 4 exp(0.028768)
+comp 5 exp(0.010536)
+parallel three 3 3 3
+parallel four 4 4
+series sys1 1 2 three four 5
+end
+
+* can ask for the mean time to system failure
+expr mean(example1a)
+
+* can ask for the variance of the system time to failure
+expr variance(example1a)
+
+* can ask for the coefficient of variation of system time to failure
+var coeff ((variance(example1a))^0.5)/mean(example1a)
+expr coeff
+
+* A symbolic expression for the distribution of time to failure
+cdf (example1a)
+
+* numerical evaluation of system failure prob 
+* at various points in time
+eval (example1a) 1 10 1
+
+* alternatively, we can ask for
+loop t,1,10,1
+   expr value(t;example1a)
+* value uses the symbolic cdf and evaluates at requested values of t
+end
+
+* alternatively, we can ask for
+loop t,1,10,1
+   expr tvalue(t;example1a)
+* tvalue assigns a numerical failure prob to each comp at time t
+* and numercially evaluates the system failure probability; that
+* is a recomputation at each time point is involved.
+end
+
+echo Example 2:
+* Example 2: A Reliability Block diagram 
+* Used to compute Steady-state availability
+
+block parsys
+* a component has attached to it, its steady-state unavailability
+* this is known to be failure rate divided by the sum of the failure rate
+* and the repair rate. We assume all components have their own repair facility
+comp unit prob(lam/(lam+mu))
+* the system as whole has n s-independent units; only one required to
+* function for the system to be up
+kofn sys1 1,n,unit
+end
+
+bind
+lam 0.0001
+end
+
+* variable named sysunavail is the  system steady-state unavailability 
+var sysunavail sysprob(parsys)
+* variable named downtimeis the system downtime in minutes per year
+var downtime 8760*sysunavail
+* variable named sysavail is the system steady-state availability 
+var sysavail 1-sysunavail
+
+* vary the repair rate in the outer loop below
+loop i,0.5,2.0,0.5
+  bind mu i
+* vary the number of units in the inner loop below
+  loop j,5,1,-1
+    bind n j
+* print the values of sysavail, sysunavail and downtime
+    expr  sysavail, sysunavail,downtime
+  end
+end
+
+* Example 2a: A Reliability Block diagram
+* Used to compute Steady-state availability
+* small difference between Example 2 and 2a is
+* that component MTTR and MTTF are specified rather than
+* component failure rate and repair rate
+
+block parsysa
+* a component has attached to it, its steady-state unavailability
+* this is known to be component MTTR divided by the sum of the MTTF
+* and MTTR. We assume all components have their own repair facility
+comp unit prob(MTTR/(MTTF+MTTR))
+* the system as whole has n s-independent units; only one required to
+* function for the system to be up
+kofn sys1 1,n,unit
+end
+
+bind
+MTTF 10000
+end
+
+* variable named sysunavail is the  system steady-state unavailability
+var sysunavaila sysprob(parsysa)
+* variable named downtimeis the system downtime in minutes per year
+var downtimea 8760*sysunavaila
+* variable named sysavail is the system steady-state availability
+var sysavaila 1-sysunavaila
+
+* vary the repair rate in the outer loop below
+loop i,2.0,0.5,-0.5
+  bind MTTR i
+* vary the number of units in the inner loop below
+  loop j,5,1,-1
+    bind n j
+* print the values of sysavail, sysunavail and downtime
+    expr  sysavaila, sysunavaila,downtimea
+  end
+end
+
+echo Example 3:
+* Example 3: a block diagram model of a system with 
+* N processors, N memories and a switch.
+
+format 8
+
+bind
+lamp 0.0000689
+lamm 0.000224
+lams 0.000202
+end
+
+block procs
+comp processor exp(lamp)
+* req is the minimum number of procs needed for system to remain operational
+kofn procs req,N, processor
+end
+
+block mems
+comp memory exp(lamm)
+* req is the minimum number of mems needed for system to remain operational
+kofn mems req, N , memory
+end
+ 
+block sys1
+comp switch exp(lams)
+comp procs  cdf(procs)
+comp mems   cdf(mems)
+series TOP switch procs mems
+end
+
+loop N,8,24,8
+loop i,4,N,4
+  * vary the minimum number of processor-memory pairs required
+  * for the system to function
+  bind req i
+  * first compute th mean time to system failure
+  expr mean(sys1)
+
+  loop t,100,1000,100
+    * Now compute system failure prob at time t
+    * Since keyword value requires symbolic computation of the CDF
+    * and then numerical substitution, it can have numerical
+    * instabilities. The keyword tvalue does a direct numerical
+    * computation and hence is numerically more trustworthy.
+    expr value (t;sys1), tvalue(t;sys1) 
+  end
+end
+end
+
+echo Example 4:
+*   Example 4:
+* A memory reliability model
+
+block mem1
+comp support exp(lambdas)
+comp bbit    exp(lambdab)
+kofn wword   2,2,bbit
+kofn allwords 3,3,wword
+series 1 support allwords
+end
+
+bind
+lambdas 0.05
+lambdab 0.122
+end
+
+cdf (mem1)
+
+* Example 5:
+echo Example 5:
+* for a block diagram
+* make sure tvalue and value give the same
+* answers.  
+
+* block diagram
+block B
+comp 1 exp(5.4)
+comp 2 exp(6.1)
+comp 3 exp(3.1)
+comp 4 exp(2)
+comp 5 exp(9.2)
+comp 6 exp(8.2)
+comp 7 exp(4.3)
+comp 8 exp(6.2)
+parallel CP 1 2 3
+series CS 4 5
+kofn K 2,3, 6 7 8
+series X CP K
+parallel top CS X
+end
+
+loop t,0,1,.1
+    expr value (t;B), tvalue (t;B)
+end
+
+*   Example 6:
+echo Example 6:
+*   This example is an availability model from
+*   the paper by Sahner and Trivedi; IEEE-Trans. on Soft. Eng.; Oct. 1987.
+*   This is Example 5 on pp. 1112-1113
+
+bind
+lambda1  .001
+lambda2  .01
+lambda3  .01
+lambda4  .01
+lambda5  .005
+lambda6  .005
+lambda7  .01
+lambda8  .01
+lambda9  .01
+lambda10  .01
+lambda11  .01
+
+mu1       1 / 5
+mu2       1 / 7.5
+mu3       1 / 7.5
+mu4       1 / 7.5
+mu5       1 / 6
+mu6       1 / 6
+mu7       1 / 7.5
+mu8       1 / 7.5
+mu9       1 / 7.5
+mu10      1 / 5
+mu11      1 / 5
+end
+
+markov avail(lambda, mu)
+up down lambda
+down up mu
+end
+
+poly Ua(lambda, mu) gen\
+   prob (avail, down;lambda, mu), 0, 0
+
+block  p3a (k1,u1,k2,u2,k3,u3)
+comp A Ua(k1,u1)
+comp B Ua(k2,u2)
+comp C Ua(k3,u3)
+parallel TOP A B C
+end
+
+block maina
+comp   1      Ua(lambda1, mu1)
+comp   2-3-4  cdf(p3a;lambda2,mu2,lambda3,mu3,lambda4,mu4)
+comp   5      Ua(lambda5, mu5)
+comp   6      Ua(lambda6, mu6)
+parallel     56     5  6
+series  A      1 2-3-4 56
+comp   7-8-9  cdf(p3a;lambda7,mu7,lambda8,mu8,lambda9,mu9)
+comp   10     Ua(lambda10, mu10)
+comp   11     Ua(lambda11, mu11)
+series  B      7-8-9 10 11
+parallel     TOP    A B
+end
+
+cdf (maina)
+
+*   Example 7:
+echo Example 7:
+*   This is an alternative implementation of the IEEE-TSE
+*   Oct. 1987 paper (Example 5 on pp. 1112-1113).
+*   We will now able to compute the instantaneous unavailability
+*   of the system besides its steady-state unavailability
+
+poly U(lambda, mu) gen\
+   lambda / (lambda + mu), 0, 0\
+  -lambda / (lambda + mu), 0, -(lambda + mu)
+
+block  p3 (k1,u1,k2,u2,k3,u3)
+comp A U(k1,u1)
+comp B U(k2,u2)
+comp C U(k3,u3)
+parallel TOP A B C
+end
+
+block main
+comp   1      U(lambda1, mu1)
+comp   2-3-4  cdf(p3;lambda2,mu2,lambda3,mu3,lambda4,mu4)
+comp   5      U(lambda5, mu5)
+comp   6      U(lambda6, mu6)
+parallel     56     5  6
+series  A      1 2-3-4 56
+comp   7-8-9  cdf(p3;lambda7,mu7,lambda8,mu8,lambda9,mu9)
+comp   10     U(lambda10, mu10)
+comp   11     U(lambda11, mu11)
+series  B      7-8-9 10 11
+parallel     TOP    A B
+end
+
+expr pzero (main)
+
+* Example 8:
+echo Example 8:
+* compute reliability of a system with 40 components
+* in series, where each of these components is composed
+* of 2 subcomponents in parallel.
+
+format 8
+
+block opt
+comp S exp(1.0)
+parallel CP S S
+series C1 CP CP CP CP CP CP CP CP CP CP 
+series sys1 C1 C1 C1 C1 
+end
+
+* The reason for commenting out the next two commands is that they
+* give rise to instability. The alternative methods of computation
+* are given next.
+*cdf(opt)
+*eval (opt) .1 1 .1
+
+* alternate way of computing the values of the cdf at some values of t:
+* assign each component its failure probability at t.
+* this is the same, essentially, as using tvalue.
+* theoretically, zero(alt;t), tvalue(t;opt) and value(t;opt)
+* should give the same answer.
+
+func g(t) 1-^(-t)
+
+block alt(t)
+comp S prob(g(t))
+parallel CP S S
+series C1 CP CP CP CP CP CP CP CP CP CP 
+series sys1 C1 C1 C1 C1 
+end
+
+loop t, .1, 1, .1
+    expr pzero(alt;t), tvalue (t; opt)
+end
+
+end
+

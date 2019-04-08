@@ -1,0 +1,162 @@
+
+*verbose on
+*
+
+
+* Example 1: M/M/1/K queue
+markov mm1k(k) readprobs
+loop i,0,k-1,1
+$(i)   $(i+1) lam
+end
+loop i,1,k,1
+$(i)   $(i-1) mu
+end
+reward 
+loop i,0,k,1
+$(i) i
+end
+end
+0 1.0
+end
+
+bind
+lam 1.0
+mu  1.5
+end
+
+loop k,10,20,10
+
+expr exrss(mm1k;k)
+loop t,1,10,1
+expr exrt(t;mm1k;k)
+end
+end
+
+* Example 2: Ring network; refer to Figure 9.44 in Sahner 
+* et al book
+
+bind lamL 0.000001
+bind lamN 0.000001
+
+markov M(N,F)
+loop i,0,N-2
+  $(i) $(i+1) (N-i)*lamN*(1-F)
+  $(i) FC     (N-i)*lamN*F
+end
+loop i,0,N-1
+  $(i) FL      N*lamL
+end
+$(N-1) FN      lamN
+end
+0   1.0
+end
+
+func unrelring(t,N,F) tvalue(t;M;N,F)
+
+loop N,16,32,16
+loop F,0.1,0.2,0.1
+loop j,0,5,1
+bind t 10^j
+
+expr unrelring(t,N,F)
+end
+end
+end
+
+markov M2(N,F)
+loop i,0,N-2
+  $(i) $(i+1) (N-i)*lamN*(1-F)
+  $(i) FC     (N-i)*lamN*F
+end
+loop i,0,N-1
+  $(i) FL      N*lamL
+end
+$(N-1) FN      lamN
+end
+0   1.0
+end
+
+*get the same results as shown on p. 198 in Sahner et al book
+cdf(M2;16,1)
+cdf(M2;16,0)
+
+*get the same results as shown on p. 202 in Sahner et al book
+cdf(M2;16,.2)
+
+* Example 3: Refer to example 9.16 in Trivedi's Prentice-Hall book
+* it shows a hierarchical model for a non-product-form
+* queuing network.
+* the inner model is a pfqn
+* the outer model is also a pfqn
+
+format 8
+
+bind
+q1 0.5
+q2 0.3
+q3 0.15
+mucpu 89.3
+muio1 44.6
+muio2 26.8
+muio3 13.4
+lam 1/15
+end
+var q0 1-q1-q2-q3
+
+pfqn inner(n)
+cpu io1 q1
+cpu io2 q2
+cpu io3 q3
+io1 cpu 1
+io2 cpu 1
+io3 cpu 1
+end
+cpu fcfs mucpu
+io1 fcfs muio1
+io2 fcfs muio2
+io3 fcfs muio3
+end
+cust n
+end
+
+func MET(N) mucpu*util(inner,cpu;N)*q0
+
+*outer level markov chain description
+
+
+markov lds(M,N)
+loop i,0,M-1,1
+  $(i) $(i+1) (M-i)*lam
+end
+loop i,1,N-1,1
+$(i) $(i-1) MET(i)
+end
+loop i,N,M,1
+   $(i) $(i-1) MET(N)
+end
+
+reward default 0
+loop i,1,N-1,1
+$(i) MET(i)
+end
+loop i,N,M,1
+   $(i) MET(N)
+end
+end
+end
+
+func METhat(M) exrss(lds;M,M)
+func MERhat(M) M/METhat(M) - 1/lam
+func MET1(M,N) exrss(lds;M,N)
+func MER(M,N) M/MET1(M,N) - 1/lam
+ 
+bind N 4
+loop M,10,50,10
+  expr MERhat(M), MER(M,N)
+end
+
+
+end
+
+
+

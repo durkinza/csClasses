@@ -1,0 +1,599 @@
+* A set of examples illustrating fault tree models 
+* in SHARPE
+
+* Example 1: 
+* each basic event has a failure prob attached to it.
+
+ftree ft1
+basic one prob(p1)
+basic two prob(p2)
+basic three prob(p3)
+and 12 one two
+and 23 two three
+or top 12 23
+end
+bind
+p1 0.1
+p2 0.4
+p3 0.7
+end
+
+* System unreliability is computed as 
+var sysunrel sysprob(ft1)
+
+expr sysunrel
+
+
+* Example 2:
+
+ftree ft2
+* each basic component has attached to its steady-state unavailability
+* as computed to be its fail rate divided the sum of its failrate and rep. rate
+basic proc prob(lambdap/(lambdap+mup))
+basic mem  prob(lambdam/(lambdam+mum))
+basic bus  prob(lambdab/(lambdab+mub))
+or top proc mem bus
+end
+
+var sysunavail sysprob(ft2)
+var downtime sysunavail*8760*60
+
+bind
+lambdap 0.0001
+lambdam 0.00001
+lambdab 0.00001
+mup     1.0
+mum     1.0
+mub     1.0
+end
+
+expr sysunavail
+expr downtime
+
+* Example 3:
+* The next example is from SHARPE86 Users Guide.
+* a TMR of TMR model using fault trees
+* Each TMR subsytem is allowed to be different, in general
+
+format 8
+ftree fcc1(lambda1,lambda2,lambda3)
+* to each basic event, we now attach a distribution function,
+* its time to failure distribution function; assumed to be exponential
+* failure rates are symbolic.
+basic A exp(lambda1)
+basic B exp(lambda2)
+basic C exp(lambda3)
+* next two kofn gates have statistically identical inputs
+kofn Afail k,n, A
+kofn Bfail k,n, B
+kofn Cfail k,n, C
+*the next kofn gate has statistically distinct inputs
+kofn Sysfail ksys,nsys, Afail Bfail Cfail
+end
+
+bind
+k 2
+n 3
+ksys 2
+nsys 3
+lambda1 0.0001
+lambda2 0.0001
+lambda3 0.0001
+end
+
+* can ask for the mean time to system failure
+expr mean(fcc1;lambda1,lambda2,lambda3)
+
+* can ask for the variance of the system time to failure
+expr variance(fcc1;lambda1,lambda2,lambda3)
+
+* can ask for the coefficient of variation of system time to failure
+var coeff ((variance(fcc1;lambda1,lambda2,lambda3))^0.5)/mean(fcc1;lambda1,lambda2,lambda3)
+expr coeff
+
+* Next we ask for closed-form (in time variable t) time-to-failure
+* distribution function
+cdf (fcc1;lambda1,lambda2,lambda3)
+
+* Now we ask for numerical values of system failure probabilities
+* at mission times, 10 thru 60 at 10 hour intervals.
+eval (fcc1;lambda1,lambda2,lambda3) 10 60 10
+
+* loop construct is now available in sharpe; 
+loop i,1,10,1
+   bind lambda1 i*.00001
+   expr value(100;fcc1;lambda1,lambda2,lambda3)
+   * the failure prob of the system is evaluated at time 100
+end
+
+* Example 4:
+*sharpe allows nodes to be shared (repeated) in a fault-tree
+*Next example considers fault-trees with repeated nodes.
+
+ftree dsp70
+basic a prob(q)
+basic b prob(q)
+basic c prob(q)
+basic d prob(q)
+or t3 a b
+and t1 t3 d
+transfer d1 d
+and t2 c d1
+or t0 t1 t2
+end
+
+bind 
+q 0.25
+end
+
+expr sysprob(dsp70)
+
+
+* By hand calculation the answer was obtained as
+expr 37/256
+
+* Example 5:
+* It is possible to reformualte the ftree of dsp70 
+* to eliminate repeated nodes. It results in dsp71.
+* this provides a second check.
+ftree dsp71
+basic a prob(q)
+basic b prob(q)
+basic c prob(q)
+basic d prob(q)
+or t1 a b c
+and t0 t1 d
+end
+expr sysprob(dsp71)
+
+* Example 6:
+* Suppose that you intended a fault-tree with repeated nodes
+
+ftree f-repeat
+basic a exp(3.1)
+basic b exp(4.2)
+basic c exp(3.7)
+basic d exp(7.2)
+basic e exp(2)
+basic f exp(1.2)
+basic g exp(0.8)
+basic x exp(3)
+basic y exp(4)
+transfer a1 a
+transfer a2 a
+transfer e1 e
+or BE b e
+and A a BE
+kofn K1 2,3, a1 x y
+kofn K2 3,4, g c d a2
+or EG e1 g
+or FC f c
+and E EG FC
+or top A K1 K2 E
+end
+
+loop t,0,1,.1
+    expr value(t;f-repeat), tvalue (t;f-repeat)
+    * The difference between value and tvalue should be noted.
+    * For value, a symbolic computation of the time-to-failure 
+    * distribution is carried out and then numerical evaluation is done.
+    * For tvalue, direct numerical computation is done. The latter
+    * is much more stable. 
+end
+expr mean(f-repeat)
+
+* Now the same fault -tree is declared to have no repeated nodes.
+* Perhaps this was an unintentional error on the part of the modeler.
+* We can determine the error in the results.
+* fault tree, no repeated nodes
+
+ftree f-norepeat
+basic a exp(3.1)
+basic b exp(4.2)
+basic c exp(3.7)
+basic d exp(7.2)
+basic e exp(2)
+basic f exp(1.2)
+basic g exp(0.8)
+basic x exp(3)
+basic y exp(4)
+or BE b e
+and A a BE
+kofn K1 2,3, a x y
+kofn K2 3,4, g c d a
+or EG e g
+or FC f c
+and E EG FC
+or top A K1 K2 E
+end
+
+loop t,0,1,.1
+    expr tvalue (t;f-norepeat), value(t;f-norepeat)
+end
+
+* Example 7:
+* Another example of a fault tree with shared (or repeated) nodes
+* thus node a1 below represents an event that is exactly the same
+* event as node a. 
+
+ftree fshared
+basic a exp(1)
+basic b exp(1)
+basic c exp(1)
+basic d exp(1)
+basic e exp(1)
+basic f exp(1)
+basic g exp(1)
+basic h exp(1)
+transfer a1 a
+transfer b1 b
+transfer c1 c
+transfer d1 d
+transfer e1 e
+transfer f1 f
+transfer g1 g
+transfer h1 h
+transfer a2 a
+transfer b2 b
+transfer c2 c
+transfer d2 d
+and AB a e
+and AC b f
+and AD c g
+and AE d h
+and AF g1 b1
+and AG h1 c1
+and AH e1 d1
+and AI f1 a1
+and AJ a2 c2
+and AK b2 d2
+or top AB AC AD AE AF AG AH AI AJ AK
+end
+cdf(fshared)
+
+* If we ignore the shared nodes and keep `the same' tree
+* otherwise then answers are different. Make sure you use
+* the right model for the problem!
+ftree fnoshared
+basic a exp(1)
+basic b exp(1)
+basic c exp(1)
+basic d exp(1)
+basic e exp(1)
+basic f exp(1)
+basic g exp(1)
+basic h exp(1)
+and AB a e
+and AC b f
+and AD c g
+and AE d h
+and AF g b
+and AG h c
+and AH e d
+and AI f a
+and AJ a c
+and AK b d
+or top AB AC AD AE AF AG AH AI AJ AK
+end
+cdf(fnoshared)
+
+
+* Now compare the values
+expr mean(fshared), mean(fnoshared)
+
+loop t,1,10,1
+expr tvalue(t;fshared), tvalue(t;fnoshared)
+end
+
+* Example 8:
+* In next example we model the reliability and
+* inst. availability of a system Using a fault tree. See
+* Sahner & Trivedi; IEEE-TR; June 1987.
+* Section 5 of the paper. This is a simplified
+* version of the problem
+
+format 8
+
+bind
+busrr 1/2.5
+muproc 1/2.5
+memrr 1/2.5
+end
+
+* Model the system reliability without repair
+ftree system1
+basic proc exp(1/720)
+basic mem  exp(1/(2*720))
+basic bus  exp(1/(3*720))
+kofn procs 2, 2 , proc
+kofn mems 2, 3 , mem
+or top procs mems bus
+end
+
+* polynomial U is the inst. unavail of a component
+poly U(lambda, mu) gen\
+   lambda / (lambda + mu), 0, 0\
+  -lambda / (lambda + mu), 0, -(lambda + mu)
+* model system insta. availability
+ftree system2
+basic proc U(1/720,muproc)
+basic mem  U(1/(2*720),memrr)
+basic bus  U(1/(3*720),busrr)
+kofn procs 2, 2 , proc
+kofn mems 2, 3 , mem
+or top procs mems bus
+end
+
+markov mb
+0 1 1/(3*720)
+1 0 busrr
+end
+
+
+
+markov mm
+0 1 1.5/720
+1 2 1/720
+2 3 1/(2*720)
+1 0 memrr
+2 1 memrr
+3 2 memrr
+end
+
+
+markov mp
+0 1 2/720
+1 2 1/720
+1 0 muproc
+2 1 muproc
+end
+
+
+
+* Model system steady-state availability
+poly U1(a) gen\
+   a, 0, 0
+
+ftree system3
+basic proc U1(prob(mp,2))
+basic mem  U1(prob(mm,2)+prob(mm,3))
+basic bus  U1(prob(mb,1))
+or top proc mem bus
+end
+
+cdf (system1)
+cdf (system2)
+cdf (system3)
+
+
+
+* Example 9:
+* loss of precision in coefficients cause invalid results : fault trees
+* and block diagrams
+* By asking for numerical rather than symbolic computation, this
+* can be avoided. Stdudy this example carefully.
+
+
+poly f(x) gen 1,0,0,-1,0,-x
+ftree main
+basic 1151 f(lambda)
+basic 1152 f(lambda)
+basic 1153 f(lambda)
+basic 1154 f(lambda)
+basic 1155 f(lambda)
+basic 1156 f(lambda)
+and G169 1151 1152 1153
+and G170 1154 1155 1156
+and G174 G169 G170
+basic 3031 f(lambda)
+basic 3032 f(lambda)
+basic 3033 f(lambda)
+basic 3034 f(lambda)
+basic 3035 f(lambda)
+basic 3036 f(lambda)
+and G140 3031 3032 3033
+and G141 3034 3035 3036
+basic 1121 f(lambda)
+basic 1122 f(lambda)
+basic 1123 f(lambda)
+basic 1124 f(lambda)
+basic 1125 f(lambda)
+basic 1126 f(lambda)
+and G144 1121 1122 1123
+and G145 1124 1125 1126
+and G142 G140 G141
+basic 4030 f(lambda)
+and G143 G142 4030
+and G146 G144 G145
+and G154 G143 G146
+basic G65 f(lambda)
+basic G99 f(lambda)
+basic G93 f(lambda)
+basic G78 f(lambda)
+and G149 G65 G99 G93 G78
+basic 2000 f(lambda)
+and G150 G149 2000
+basic 1131 f(lambda)
+basic 1132 f(lambda)
+basic 1133 f(lambda)
+basic 1134 f(lambda)
+basic 1135 f(lambda)
+basic 1136 f(lambda)
+and G151 1131 1132 1133
+and G152 1134 1135 1136
+and G153 G151 G152
+and G155 G150 G153
+or G156 G154 G155
+basic 2030 f(lambda)
+and G162 G156 2030
+basic 1141 f(lambda)
+basic 1142 f(lambda)
+basic 1143 f(lambda)
+basic 1144 f(lambda)
+basic 1145 f(lambda)
+basic 1146 f(lambda)
+and G160 1141 1142 1143
+and G161 1144 1145 1146
+and G163 G160 G161
+and G164 G162 G163
+basic 3041 f(lambda)
+basic 3042 f(lambda)
+basic 3043 f(lambda)
+basic 3044 f(lambda)
+basic 3045 f(lambda)
+basic 3046 f(lambda)
+and G165 3041 3042 3043
+and G166 3044 3045 3046
+and G167 G165 G166
+and G168 G164 G167
+basic 2040 f(lambda)
+and G175 G168 2040
+and G176 G174 G175
+basic 1201 f(lambda)
+basic 1202 f(lambda)
+basic 1203 f(lambda)
+basic 1204 f(lambda)
+basic 1205 f(lambda)
+basic 1206 f(lambda)
+and G206 1201 1202 1203
+and G207 1204 1205 1206
+and G208 G206 G207
+basic 3051 f(lambda)
+basic 3052 f(lambda)
+basic 3053 f(lambda)
+basic 3054 f(lambda)
+basic 3055 f(lambda)
+basic 3056 f(lambda)
+and G202 3051 3052 3053
+and G203 3054 3055 3056
+and G204 G202 G203
+basic 1181 f(lambda)
+basic 1182 f(lambda)
+basic 1183 f(lambda)
+basic 1184 f(lambda)
+basic 1185 f(lambda)
+basic 1186 f(lambda)
+and G189 1181 1182 1183
+and G190 1184 1185 1186
+and X1 G189 G190
+basic X2 f(lambda)
+basic 1171 f(lambda)
+basic 1172 f(lambda)
+basic 1173 f(lambda)
+basic 1174 f(lambda)
+basic 1175 f(lambda)
+basic 1176 f(lambda)
+and G185 1171 1172 1173
+and G186 1174 1175 1176
+and G187 G185 G186
+and X3 X1 G187
+and G192 X1 X3
+basic G117 f(lambda)
+basic G128 f(lambda)
+basic G136 f(lambda)
+basic G124 f(lambda)
+and G182 G117 G128 G136 G124
+basic 2050 f(lambda)
+and G183 G182 2050
+basic 1161 f(lambda)
+basic 1162 f(lambda)
+basic 1163 f(lambda)
+basic 1164 f(lambda)
+basic 1165 f(lambda)
+basic 1166 f(lambda)
+and G177 1161 1162 1163
+and G178 1164 1165 1166
+and G179 G177 G178
+and G184 G183 G179
+basic 6010 f(lambda)
+basic 6040 f(lambda)
+basic 6020 f(lambda)
+or G139 6010 6040 6020
+or G193 G192 G184 G139
+basic 2060 f(lambda)
+and G197 2060 G193
+basic 1191 f(lambda)
+basic 1192 f(lambda)
+basic 1193 f(lambda)
+basic 1194 f(lambda)
+basic 1195 f(lambda)
+basic 1196 f(lambda)
+and G198 1191 1192 1193
+and G199 1194 1195 1196
+and G200 G198 G199
+and G201 G197 G200
+and G205 G204 G201
+and G209 G208 G205
+or G212 G175 G209
+basic 2070 f(lambda)
+and G213 G212 2070
+end
+
+bind
+lambda .8
+end
+
+* tvalue computes the answer numerically to start with
+* and hence is lot more stable. The use of tvalue is advised for larger
+* problems. In any case, check value and tvalue against
+* each other.
+loop t,0,2, .2
+   expr tvalue (t;main)
+end
+
+* Examples from the paper by M. Balakrishnan and Trivedi:
+*Stochastic Petri Nets for the
+*Reliability Analysis of Communication Network Applications with
+* Alternate-Routing,
+* Reliability Engineering and System Safety, Vol. 52, 1996.
+
+* Example 10a
+
+ftree ex1
+basic ae exp(lam)
+basic be exp(lam)
+basic ac exp(lam)
+basic bc exp(lam)
+basic ad exp(lam)
+basic bd exp(lam)
+basic ce exp(lam)
+basic de exp(lam)
+basic ab exp(lam)
+basic cd exp(lam)
+or ab1 ae be
+or ab2 ac bc
+or ab3 ad bd
+and AB ab ab1 ab2 ab3 
+or cd1 ce de
+and CD cd cd1
+or top AB CD
+end
+
+bind lam 0.0005
+
+* Example 10b
+
+ftree ex2
+repeat bc exp(lam)
+basic ab exp(lam)
+basic ac exp(lam)
+basic bd exp(lam)
+basic cd exp(lam)
+or ab1 ac bc
+or cd1 bc bd
+and x ab ab1
+and y cd1 cd
+or top x y
+end
+
+loop i,0,100,10
+bind t i
+expr tvalue(t;ex1), tvalue(t;ex2)
+end
+
+
+pqcdf(ex2)
+
+end
+
+end

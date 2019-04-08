@@ -1,0 +1,40 @@
+* Author Zane Durkin <durk7832>
+* Homework 2 Part 2 Question 2
+* 
+
+echo Homework 2 part 2 #2
+echo
+
+block system
+	comp PU1 prob(1/3000)
+	comp PU2 prob(1/3000)
+	comp PU3 prob(1/3000)
+	comp RT1 prob(1/3000)
+	comp RT2 prob(1/3000)
+	comp AHRS1 prob(1/1500)
+	comp AHRS2 prob(1/1500)
+	comp INS1 prob(1/1500)
+	comp Dopp1 prob(1/800)
+	comp Bus1 prob(1/5000)
+	comp Bus2 prob(1/5000)
+	parallel PU PU1 PU2 PU3
+	parallel RT RT1 RT2
+	parallel AHRS AHRS1 AHRS2
+	parallel Bus Bus1 Bus2
+	series nav1 Dopp1 AHRS
+	parallel nav INS1 nav1
+	series sys PU RT Bus nav
+end
+
+
+
+
+var syst sysprob(system)
+expr syst
+
+eval (system) 1 1 1
+eval (system) 24 24 1
+eval (system) 48 48 1
+eval (system) 72 72 1
+
+end

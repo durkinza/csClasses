@@ -1,0 +1,63 @@
+* Author Zane Durkin <durk7832>
+* Homework 2 Problem 5
+
+echo Homework 2 Part 2 #1
+echo
+
+* 
+* starting 1 of 1 system
+* 
+echo 1-of-1 system
+ 
+block oneofone
+	comp 1 prob(0.0001)
+end
+cdf(oneofone)
+expr mean(oneofone)
+
+
+* 
+* Starting 1 of 3 system
+* 
+echo 1-of-3 system
+
+block oneofthree
+	comp 1 prob(0.0001)
+	comp 2 prob(0.0001)
+	comp 3 prob(0.0001)
+	kofn K 1,3, 1 2 3
+end
+cdf(oneofthree)
+expr mean(oneofthree)
+
+
+
+
+* 
+* Starting 2 of 3 system
+* 
+echo 2-of-3 system
+
+block oneofthree
+	comp 1 prob(0.0001)
+	comp 2 prob(0.0001)
+	comp 3 prob(0.0001)
+	kofn K 1,3, 1 2 3
+end
+cdf(oneofthree)
+expr mean(oneofthree)
+
+
+
+
+* 
+* 
+* 
+* For a short term mission, a 2 of 3 system would be preferred. This is because in a short term mission, you are less likely to have components break down during the mission, and having 2 required components allows for a higher fault tolerance. 
+* 
+* 
+* For a long term mission a 1 of 3 system would be preferred. This is because in a long term mission, you are more likely to have components break down during the mission. By only needing a single component running, the system is less likey to crash when components break down. 
+
+
+
+end

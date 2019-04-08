@@ -1,0 +1,185 @@
+* Homework given in a class at DEC
+* File used by SHARPE to calculate the availablity of the system
+info epsilons 
+format 8
+bind
+hscrr 1/3.5
+disc1rr 1/4
+disc2rr 1/4
+end
+
+ftree system1
+basic hsc exp(1/7000)
+basic disc1 exp(1/20000)
+basic disc2 exp(1/20000)
+kofn hscs 2, 2 , hsc
+kofn disc1s 2, 2 , disc1
+kofn disc2s 2, 2 , disc2
+or top hscs disc1s disc2s
+end
+
+cdf (system1)
+
+poly U(lam,mu) gen\
+ lam/(lam+mu),0,0\
+-lam/(lam+mu),0,-(lam+mu)
+
+ftree system2
+basic hsc U(1/(7000),hscrr)
+basic disc1 U(1/(20000),disc1rr)
+basic disc2 U(1/(20000),disc2rr)
+kofn hscs 2, 2 , hsc
+kofn disc1s 2, 2 , disc1
+kofn disc2s 2, 2 , disc2
+or top hsc disc1 disc2
+end
+
+cdf (system2)
+
+markov hh
+2 1 2/7000
+1 0 1/7000
+0 1 2*(hscrr)
+1 2 hscrr
+end
+
+markov dd
+2 1 2/20000
+1 0 1/20000
+0 1 2*(disc1rr)
+1 2 disc1rr
+end
+
+markov ss
+2 1 2/20000
+1 0 1/20000
+0 1 2*(disc2rr)
+1 2 disc2rr
+end
+
+ftree system3
+basic hsc prob(prob(hh,0))
+basic disc1 prob(prob(dd,0))
+basic disc2 prob(prob(ss,0))
+end
+
+cdf (system3)
+
+markov mh
+2 1 2/7000
+1 0 1/7000
+0 1 hscrr
+1 2 hscrr
+end
+
+markov md
+2 1 2/20000
+1 0 1/20000
+0 1 disc1rr
+1 2 disc1rr
+end
+
+markov ms
+2 1 2/20000
+1 0 1/20000
+0 1 disc2rr
+1 2 disc2rr
+end
+
+ftree system4
+basic hsc prob(prob(mh,0))
+basic disc1 prob(prob(md,0))
+basic disc2 prob(prob(ms,0))
+or top hsc disc1 disc2
+end
+
+cdf (system4)
+
+
+markov m5
+222 122 2*(1/7000)
+122 222 hscrr
+222 212 2*1/20000
+212 222 disc1rr
+222 221 2*1/20000
+221 222 disc1rr
+221 121 2*(1/7000)
+121 221 hscrr
+221 220 1/20000
+220 221 disc2rr
+221 211 2*(1/20000)
+211 221 disc1rr
+220 210 2*(1/20000)
+220 120 2*(1/7000)
+212 202 1/20000
+202 212 disc1rr
+212 112 2*(1/7000)
+112 212 hscrr
+212 211 2*(1/20000)
+211 201 1/20000
+201 211 disc1rr
+211 210 1/20000
+210 211 disc2rr
+211 111 2*(1/7000)
+111 211 hscrr
+210 200 1/20000
+200 210 disc1rr
+210 110 2*(1/7000)
+202 201 2*(1/20000)
+202 102 2*(1/7000)
+201 200 1/20000
+201 101 2*(1/7000)
+200 100 2*(1/7000)
+122 112 2*(1/20000)
+122 121 2*(1/20000)
+122 022 1/7000
+022 122 hscrr
+121 120 1/20000
+120 121 disc2rr
+121 021 1/7000
+021 121 hscrr
+120 020 1/7000
+020 120 hscrr
+120 110 2*(1/20000)
+112 111 2*(1/20000)
+112 102 1/20000
+102 112 disc1rr
+112 012 1/7000
+012 112 hscrr
+111 110 1/20000
+110 111 disc2rr
+111 011 1/7000
+011 111 hscrr
+111 101 1/20000
+101 111 disc1rr
+110 100 1/20000
+100 110 disc1rr
+110 010 1/7000
+010 110 hscrr
+102 101 2*(1/20000)
+102 002 1/7000
+002 102 hscrr
+101 100 1/20000
+101 001 1/7000
+001 101 hscrr
+100 000 1/7000
+000 100 hscrr
+022 021 2*(1/20000)
+022 012 1/20000
+021 020 1/20000
+021 011 2*(1/20000)
+020 010 2*(1/20000)
+012 011 2*(1/20000)
+012 002 1/20000
+011 010 1/20000
+011 001 1/20000
+010 000 1/20000
+002 001 2*(1/20000)
+001 000 1/20000
+end 
+
+var avail5 prob (m5,222)+prob(m5,221)+prob(m5,212)\
++prob(m5,211)+prob(m5,122)+prob(m5,121)+prob(m5,112)\
++prob(m5,111)
+expr avail5
+end

@@ -1,0 +1,166 @@
+
+* This is a model type that allows non-series-parallel reliability graphs
+* algorithm used is developed in a paper by Veeraraghavan & Trivedi
+* in the Ninth Symposium on Reliable Distributed Systems, 
+* Huntsville, October 1990.
+* It also appears in an IEEE Trans. Rel paper in Aug 1991, coauthored
+* by Veeraraghavan and Trivedi
+
+format 8
+
+* A graph with source nodes 1 & 3 and sink nodes 2 & 4
+relgraph 2s2d 
+1 2 exp(1)
+3 4 exp(10)
+end
+
+expr mean (2s2d), 1/1 + 1/10 - 1/(1+10)
+
+* A graph with source nodes 1  and sink nodes 2 & 3
+relgraph 1s2d
+1 2 exp(1)
+1 3 exp(10)
+end
+
+expr mean (1s2d), 1/1 + 1/10 - 1/(1+10)
+* A graph with source nodes 1 & 3  and sink node 4
+relgraph 2s1d 
+1 4 exp(1)
+3 4 exp(10)
+end
+expr mean (2s1d), 1/1 + 1/10 - 1/(1+10)
+
+* A relgraph model can be used to model the bridge.
+
+
+* Model a bridge with nodes labelled 1,2,3,4. Unidirectional 
+* edges connect pairs of nodes. Edges can fail and have associated
+* Failure probs or time to failure distributions. 
+* Sharpe determines the prob of a path from source node
+* to the terminal node. Or the distribution (mean and variance as well)
+* of the time to disconnection between th source and the terminal.
+
+* First we attach a failure prob with each edge.
+relgraph bridge0
+1 2 prob(q)
+1 3 prob(q)
+2 3 prob(q)
+3 2 prob(q)
+2 4 prob(q)
+3 4 prob(q)
+end
+
+bind
+q 0.1
+end
+
+expr 1-sysprob(bridge0)
+
+var r 1-q
+* Since the expression from bridge reliability is known,
+* we can compare the one computed by sharpe algorithm
+var relbridge r*r*(2+2*r-5*r*r+2*r*r*r)
+
+expr relbridge
+
+* We attach an exp. dist with each edge.
+relgraph bridge
+1 2 exp(lam)
+1 3 exp(lam)
+2 3 exp(lam)
+3 2 exp(lam)
+2 4 exp(lam)
+3 4 exp(lam)
+end
+
+* Note that a bidirection edge was specified as two unidirectional
+* edges. Alternatively, we can sepcify bidirectional edges directly
+
+relgraph bridge2
+1 2 exp(lam)
+1 3 exp(lam)
+3 4 exp(lam)
+2 4 exp(lam)
+bidirect
+2 3 exp(lam)
+end
+
+bind
+lam 1
+end
+
+cdf(bridge)
+pqcdf(bridge2)
+cdf(bridge2)
+
+* Now we model the bridge using an ftree.
+ftree bridge1
+basic l1 exp(lam)
+basic l2 exp(lam)
+basic l3 exp(lam)
+basic l4 exp(lam)
+basic l5 exp(lam)
+* the transfer keyword makes the two nodes identical
+transfer tl1 l1
+transfer tl2 l2
+transfer tl3 l3
+transfer tl4 l4
+transfer tl5 l5
+and 1 l1 l2
+and 2 l3 l4
+and 3 tl1 tl4 l5
+and 4 tl2 tl3 tl5
+or top 1 2 3 4
+end
+
+cdf(bridge1)
+pqcdf(bridge1)
+
+* A bridge can be analyzed by hand calculations
+* for its reliability and if all 
+* components times to failure are exp. random vars and 
+* component failures are statistically ind then the 
+* resulting expression can be coded up in sharpe as an exponomial.
+
+poly bridge4(v1,v2,v3,v4,v5) gen\
+   1,0,0\
+   -1,0,-(v1+v4)\
+   -1,0,-(v2+v5)\
+   -1,0,-(v1+v3+v5)\
+   -1,0,-(v2+v3+v4)\
+   1,0,-(v1+v2+v3+v4)\
+   1,0,-(v1+v2+v3+v5)\
+   1,0,-(v1+v2+v4+v5)\
+   1,0,-(v1+v3+v4+v5)\
+   1,0,-(v2+v3+v4+v5)\
+   -2,0,-(v1+v2+v3+v4+v5)
+
+graph bridge3
+a
+end
+dist a bridge4 (3,3,3,3,3)
+end
+
+cdf(bridge3)
+
+
+* reliability graph
+
+relgraph R
+1 2 exp(1.1)
+1 4 exp(2.2)
+1 3 exp(3.1)
+2 5 exp(2.3)
+4 5 exp(4.1)
+3 5 exp(0.9)
+bidirect
+2 4 exp(1.7)
+3 4 exp(4.1)
+end
+
+eval (R) 0 5 .5
+loop t,0,5,.5
+    expr tvalue (t;R)
+end
+
+end
