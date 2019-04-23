@@ -18,17 +18,30 @@ Extend the scenario above to have the server support multiple clients. When a cl
 
 Use docstrings for comments. For each function generate documentation in Shpinx.
 """
-
+import sys
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256, HMAC
 from Crypto.Signature import PKCS1_v1_5
 from Crypto import Random
+from twisted.internet.protocol import Factory, ClientFactory
+from twisted.protocols.basic import LineReceiver
+from twisted.internet import reactor
+from twisted.internet.error import ReactorNotRunning
+from time import sleep
 import base64
 
 # general vars
-random_generator = Random.new().read
+random_seed = Random.new().read
 message_split = '='*100
+
+
+# Debugging output level
+# 0 = no debug
+# 1 = minor debug
+# ...
+# 5 = max debug
+DEBUG_LEVEL = 1
 
 # vars for AES
 block_size = AES.block_size
@@ -41,7 +54,7 @@ def generateRSAKeys():
 	:returns: privKey, pubKey
 	"""
 	# vars for RSA
-	RSAKeys = RSA.generate(1024, random_generator) #generate pub and priv RSA keys
+	RSAKeys = RSA.generate(4096, random_seed) #generate pub and priv RSA keys
 	pubKey = getPubKey(RSAKeys)
 	return RSAKeys, pubKey	
 
@@ -103,8 +116,12 @@ def EncryptRSA(key, plainText):
 
 	:returns: base64 encoded cipher text
 	"""
+	try:
+		plainText = plainText.encode()
+	except AttributeError:
+		pass
 	encryptor = PKCS1_OAEP.new(key)
-	cipherText = encryptor.encrypt(plainText.encode())
+	cipherText = encryptor.encrypt(plainText)
 	encodedCipherText = base64.b64encode(cipherText)
 	return encodedCipherText
 
@@ -197,89 +214,390 @@ def getPubKey(privKey):
 	return privKey.publickey()
 
 
+
+
+
+
+
+
+#######################################################################
+#
+#
+# SERVER
+#
+#
+#######################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ServerWorker(LineReceiver):
+	"""
+	This class will act as a point of contact for a single client.
+	"""
+	def __init__(self, factory, id):
+		self.factory = factory
+		self.client_id = id
+		self.AESKey = random_seed(256)
+
+	def debug(self, message, level=1):
+		if level <= DEBUG_LEVEL:
+			self.log(message)
+
+	def log(self, message):
+		"""
+		Log message to console
+
+		:param message: The message to log
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		print("(Server "+str(self.client_id)+"): "+message)
+		sys.stdout.flush()
+
+	def send(self, message):
+		self.sendLine(message)
+
+	def connectionMade(self):
+		"""
+		Automatically ran when client connects
+		"""
+		self.log("Connection made to client")
+		self.factory.servers.append(self)
+		self.send(b"SPK:"+self.factory.RSAPubKey.exportKey("PEM"))
+
+	def lineReceived(self, data):	
+		"""
+		Automatically ran when a message is recieved
+		
+		:param data: (bytes) the data recieved
+		"""
+		# decode data
+		data = data.decode("utf-8")
+		self.debug("client "+str(self.client_id)+" said:"+data, 5)
+		if data.startswith("CPK:"):
+			self.log("Recieved Client Public Key")
+			self.debug("Client Public Key is:"+data[4:], 3)
+			self.clientPubKey = importKey(data[4:])
+
+			# After a public key is recieved, send an AES key to use from now on
+			#self.log(b"Using AES KEY:"+self.AESKey)
+			AEScipherText = EncryptRSA(self.clientPubKey, self.AESKey)
+			AESSignature = SignRSA(self.factory.RSAPrivKey, HashSHA( AEScipherText ) )
+			self.send(b"AES:"+AEScipherText+b":::"+AESSignature)
+		else:
+			data = DecryptAES(self.AESKey, data.encode()).decode("utf-8")
+			self.log("forwarding:"+data)
+			# if it's a general message, repeat it.
+			for echoer in self.factory.servers:
+				d = EncryptAES(echoer.AESKey, data)
+				echoer.sendLine(d)
+
+	def connectionLost(self, reason):
+		"""
+		Automatically ran when a client disconnects
+		
+		:param reason: The reason for the disconnect
+		"""
+		self.log("Connection lost")
+		self.factory.servers.remove(self)
+
+
+class ServerFactory(Factory):
+	"""
+	This class will listen for new client connections
+	For each connection, a ServerWorker will be spawned
+	"""
+	def __init__(self):
+		self.servers = []
+		self.RSAPrivKey, self.RSAPubKey = generateRSAKeys()
+
+	def getPublicKey(self):
+		return self.RSAPubKey.exportKey("PEM")
+
+	def buildProtocol(self, addr):
+		"""
+		Build the worker for the connection
+
+		:param addr: The address the connection is made on
+		"""
+		return ServerWorker(self, len(self.servers)+1)
+
+
+
+
+
+
+
+
+
+
+
+#######################################################################
+#
+#
+# CLIENT
+#
+#
+#######################################################################
+
+
+
+
+
+class ClientWorker(LineReceiver):
+	"""
+	This class will act as a client to talk with the server
+	"""
+
+	def __init__(self, factory, id, pubKey):
+		self.factory = factory
+		self.id = id
+		self.RSAPrivKey, self.RSAPubKey = generateRSAKeys()
+		self.serverPublicKey = pubKey
+		self.serverAESKey = ''
+
+	def debug(self, message, level=1):
+		if level <= DEBUG_LEVEL:
+			self.log(message)
+
+	def log(self, message):
+		"""
+		Log message to console
+
+		:param message: The message to log
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		print("(Client "+str(self.id)+"): "+message)
+		sys.stdout.flush()
+
+	def send(self, message):
+		self.sendLine(message)
+
+	def makeConnection(self, transport):
+		"""
+		Automatically to connect to server
+
+		:param transport: The connection to the server
+		"""
+		self.transport = transport
+		self.factory.clients.append(self)
+		self.log("Connection made")
+		self.send(b"CPK:"+self.RSAPubKey.exportKey("PEM"))
+
+
+	def connectionMade(self):
+		"""
+		Automatically ran when a connection to the server is made
+		"""
+		pass
+
+
+	def lineReceived(self, data):
+		"""
+		Automatically ran when a message is recieved from the server
+		
+		:param data: The message recieved from the server
+		"""
+		data = data.decode('utf-8')
+		self.debug("server said:"+data, 5)
+		if data.startswith("SPK:"):
+			# if it's a public key, save it
+			self.log("Recieved server public key")
+			self.debug("server public key is:"+data[4:], 3)
+			self.serverPubKey = importKey(data[4:])
+		elif data.startswith("AES:"):
+			# if it's an AES key, save it
+			AESKey = data[4:].split(":::")
+			AESKeyEncrypted = AESKey[0]
+			self.debug("server AES key Encrypted is:"+AESKeyEncrypted, 4)
+			AESSignature = AESKey[1]
+			self.debug("server AES key Signature is:"+AESSignature, 3)
+			# verify that the server sent the AES key.
+			isValid = VerifySignatureRSA(self.serverPubKey, HashSHA(AESKeyEncrypted), AESSignature)
+			self.debug("server AES key Signauture is valid? - "+str(isValid), 2)
+			if isValid:
+				# Decrypt the AES key
+				AESKeyPlainText = DecryptRSA(self.RSAPrivKey, AESKeyEncrypted.encode())
+				#self.debug("server AES key is:"+AESKeyPlainText.decode(), 3) ## Can't print AES key since it's a random set of bytes that don't print in utf-8
+				self.AESKey = AESKeyPlainText
+
+				message = "This is a test message from client"+str(self.id)
+				self.log("Sending message to server: "+message)
+				self.send(EncryptAES(self.AESKey, message))
+			else:
+				self.debug("Server AES Signature is invalid", 1)			
+			
+		else:
+			# if we don't know it, it's probably a message, just print it out
+			data = DecryptAES(self.AESKey, data.encode()).decode("utf-8")
+			self.log(data)
+
+
+			
+
+
+class ClientFactory(ClientFactory):
+	"""
+	This class will generate new clients as requested
+	Each client created will act independently as a unique client.
+	"""
+	def __init__(self, ServerPubKey):
+		self.client_count = 0
+		self.clients = []
+		self.ServerPubKey = ServerPubKey
+
+	def startedConnecting(self, connector):
+		"""
+		Automatically ran before a client connection is created.
+		"""
+		pass
+
+	def buildProtocol(self, addr):
+		"""
+		For each new client requests, generate a new ClientWorker
+
+		:param addr: The address to connect to
+		"""
+		self.client_count = self.client_count+1
+		return ClientWorker(self, self.client_count, self.ServerPubKey)
+
+	def clientConnectionFailed(self, connector, reason):
+		"""
+		Automatically ran if the connection failed to connect.
+		
+		:param connector: The failed connection
+		:param reason: The reason the connection failed
+		"""
+		print("Connection failed - goodbye!")
+		try:
+			reactor.stop()
+		except ReactorNotRunning:
+			pass
+
+	def clientConnectionLost(self, connector, reason):
+		"""
+		Automatically ran if the connection is lost.
+		:param connector: The connection that failed
+		:param reason: The reason the connectoin failed
+		"""
+		print("Connection lost - goodbye!")
+		try:
+			reactor.stop()
+		except ReactorNotRunning:
+			pass
+
 if __name__ == "__main__":
+	"""
+	Default to a server instance.
+	if an argument if given then create a client
+	"""
 
-	RSAPrivKey, RSAPubKey = generateRSAKeys()
-
-	AESKey = "This is the AES Key"
-
-	message = "This is a longer test message to encrypt for testing"
-
-	print(message_split)
-	print(message_split)
-	print("Message to encrypt is:")
-	print(message)
-	print(message_split)
-	print("Encrypting with AES key:")
-	print(AESKey)
-	print(message_split)
-	print("Encrypting with RSA private key:")
-	print(RSAPrivKey.exportKey('PEM').decode())
-	print(message_split)
-	print("Decrypting with RSA public key:")
-	print(RSAPubKey.exportKey('PEM').decode())
-	print(message_split)
-	print(message_split)
-	print('')
-	print('')
-	print('')
+	SF = ServerFactory()
+	CF = ClientFactory(SF.getPublicKey)
+	reactor.listenTCP(4321, SF)
+	reactor.connectTCP('localhost', 4321, CF)
+	reactor.connectTCP('localhost', 4321, CF)
+	reactor.run()
 
 
-	AESciphertext = EncryptAES(AESKey, message)
-	RSAciphertext = EncryptRSA(RSAPubKey, message)
-
-	#messageSignature = SignRSA(RSAPrivKey, HashSHA( message ) ) # messages with be ciphered before signing
-	#AESSignature = SignRSA(RSAPrivKey, HashSHA( AESciphertext ) ) # AES will use HMAC, not signatures
-	RSASignature = SignRSA(RSAPrivKey, HashSHA( RSAciphertext ) )
-	AESHMAC = ProtectHMAC(AESKey, AESciphertext)
-
-
-	print(message_split)
-	print(message_split)
-	print("AES cipher text:")
-	print(AESciphertext.decode())
-	print(message_split)
-	print("RSA cipher text:")
-	print(RSAciphertext.decode())
-	print(message_split)
-	print(message_split)
-	#print("message signature: "+messageSignature)
-	#print("AES signature: "+AESSignature)
-	print("RSA signature:")
-	print(RSASignature.decode())
-	print(message_split)
-	print("AES HMAC:")
-	print(AESHMAC.decode())
-	print(message_split)
-	print(message_split)
-	print('')
-	print('')
-	print('')
-
-
-	AESplaintext = DecryptAES(AESKey, AESciphertext)
-	RSAplaintext = DecryptRSA(RSAPrivKey, RSAciphertext)
-
-	#messageVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(message), messageSignature)
-	#AESVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(AESciphertext), AESSignature)
-	RSAVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(RSAciphertext), RSASignature)
-	HMACVerify = True if ProtectHMAC(AESKey, AESciphertext) == AESHMAC else False
-
-
-	print(message_split)
-	print(message_split)
-	print("Verifying signatures:")
-	#print("message is valid: " + str(messageVerify))
-	#print("AES is valid: " + str(AESVerify))
-	print("RSA is valid: " + str(RSAVerify))
-	print("HMAC is valid: " + str(HMACVerify))
-	print(message_split)
-	print(message_split)
-	print("AES plain text:")
-	print(AESplaintext.decode())
-	print(message_split)
-	print("RSA plain text:")
-	print(RSAplaintext.decode())
-	print(message_split)
-	print(message_split)
-
+#	RSAPrivKey, RSAPubKey = generateRSAKeys()
+#	
+#
+#	AESKey = "This is the AES Key"
+#
+#	message = "This is a longer test message to encrypt for testing"
+#
+#	print(message_split)
+#	print(message_split)
+#	print("Message to encrypt is:")
+#	print(message)
+#	print(message_split)
+#	print("Encrypting with AES key:")
+#	print(AESKey)
+#	print(message_split)
+#	print("Encrypting with RSA private key:")
+#	print(RSAPrivKey.exportKey('PEM').decode())
+#	print(message_split)
+#	print("Decrypting with RSA public key:")
+#	print(RSAPubKey.exportKey('PEM').decode())
+#	print(message_split)
+#	print(message_split)
+#	print('')
+#	print('')
+#	print('')
+#
+#
+#	AESciphertext = EncryptAES(AESKey, message)
+#	RSAciphertext = EncryptRSA(RSAPubKey, message)
+#
+#	#messageSignature = SignRSA(RSAPrivKey, HashSHA( message ) ) # messages with be ciphered before signing
+#	#AESSignature = SignRSA(RSAPrivKey, HashSHA( AESciphertext ) ) # AES will use HMAC, not signatures
+#	RSASignature = SignRSA(RSAPrivKey, HashSHA( RSAciphertext ) )
+#	AESHMAC = ProtectHMAC(AESKey, AESciphertext)
+#
+#
+#	print(message_split)
+#	print(message_split)
+#	print("AES cipher text:")
+#	print(AESciphertext.decode())
+#	print(message_split)
+#	print("RSA cipher text:")
+#	print(RSAciphertext.decode())
+#	print(message_split)
+#	print(message_split)
+#	#print("message signature: "+messageSignature)
+#	#print("AES signature: "+AESSignature)
+#	print("RSA signature:")
+#	print(RSASignature.decode())
+#	print(message_split)
+#	print("AES HMAC:")
+#	print(AESHMAC.decode())
+#	print(message_split)
+#	print(message_split)
+#	print('')
+#	print('')
+#	print('')
+#
+#
+#	AESplaintext = DecryptAES(AESKey, AESciphertext)
+#	RSAplaintext = DecryptRSA(RSAPrivKey, RSAciphertext)
+#
+#	#messageVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(message), messageSignature)
+#	#AESVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(AESciphertext), AESSignature)
+#	RSAVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(RSAciphertext), RSASignature)
+#	HMACVerify = True if ProtectHMAC(AESKey, AESciphertext) == AESHMAC else False
+#
+#
+#	print(message_split)
+#	print(message_split)
+#	print("Verifying signatures:")
+#	#print("message is valid: " + str(messageVerify))
+#	#print("AES is valid: " + str(AESVerify))
+#	print("RSA is valid: " + str(RSAVerify))
+#	print("HMAC is valid: " + str(HMACVerify))
+#	print(message_split)
+#	print(message_split)
+#	print("AES plain text:")
+#	print(AESplaintext.decode())
+#	print(message_split)
+#	print("RSA plain text:")
+#	print(RSAplaintext.decode())
+#	print(message_split)
+#	print(message_split)
+#
