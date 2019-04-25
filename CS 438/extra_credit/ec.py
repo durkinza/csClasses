@@ -1,3 +1,7 @@
+#! /usr/bin/env python3
+# Author Zane Durkin <durk7832@vandals.uidaho.edu>
+# 
+# 
 """
 Create a proof-of-concept secure chat application in Python.
 
@@ -31,17 +35,18 @@ from twisted.internet.error import ReactorNotRunning
 from time import sleep
 import base64
 
-# general vars
-random_seed = Random.new().read
-message_split = '='*100
-
-
 # Debugging output level
 # 0 = no debug
 # 1 = minor debug
 # ...
 # 5 = max debug
-DEBUG_LEVEL = 1
+DEBUG_LEVEL = 0
+
+
+# general vars
+random_seed = Random.new().read
+message_split = '='*100
+
 
 # vars for AES
 block_size = AES.block_size
@@ -101,7 +106,7 @@ def HashSHA(plainText):
 	:returns: Hash object
 	"""
 	try:
-		plainText = plainText.encode('utf-8')
+		plainText = plainText.encode()
 	except AttributeError:
 		pass
 	return SHA256.new(plainText)
@@ -178,7 +183,7 @@ def ProtectHMAC(key, message):
 	:returns: base64 encoded HMAC
 	"""
 	try:
-		key = key.encode('utf-8')
+		key = key.encode()
 	except AttributeError:
 		pass
 	mac = HMAC.new(key, message, SHA256.new())
@@ -228,19 +233,6 @@ def getPubKey(privKey):
 #
 #######################################################################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ServerWorker(LineReceiver):
 	"""
 	This class will act as a point of contact for a single client.
@@ -251,6 +243,12 @@ class ServerWorker(LineReceiver):
 		self.AESKey = random_seed(256)
 
 	def debug(self, message, level=1):
+		"""
+		Send Debug messages based on the level of debugging
+
+		:param message: The message to log
+		:param level: (default 1) The level (from 1 to 5) of debugging needed to display the message
+		"""
 		if level <= DEBUG_LEVEL:
 			self.log(message)
 
@@ -264,17 +262,62 @@ class ServerWorker(LineReceiver):
 			message = message.decode()
 		except AttributeError:
 			pass
-		print("(Server "+str(self.client_id)+"): "+message)
+		#print("(Server "+str(self.client_id)+"): "+message)
+		print("(Server): "+message)
 		sys.stdout.flush()
 
 	def send(self, message):
+		"""
+		Send a given message across the connection
+	
+		:param message: The encryptd message to send
+		"""
+		try:
+			message = message.encode()
+		except AttributeError:
+			pass
 		self.sendLine(message)
+
+	def sendSafe(self, message):
+		"""
+		Generate HMAC and encrypt a message before sending it
+	
+		:param message: The encryptd message to encrypt
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		hmac = ProtectHMAC(self.AESKey, message.encode())
+		emessage = EncryptAES(self.AESKey, message+':::'+hmac.decode())
+		self.debug("Sending safe:"+message+':::'+hmac.decode(), 4)
+		self.send((b"SAF:"+emessage).decode())
+
+	def receiveSafe(self, message):
+		"""
+		Recieve and decrypt an encrypted message and verify the HMAC
+	
+		:param message: The encryptd message to decrypt
+		
+		:returns: The decrypted message, or False if the decryption failed
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		data = DecryptAES(self.AESKey, message).decode()
+		data = data.split(":::")
+		self.debug("Received message:"+data[0], 4)
+		self.debug("With hmac: "+data[1], 4)
+		if ProtectHMAC(self.AESKey, data[0].encode()).decode() == data[1]:
+			return data[0]
+		return False
 
 	def connectionMade(self):
 		"""
 		Automatically ran when client connects
 		"""
-		self.log("Connection made to client")
+		self.log("Connection made to client "+str(self.client_id))
 		self.factory.servers.append(self)
 		self.send(b"SPK:"+self.factory.RSAPubKey.exportKey("PEM"))
 
@@ -285,11 +328,11 @@ class ServerWorker(LineReceiver):
 		:param data: (bytes) the data recieved
 		"""
 		# decode data
-		data = data.decode("utf-8")
+		data = data.decode()
 		self.debug("client "+str(self.client_id)+" said:"+data, 5)
 		if data.startswith("CPK:"):
-			self.log("Recieved Client Public Key")
-			self.debug("Client Public Key is:"+data[4:], 3)
+			self.log("Recieved Client "+str(self.client_id)+" Public Key")
+			self.debug("Client Public Key is:"+data[4:], 5)
 			self.clientPubKey = importKey(data[4:])
 
 			# After a public key is recieved, send an AES key to use from now on
@@ -297,13 +340,19 @@ class ServerWorker(LineReceiver):
 			AEScipherText = EncryptRSA(self.clientPubKey, self.AESKey)
 			AESSignature = SignRSA(self.factory.RSAPrivKey, HashSHA( AEScipherText ) )
 			self.send(b"AES:"+AEScipherText+b":::"+AESSignature)
+		elif data.startswith("SAF:"):
+			self.debug("Recieved Encrypted message from client "+str(self.client_id), 4)
+			message = self.receiveSafe(data[4:])
+			if message:
+				self.log("forwarding:"+message)
+				# if it's a general message, repeat it.
+				for echoer in self.factory.servers:
+					echoer.sendSafe(message)
+			else:
+				self.log("Message from client "+str(self.client_id)+" failed to verify")
 		else:
-			data = DecryptAES(self.AESKey, data.encode()).decode("utf-8")
-			self.log("forwarding:"+data)
-			# if it's a general message, repeat it.
-			for echoer in self.factory.servers:
-				d = EncryptAES(echoer.AESKey, data)
-				echoer.sendLine(d)
+			self.debug("Unkown/un-encrypted message recieved from client "+str(self.client_id), 1)
+			self.log(data)
 
 	def connectionLost(self, reason):
 		"""
@@ -318,13 +367,18 @@ class ServerWorker(LineReceiver):
 class ServerFactory(Factory):
 	"""
 	This class will listen for new client connections
-	For each connection, a ServerWorker will be spawned
+	For each connection, a ServerWorker will be spawned to handle the connections
 	"""
 	def __init__(self):
 		self.servers = []
 		self.RSAPrivKey, self.RSAPubKey = generateRSAKeys()
 
 	def getPublicKey(self):
+		"""
+		Get public key of the server
+		
+		:returns: RSA obj with public key
+		"""
 		return self.RSAPubKey.exportKey("PEM")
 
 	def buildProtocol(self, addr):
@@ -353,10 +407,6 @@ class ServerFactory(Factory):
 #
 #######################################################################
 
-
-
-
-
 class ClientWorker(LineReceiver):
 	"""
 	This class will act as a client to talk with the server
@@ -367,9 +417,15 @@ class ClientWorker(LineReceiver):
 		self.id = id
 		self.RSAPrivKey, self.RSAPubKey = generateRSAKeys()
 		self.serverPublicKey = pubKey
-		self.serverAESKey = ''
+		self.AESKey = ''
 
 	def debug(self, message, level=1):
+		"""
+		Send Debug messages based on the level of debugging
+
+		:param message: The message to log
+		:param level: (default 1) The level (from 1 to 5) of debugging needed to display the message
+		"""
 		if level <= DEBUG_LEVEL:
 			self.log(message)
 
@@ -387,7 +443,52 @@ class ClientWorker(LineReceiver):
 		sys.stdout.flush()
 
 	def send(self, message):
+		"""
+		Send a given message across the connection
+	
+		:param message: The encryptd message to send
+		"""
+		try:
+			message = message.encode()
+		except AttributeError:
+			pass
 		self.sendLine(message)
+
+	def sendSafe(self, message):
+		"""
+		Generate HMAC and encrypt a message before sending it
+	
+		:param message: The encryptd message to encrypt
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		hmac = ProtectHMAC(self.AESKey, message.encode())
+		emessage = EncryptAES(self.AESKey, message+':::'+hmac.decode())
+		self.debug("Sending safe:"+message+':::'+hmac.decode(), 4)
+		self.send((b"SAF:"+emessage).decode())
+
+
+	def receiveSafe(self, message):
+		"""
+		Recieve and decrypt an encrypted message and verify the HMAC
+	
+		:param message: The encryptd message to decrypt
+		
+		:returns: The decrypted message, or False if the decryption failed
+		"""
+		try:
+			message = message.decode()
+		except AttributeError:
+			pass
+		data = DecryptAES(self.AESKey, message).decode()
+		data = data.split(":::")
+		self.debug("Received message:"+data[0], 4)
+		self.debug("With hmac: "+data[1], 4)
+		if ProtectHMAC(self.AESKey, data[0].encode()).decode() == data[1]:
+			return data[0]
+		return False
 
 	def makeConnection(self, transport):
 		"""
@@ -397,7 +498,7 @@ class ClientWorker(LineReceiver):
 		"""
 		self.transport = transport
 		self.factory.clients.append(self)
-		self.log("Connection made")
+		self.log("Connection made to server")
 		self.send(b"CPK:"+self.RSAPubKey.exportKey("PEM"))
 
 
@@ -414,12 +515,12 @@ class ClientWorker(LineReceiver):
 		
 		:param data: The message recieved from the server
 		"""
-		data = data.decode('utf-8')
+		data = data.decode()
 		self.debug("server said:"+data, 5)
 		if data.startswith("SPK:"):
 			# if it's a public key, save it
 			self.log("Recieved server public key")
-			self.debug("server public key is:"+data[4:], 3)
+			self.debug("server public key is:"+data[4:], 5)
 			self.serverPubKey = importKey(data[4:])
 		elif data.startswith("AES:"):
 			# if it's an AES key, save it
@@ -439,13 +540,16 @@ class ClientWorker(LineReceiver):
 
 				message = "This is a test message from client"+str(self.id)
 				self.log("Sending message to server: "+message)
-				self.send(EncryptAES(self.AESKey, message))
+				self.sendSafe(message.encode())
 			else:
 				self.debug("Server AES Signature is invalid", 1)			
 			
+		elif data.startswith("SAF:"):
+			message = self.receiveSafe(data[4:])
+			self.log(message)
 		else:
 			# if we don't know it, it's probably a message, just print it out
-			data = DecryptAES(self.AESKey, data.encode()).decode("utf-8")
+			data = DecryptAES(self.AESKey, data.encode()).decode()
 			self.log(data)
 
 
@@ -511,6 +615,8 @@ if __name__ == "__main__":
 	SF = ServerFactory()
 	CF = ClientFactory(SF.getPublicKey)
 	reactor.listenTCP(4321, SF)
+	sleep(1)
+	reactor.connectTCP('localhost', 4321, CF)
 	reactor.connectTCP('localhost', 4321, CF)
 	reactor.connectTCP('localhost', 4321, CF)
 	reactor.run()
