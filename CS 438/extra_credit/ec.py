@@ -336,7 +336,7 @@ class ServerWorker(LineReceiver):
 			self.clientPubKey = importKey(data[4:])
 
 			# After a public key is recieved, send an AES key to use from now on
-			#self.log(b"Using AES KEY:"+self.AESKey)
+			#self.debug("Using AES KEY:"+self.AESKey, 5)## The AES won't print in plain text since it's a random set of bytes that don't work in utf-8
 			AEScipherText = EncryptRSA(self.clientPubKey, self.AESKey)
 			AESSignature = SignRSA(self.factory.RSAPrivKey, HashSHA( AEScipherText ) )
 			self.send(b"AES:"+AEScipherText+b":::"+AESSignature)
@@ -371,6 +371,7 @@ class ServerFactory(Factory):
 	"""
 	def __init__(self):
 		self.servers = []
+		# generate an RSA key for all server workers to share
 		self.RSAPrivKey, self.RSAPubKey = generateRSAKeys()
 
 	def getPublicKey(self):
@@ -486,6 +487,7 @@ class ClientWorker(LineReceiver):
 		data = data.split(":::")
 		self.debug("Received message:"+data[0], 4)
 		self.debug("With hmac: "+data[1], 4)
+		# verfiy the HMAC of the message before we accept it
 		if ProtectHMAC(self.AESKey, data[0].encode()).decode() == data[1]:
 			return data[0]
 		return False
@@ -499,6 +501,7 @@ class ClientWorker(LineReceiver):
 		self.transport = transport
 		self.factory.clients.append(self)
 		self.log("Connection made to server")
+		# send the server our public key
 		self.send(b"CPK:"+self.RSAPubKey.exportKey("PEM"))
 
 
@@ -537,7 +540,7 @@ class ClientWorker(LineReceiver):
 				AESKeyPlainText = DecryptRSA(self.RSAPrivKey, AESKeyEncrypted.encode())
 				#self.debug("server AES key is:"+AESKeyPlainText.decode(), 3) ## Can't print AES key since it's a random set of bytes that don't print in utf-8
 				self.AESKey = AESKeyPlainText
-
+				# now that we have a key from the server, let's send a message to broadcast
 				message = "This is a test message from client"+str(self.id)
 				self.log("Sending message to server: "+message)
 				self.sendSafe(message.encode())
@@ -545,11 +548,12 @@ class ClientWorker(LineReceiver):
 				self.debug("Server AES Signature is invalid", 1)			
 			
 		elif data.startswith("SAF:"):
+			# Decrypt and verify Secure message
 			message = self.receiveSafe(data[4:])
 			self.log(message)
 		else:
-			# if we don't know it, it's probably a message, just print it out
-			data = DecryptAES(self.AESKey, data.encode()).decode()
+			# if we don't know it, it's probably an un-encrypted message, just print it out
+			self.debug("Unkown/un-encrypted message recieved from server", 1)
 			self.log(data)
 
 
