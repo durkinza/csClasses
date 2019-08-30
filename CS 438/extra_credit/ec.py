@@ -2,6 +2,13 @@
 # Author Zane Durkin <durk7832@vandals.uidaho.edu>
 # 
 # 
+# requirements.txt  >> 
+#
+# Crypto
+# twisted
+# service_identity
+#
+# << EOF
 """
 Create a proof-of-concept secure chat application in Python.
 
@@ -616,98 +623,98 @@ if __name__ == "__main__":
 	if an argument if given then create a client
 	"""
 
-	SF = ServerFactory()
-	CF = ClientFactory(SF.getPublicKey)
-	reactor.listenTCP(4321, SF)
-	sleep(1)
-	reactor.connectTCP('localhost', 4321, CF)
-	reactor.connectTCP('localhost', 4321, CF)
-	reactor.connectTCP('localhost', 4321, CF)
-	reactor.run()
+	#SF = ServerFactory()
+	#CF = ClientFactory(SF.getPublicKey)
+	#reactor.listenTCP(4321, SF)
+	#sleep(1)
+	#reactor.connectTCP('localhost', 4321, CF)
+	#reactor.connectTCP('localhost', 4321, CF)
+	#reactor.connectTCP('localhost', 4321, CF)
+	#reactor.run()
 
 
-#	RSAPrivKey, RSAPubKey = generateRSAKeys()
-#	
-#
-#	AESKey = "This is the AES Key"
-#
-#	message = "This is a longer test message to encrypt for testing"
-#
-#	print(message_split)
-#	print(message_split)
-#	print("Message to encrypt is:")
-#	print(message)
-#	print(message_split)
-#	print("Encrypting with AES key:")
-#	print(AESKey)
-#	print(message_split)
-#	print("Encrypting with RSA private key:")
-#	print(RSAPrivKey.exportKey('PEM').decode())
-#	print(message_split)
-#	print("Decrypting with RSA public key:")
-#	print(RSAPubKey.exportKey('PEM').decode())
-#	print(message_split)
-#	print(message_split)
-#	print('')
-#	print('')
-#	print('')
-#
-#
-#	AESciphertext = EncryptAES(AESKey, message)
-#	RSAciphertext = EncryptRSA(RSAPubKey, message)
-#
-#	#messageSignature = SignRSA(RSAPrivKey, HashSHA( message ) ) # messages with be ciphered before signing
-#	#AESSignature = SignRSA(RSAPrivKey, HashSHA( AESciphertext ) ) # AES will use HMAC, not signatures
-#	RSASignature = SignRSA(RSAPrivKey, HashSHA( RSAciphertext ) )
-#	AESHMAC = ProtectHMAC(AESKey, AESciphertext)
-#
-#
-#	print(message_split)
-#	print(message_split)
-#	print("AES cipher text:")
-#	print(AESciphertext.decode())
-#	print(message_split)
-#	print("RSA cipher text:")
-#	print(RSAciphertext.decode())
-#	print(message_split)
-#	print(message_split)
-#	#print("message signature: "+messageSignature)
-#	#print("AES signature: "+AESSignature)
-#	print("RSA signature:")
-#	print(RSASignature.decode())
-#	print(message_split)
-#	print("AES HMAC:")
-#	print(AESHMAC.decode())
-#	print(message_split)
-#	print(message_split)
-#	print('')
-#	print('')
-#	print('')
-#
-#
-#	AESplaintext = DecryptAES(AESKey, AESciphertext)
-#	RSAplaintext = DecryptRSA(RSAPrivKey, RSAciphertext)
-#
-#	#messageVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(message), messageSignature)
-#	#AESVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(AESciphertext), AESSignature)
-#	RSAVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(RSAciphertext), RSASignature)
-#	HMACVerify = True if ProtectHMAC(AESKey, AESciphertext) == AESHMAC else False
-#
-#
-#	print(message_split)
-#	print(message_split)
-#	print("Verifying signatures:")
-#	#print("message is valid: " + str(messageVerify))
-#	#print("AES is valid: " + str(AESVerify))
-#	print("RSA is valid: " + str(RSAVerify))
-#	print("HMAC is valid: " + str(HMACVerify))
-#	print(message_split)
-#	print(message_split)
-#	print("AES plain text:")
-#	print(AESplaintext.decode())
-#	print(message_split)
-#	print("RSA plain text:")
-#	print(RSAplaintext.decode())
-#	print(message_split)
-#	print(message_split)
-#
+	RSAPrivKey, RSAPubKey = generateRSAKeys()
+
+
+	AESKey = "This is the AES Key"
+
+	message = "This is a longer test message to encrypt for testing"
+
+	print(message_split)
+	print(message_split)
+	print("Message to encrypt is:")
+	print(message)
+	print(message_split)
+	print("Encrypting with AES key:")
+	print(AESKey)
+	print(message_split)
+	print("Encrypting with RSA private key:")
+	print(RSAPrivKey.exportKey('PEM').decode())
+	print(message_split)
+	print("Decrypting with RSA public key:")
+	print(RSAPubKey.exportKey('PEM').decode())
+	print(message_split)
+	print(message_split)
+	print('')
+	print('')
+	print('')
+
+
+	AESciphertext = EncryptAES(AESKey, message)
+	RSAciphertext = EncryptRSA(RSAPubKey, message)
+
+	#messageSignature = SignRSA(RSAPrivKey, HashSHA( message ) ) # messages with be ciphered before signing
+	#AESSignature = SignRSA(RSAPrivKey, HashSHA( AESciphertext ) ) # AES will use HMAC, not signatures
+	RSASignature = SignRSA(RSAPrivKey, HashSHA( RSAciphertext ) )
+	AESHMAC = ProtectHMAC(AESKey, AESciphertext)
+
+
+	print(message_split)
+	print(message_split)
+	print("AES cipher text:")
+	print(AESciphertext.decode())
+	print(message_split)
+	print("RSA cipher text:")
+	print(RSAciphertext.decode())
+	print(message_split)
+	print(message_split)
+	#print("message signature: "+messageSignature)
+	#print("AES signature: "+AESSignature)
+	print("RSA signature:")
+	print(RSASignature.decode())
+	print(message_split)
+	print("AES HMAC:")
+	print(AESHMAC.decode())
+	print(message_split)
+	print(message_split)
+	print('')
+	print('')
+	print('')
+
+
+	AESplaintext = DecryptAES(AESKey, AESciphertext)
+	RSAplaintext = DecryptRSA(RSAPrivKey, RSAciphertext)
+
+	#messageVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(message), messageSignature)
+	#AESVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(AESciphertext), AESSignature)
+	RSAVerify = VerifySignatureRSA(RSAPrivKey, HashSHA(RSAciphertext), RSASignature)
+	HMACVerify = True if ProtectHMAC(AESKey, AESciphertext) == AESHMAC else False
+
+
+	print(message_split)
+	print(message_split)
+	print("Verifying signatures:")
+	#print("message is valid: " + str(messageVerify))
+	#print("AES is valid: " + str(AESVerify))
+	print("RSA is valid: " + str(RSAVerify))
+	print("HMAC is valid: " + str(HMACVerify))
+	print(message_split)
+	print(message_split)
+	print("AES plain text:")
+	print(AESplaintext.decode())
+	print(message_split)
+	print("RSA plain text:")
+	print(RSAplaintext.decode())
+	print(message_split)
+	print(message_split)
+

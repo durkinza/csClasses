@@ -1,0 +1,4 @@
+1: c
+Although our result is statistically significant, it is practically not important since the point estimate is two orders of magnitude smaller than the acceptable industry standard.
+
+
