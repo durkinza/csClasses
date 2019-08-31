@@ -116,7 +116,8 @@ void print_tree(tTree * tree){
 		printf("Tree is emtpy.\n");
 	}else{
 		print_token(tree->leaf);
-		for( int i = 0; i < tree->nbranches; i++){
+		int i = 0;
+		for( i=0; i < tree->nbranches; i++){
 			if(tree->branches[i] != NULL){
 				print_tree(tree->branches[i]);
 			}
