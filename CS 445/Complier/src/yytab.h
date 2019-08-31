@@ -70,9 +70,12 @@
 #define T_RPAREN 515	/* )	*/
 #define T_LBRACK 516	/* [	*/
 #define T_RBRACK 517	/* ]	*/
-#define T_ASSIGNMENT 516/* =	*/
-#define T_INCREMENT	517	/* +=	*/
-#define T_DECREMENT	518	/* -=	*/
+#define T_LCURL 518		/* {	*/
+#define T_RCURL 519		/* }	*/
+#define T_ASSIGNMENT 520/* =	*/
+#define T_INCREMENT	521	/* +=	*/
+#define T_DECREMENT	522	/* -=	*/
+#define T_DOT 523		/* .	*/
 
 // For comments
 #define T_COMMENT 600	/* //	*/

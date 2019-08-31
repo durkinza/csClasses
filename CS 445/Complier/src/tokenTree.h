@@ -19,11 +19,11 @@ typedef struct tTree {
    struct token *leaf;
 } tTree;
 
-token create_token(int category, char *text, int colno, int lineno, char *filename, int ival, double dval, char *sval);
-tTree create_tree(int prodrule, token * leaf, int nbranches, tTree *tree[MAX_BRANCHES]);
-tTree add_token_to_tree(tTree *tree, token *leaf);
-tTree add_tree_to_tree(tTree *tree, tTree *branch);
+token * create_token(int category, char *text, int colno, int lineno, char *filename, char * value);
+tTree * push_to_tree(tTree * parent, token * leaf);
 
+void print_token(token * leaf);
 void print_tree(tTree * tree);
 void _print_tree(tTree *tree, int depth);
+char * clean_sval(char * string);
 #endif

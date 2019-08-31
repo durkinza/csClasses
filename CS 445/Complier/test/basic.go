@@ -2,6 +2,4 @@ package main
 import "fmt"
 func main () {
      fmt.Printf("Hello\tworld\n")
-     fmt.Printf(5)
-     fmt.Printf(5.0)
 }
