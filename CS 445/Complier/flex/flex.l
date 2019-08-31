@@ -26,7 +26,7 @@ int line_num = 1;
 char lastid[256];
 
 extern char *yyfilename;
-int yychar;
+int yychar = -1;
 extern int errors;
 
 

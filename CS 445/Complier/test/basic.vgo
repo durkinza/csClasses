@@ -1,6 +1,10 @@
 package main
 import "fmt"
+// inline -commnet */
 func main () {
+	/* this is a 
+       Multi line 
+       comment */
      fmt.Printf("Hello\tworld\n")
      fmt.Printf(5)
      fmt.Printf(5.0)
