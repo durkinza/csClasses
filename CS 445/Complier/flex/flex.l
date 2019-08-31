@@ -46,7 +46,6 @@ extern tTree *gtree;
 \n              		{ line_num++;/* eat the newline */ }
 [ \t\f]+        		{ /* eat the whitespace */ }
 
-"null"          		{ make_token(T_NULL); return T_NULL; }
 "boolean"       		{ make_token(T_BOOLEAN); return T_BOOLEAN; }
 "int"           		{ make_token(T_INTEGER); return T_INTEGER; }
 "double"				{ make_token(T_FLOAT64);  return T_FLOAT64; }
@@ -65,7 +64,6 @@ extern tTree *gtree;
 "import"				{ make_token(T_IMPORT); return T_IMPORT; }
 "return"				{ make_token(T_RETURN); return T_RETURN; }
 
-"break"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_BREAK; } 
 "default"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_DEFAULT; }
 "interface"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_INTERFACE; }
 "select"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_SELECT; }
