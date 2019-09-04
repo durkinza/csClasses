@@ -54,11 +54,11 @@ test: vgo
 	# Test without file ending
 	./vgo test/basic
 	@echo;
-	# Test without file ending
+	# Test an empty file
 	./vgo test/empty
 	@echo;
-	# Test without file ending
-	./vgo test/notgo
+	# Test a file that's not go
+	./vgo test/notgo; true
 
 
 val: vgo
