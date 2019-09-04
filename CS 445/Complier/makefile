@@ -5,11 +5,14 @@
 
 # variables
 cc = gcc
-ccopts = -Wall
+ccopts = -g -Wall -Wextra
 lex = flex
 lexopts = 
 yacc = bison
 yaccopts = -d
+
+valgrindopts = --leak-check=full --track-origins=yes -s --show-leak-kinds=all
+#valgrindopts = 
 
 zipname = durk7832.zip
 
@@ -41,7 +44,16 @@ _build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h
 	$(cc) src/tokenTree.c $(ccopts) -c -o _build/tokenTree.o
 
 test: vgo
-	echo;# test a basic file
+	@echo;
+	# test a basic file
 	./vgo test/basic.vgo
+	@echo;
 	# Test without file ending
 	./vgo test/basic
+
+val: vgo
+	valgrind $(valgrindopts) ./vgo test/basic.go
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/basic.vgo
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/basic.go test/basic.vgo

@@ -12,13 +12,13 @@
 char * clean_sval(char * string){
 	int len = 0;
 	char * stringPointer = string;
-	char * newString = malloc(strlen(string));
+	char * newString = malloc(strlen(string)+1);
 
 	// walk up to the "
 	while(*stringPointer != '\"'){
 		if(*stringPointer == '\0'){
 			newString[len] = '\0';
-			return newString;
+			return realloc(newString, 1);
 		}
 		stringPointer++;
 	}
@@ -44,7 +44,6 @@ char * clean_sval(char * string){
 					newString[len++] = '\'';
 					break;
 				default:
-				
 					newString[len++] = '\\';
 					newString[len++] = stringPointer[1];
 			}
@@ -55,39 +54,40 @@ char * clean_sval(char * string){
 		}
 	}
 	newString[len] = '\0';
-	newString = realloc(newString, len+1);
-	return newString;
+	return realloc(newString, sizeof(char)*len+1);
 }
 
-
 token * create_token(int category, char * text, int colno, int lineno, char * filename, char * value){
-
-	token * t = malloc(sizeof(struct token));
+	// create a token 
+	token * t = malloc(sizeof(token));
+	// fill in the token values
 	t->category = category;
-	t->text = malloc(strlen(text)+1);
-	strcpy(t->text, text);	
+	t->text = malloc((strlen(text)+1)*sizeof(char));
+	strcpy(t->text, text);
 	t->colno = colno;
 	t->lineno = lineno;
-	t->filename = malloc(sizeof(filename)+1);
+	t->filename = malloc((strlen(filename)+1)*sizeof(char));
 	strcpy(t->filename, filename);	
-	t->filename = filename;
-	t->ival = (int)'\0';
-	t->dval = (double)'\0';
-	t->sval = malloc(1);
+	// for now we will set sval to empty values
+	t->sval = NULL;
+	// now, based on the category of the token,
+	// we will set the ival, dval or sval accordingly
 	if( category == T_INTLITERAL){
 		t->ival = atoi(value);
 	}else if(category == T_FLOATLITERAL){
 		t->dval = atof(value);	
 	}else if(category == T_STRINGLITERAL){
+		// for sval, convert \n (and the like) to the actual characters
 		char * val = clean_sval(value);
-		t->sval = malloc(sizeof(val)+1);
-		strcpy(t->sval, val);
+		t->sval = malloc(strlen(val)+sizeof(char));
+		strncpy(t->sval, val, strlen(val)+sizeof(char));
+		free(val);
 	}
 	return t;
 }
 
 tTree * push_to_tree( tTree * parent, token * leaf){
-	tTree * t = malloc(sizeof(struct tTree));
+	tTree * t = malloc(sizeof(tTree));
 	t->nbranches = 0;
 	t->prodrule = 0;
 	t->leaf = leaf;
@@ -107,8 +107,10 @@ void print_token(token * leaf){
 		printf("%d\n",leaf->ival);
 	else if(leaf->category == T_FLOATLITERAL)
 		printf("%f\n", leaf->dval);
-	else
+	else if (leaf->category == T_STRINGLITERAL)
 		printf("%s\n",leaf->sval);
+	else
+		printf("\n");
 }
 
 void print_tree(tTree * tree){
@@ -122,5 +124,34 @@ void print_tree(tTree * tree){
 				print_tree(tree->branches[i]);
 			}
 		}
+	}
+}
+
+
+void delete_token(token * leaf){
+	if(leaf == NULL)
+		return;
+	if(leaf->filename)
+		free((char *)leaf->filename);
+	if(leaf->text != NULL)
+		free((char *)leaf->text);
+	if(leaf->sval != NULL)
+		free((char *)leaf->sval);
+}
+
+
+void delete_tree(tTree *tree){
+	if(tree == NULL){
+		free(tree);
+		return;
+	}else{
+		int i = 0;
+		for( i=0; i < tree->nbranches; i++){
+			delete_tree(tree->branches[i]);
+		}
+		delete_token(tree->leaf);
+		free(tree->leaf);
+		free(tree);
+		return;
 	}
 }

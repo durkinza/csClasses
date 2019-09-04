@@ -11,6 +11,7 @@
 extern FILE *yyin;
 extern int yyparse();
 extern int yylex();
+extern void yy_buffer_cleanup();
 extern char * yytext;
 extern int yydebug;
 
@@ -38,7 +39,7 @@ int main ( int argc, char **argv ){
 				
 				while (error != 0 && error != 999 && error != 601){
 					error = yylex();
-					if(error != 0 && gtoken != NULL){
+					if(error != 0 && gtoken != NULL && error != 600){
 						gtail = push_to_tree(gtail, gtoken);
 					}
 					if(gtree == NULL && gtail != NULL) gtree = gtail; // Setting the head to the first tail
@@ -52,10 +53,14 @@ int main ( int argc, char **argv ){
 					print_tree(gtree);
 				}
 				printf("\n\n");
+				delete_tree(gtree);
+				gtree = NULL;
+				gtail = NULL;
 				fclose(yyin);
 			}
 		}
+		free(yytext);
+		yy_buffer_cleanup();
 	}
 	return 0;
 }
-

@@ -17,7 +17,6 @@ IS	(u|U|l|L)
 
 #include "../src/yytab.h"
 #include "../src/tokenTree.h"
-//#include "../src/main"
 
 void comment();
 void yyerror();
@@ -128,8 +127,8 @@ extern tTree *gtree;
 
 
 void make_token(int category){
-	char * text = yytext;
-	gtoken = create_token(category, text, 0, line_num, yyfilename, text);
+	//char * text = yytext;
+	gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 }
 
 
@@ -164,11 +163,12 @@ void comment() {
 				splat_seen = 1;
 				break;
 			case '/':
-				if(splat_seen)
+				if(splat_seen){
+					yychar = T_COMMENT;
 					return;
-				else
+				}else
 					splat_seen = 0;
-					break;
+				break;
 			case 0: 
 			{
 				yychar = BAD_TOKEN;
@@ -180,3 +180,13 @@ void comment() {
 }
 
 int yywrap() { return 1; }
+
+void yy_buffer_cleanup(){
+	if(!YY_CURRENT_BUFFER)
+		return;
+	int i = (int)yy_buffer_stack_top;
+	for(i= (int)yy_buffer_stack_top; i>=0; i--){
+		free(yy_buffer_stack[i]);
+	}
+	free(yy_buffer_stack);
+}
