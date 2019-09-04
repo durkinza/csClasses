@@ -16,14 +16,18 @@ valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
 zipname = durk7832.zip
 
 
-vgo: src/main.c _build/lex.yy.o src/yytab.h _build/tokenTree.o#y.tab.c y.tab.h
-	$(cc) src/main.c _build/lex.yy.o src/yytab.h _build/tokenTree.o $(ccopts) -o vgo
+vgo: _build/main.o _build/lex.yy.o src/yytab.h _build/tokenTree.o #y.tab.c y.tab.h
+	$(cc) _build/main.o _build/lex.yy.o src/yytab.h _build/tokenTree.o $(ccopts) -o vgo
+
+_build/main.o: _build src/main.c 
+	$(cc) -c src/main.c $(ccopts) -o _build/main.o
 
 clean: 
 	rm -f vgo lex.yy.c  *.o  $(zipname) 2> /dev/null
+	rm -f src/tokenTree.h.gch
 	rm -f -r _build 2> /dev/null
 		
-zip: 
+zip: clean 
 	rm -f $(zipname)
 	zip -r $(zipname) .
 
@@ -49,6 +53,13 @@ test: vgo
 	@echo;
 	# Test without file ending
 	./vgo test/basic
+	@echo;
+	# Test without file ending
+	./vgo test/empty
+	@echo;
+	# Test without file ending
+	./vgo test/notgo
+
 
 val: vgo
 	valgrind $(valgrindopts) ./vgo test/basic.go
@@ -56,3 +67,11 @@ val: vgo
 	valgrind $(valgrindopts) ./vgo test/basic.vgo
 	@echo;echo;
 	valgrind $(valgrindopts) ./vgo test/basic.go test/basic.vgo
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/basic test/basic.vgo
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/empty
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/notgo
+
+

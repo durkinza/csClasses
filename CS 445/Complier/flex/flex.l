@@ -127,21 +127,58 @@ extern tTree *gtree;
 
 
 void make_token(int category){
-	//char * text = yytext;
+	// let's make a token, and set it to the global variable.
 	gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 }
 
+void yy_buffer_cleanup(){
+	// flex doesn't cleanup after itself
+	// So this function is the cleanup.
+	if(yytext != NULL){
+		// if yytext exists, free it
+		free(yytext);
+		yytext = NULL;
+	}
+	if(yyfilename != NULL){
+		// if yyfilename exists, free it
+		free(yyfilename);
+		yyfilename = NULL;
+	}
+	if(gtree != NULL){
+		// if gtree exists, free it
+		delete_tree(gtree);
+		gtree = NULL;
+	}
+	if(yyin != NULL)
+		fclose(yyin);
+	if(!YY_CURRENT_BUFFER)
+		// if there is no Buffer, we're done
+		return;
+	// for every buffer, lets clear it.
+	int i = (int)yy_buffer_stack_top;
+	for(i= (int)yy_buffer_stack_top; i>=0; i--){
+		free(yy_buffer_stack[i]);
+	}
+	// finally clear the stack of buffers
+	free(yy_buffer_stack);
+}
 
 
 void yyerror(char *s) {
+	// lets say there was an error
 	errors++;
 
+	// print the error to the error file
 	fprintf(stderr, "%s: ", s);
 
 	if (yyfilename)
-		fprintf(stderr, "file \"%s\", ", yyfilename );
+		// if we have a file, say what file the error was in.
+		fprintf(stderr, "\nfile \"%s\"\n", yyfilename );
 
+	// print the error line and token
 	fprintf(stderr, "line %d, token = \"%s\"\n", line_num, yytext);
+	// before we leave, let's cleanup a bit
+	yy_buffer_cleanup();
 	exit(1);
 }
 
@@ -181,12 +218,3 @@ void comment() {
 
 int yywrap() { return 1; }
 
-void yy_buffer_cleanup(){
-	if(!YY_CURRENT_BUFFER)
-		return;
-	int i = (int)yy_buffer_stack_top;
-	for(i= (int)yy_buffer_stack_top; i>=0; i--){
-		free(yy_buffer_stack[i]);
-	}
-	free(yy_buffer_stack);
-}

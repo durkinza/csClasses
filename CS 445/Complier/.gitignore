@@ -1,3 +1,5 @@
 vgo
 _build
 *.o
+*.gch
+*.zip
