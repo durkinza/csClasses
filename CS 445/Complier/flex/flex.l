@@ -63,20 +63,21 @@ extern tTree *gtree;
 "import"				{ make_token(T_IMPORT); return T_IMPORT; }
 "return"				{ make_token(T_RETURN); return T_RETURN; }
 
-"default"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_DEFAULT; }
-"interface"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_INTERFACE; }
-"select"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_SELECT; }
-"case"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_CASE; }
-"defer"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_DEFER; }
-"go"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_GO; }
-"chan"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_CHAN; }
-"goto"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_GOTO; }
-"switch"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_SWITCH; }
-"fallthrough"			{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_FALLTHROUGH; }
-"range"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_RANGE; }
-"continue"				{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_CONTINUE; }
-"while"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_WHILE; }
-"break"					{ make_token( T_NOTDEFINED); return T_NOTDEFINED; return T_BREAK; }
+"default"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_DEFAULT; }
+"interface"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_INTERFACE; }
+"select"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_SELECT; }
+"case"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_CASE; }
+"defer"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_DEFER; }
+"go"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_GO; }
+"chan"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_CHAN; }
+"goto"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_GOTO; }
+"switch"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_SWITCH; }
+"fallthrough"			{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_FALLTHROUGH; }
+"range"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_RANGE; }
+"continue"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_CONTINUE; }
+"while"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_WHILE; }
+"break"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); return T_BREAK; }
+":"						{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; make_token( T_NOTDEFINED); }
 
 
 "true"					{ make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
@@ -92,7 +93,6 @@ extern tTree *gtree;
 {DIGIT}+"."{DIGIT}*({EXPONENT})?{FS}?	{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 
 
-","						{ make_token(T_SEPERATOR); return T_SEPERATOR; }
 "+"						{ make_token(T_PLUS); return T_PLUS; }
 "-"						{ make_token(T_MINUS); return T_MINUS; }
 "/"						{ make_token(T_DIVIDE);  return T_DIVIDE; }
@@ -117,6 +117,8 @@ extern tTree *gtree;
 "+="					{ make_token(T_INCREMENT); return T_INCREMENT; }
 "-="					{ make_token(T_DECREMENT); return T_DECREMENT; }
 "."						{ make_token(T_DOT); return T_DOT; }
+","						{ make_token(T_SEPERATOR); return T_SEPERATOR; }
+";"						{ make_token(T_SEMICOLON); return T_SEMICOLON; }
 
 
 .                       { yyerror("lexical error"); }

@@ -18,7 +18,6 @@
 #define T_STRINGLITERAL 293
 #define T_FLOATLITERAL 294
 #define T_VARIABLE 295
-#define T_SEPERATOR 296
 #define T_HEXLITERAL 297
 
 
@@ -77,6 +76,8 @@
 #define T_INCREMENT	521	/* +=	*/
 #define T_DECREMENT	522	/* -=	*/
 #define T_DOT 523		/* .	*/
+#define T_SEPERATOR 524	/* ,	*/
+#define T_SEMICOLON 525	/* ;	*/
 
 // For comments
 #define T_COMMENT 600	/* //	*/
