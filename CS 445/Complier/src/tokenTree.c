@@ -77,6 +77,11 @@ token * create_token(int category, char * text, int colno, int lineno, char * fi
 	// for now we will set sval to empty values
 	t->sval = NULL;
 	// now, based on the category of the token,
+	// if it's a hexliteral, implicitly convert to an integer
+	if( category == T_HEXLITERAL){
+		t->ival = (int)strtol(value, NULL, 0); 		
+		t->category = T_INTLITERAL;
+	}else
 	// we will set the ival, dval or sval accordingly
 	if( category == T_INTLITERAL){
 		// convert string to int.
@@ -118,7 +123,7 @@ tTree * push_to_tree( tTree * parent, token * leaf){
 
 void print_token(token * leaf){
 	// print out basic info from the token
-	printf("%-10d %-20s %-5d\t %-17s", leaf->category, leaf->text, leaf->lineno, leaf->filename);
+	printf("%-10d %-20s %-5d\t %-17s ", leaf->category, leaf->text, leaf->lineno, leaf->filename);
 	
 	if(leaf->category == T_INTLITERAL)
 		// if we are an int, print the ival

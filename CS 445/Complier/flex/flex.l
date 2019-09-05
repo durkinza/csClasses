@@ -83,15 +83,16 @@ extern tTree *gtree;
 "false"					{ make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
 "null"					{ make_token(T_NULLLITERAL); return T_NULLLITERAL; }
 {LETTER}({LETTER}|{DIGIT})*				{ make_token(T_VARIABLE); return T_VARIABLE; }
+"0x"{HEXD}+				{ make_token(T_HEXLITERAL); return T_HEXLITERAL; }
 {DIGIT}+{IS}?			{ make_token(T_INTLITERAL); return T_INTLITERAL; }
-{SLITERAL}				{ make_token(T_INTLITERAL); return T_INTLITERAL; return T_CHARLITERAL; }
+{SLITERAL}				{ make_token(T_INTLITERAL); return T_INTLITERAL; }
 {DLITERAL}              { make_token(T_STRINGLITERAL); return T_STRINGLITERAL; }
 {DIGIT}+{EXPONENT}{FS}?					{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 {DIGIT}*"."{DIGIT}+({EXPONENT})?{FS}?	{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 {DIGIT}+"."{DIGIT}*({EXPONENT})?{FS}?	{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 
 
-
+","						{ make_token(T_SEPERATOR); return T_SEPERATOR; }
 "+"						{ make_token(T_PLUS); return T_PLUS; }
 "-"						{ make_token(T_MINUS); return T_MINUS; }
 "/"						{ make_token(T_DIVIDE);  return T_DIVIDE; }

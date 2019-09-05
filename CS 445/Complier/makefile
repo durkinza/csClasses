@@ -59,6 +59,18 @@ test: vgo
 	@echo;
 	# Test a file that's not go
 	./vgo test/notgo; true
+	@echo;
+	# Test setting literal values
+	./vgo test/values.go
+	@echo;
+	# Test setting variables
+	./vgo test/variables.go
+	@echo;
+	# Test setting constants
+	./vgo test/constants.go
+	@echo;
+	# Test for loops
+	./vgo test/for.go
 
 
 val: vgo

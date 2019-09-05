@@ -18,7 +18,8 @@
 #define T_STRINGLITERAL 293
 #define T_FLOATLITERAL 294
 #define T_VARIABLE 295
-#define T_CHARLITERAL 296 // not used
+#define T_SEPERATOR 296
+#define T_HEXLITERAL 297
 
 
 // reserved words
