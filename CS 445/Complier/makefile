@@ -47,30 +47,33 @@ _build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h
 	$(cc) src/tokenTree.c $(ccopts) -c -o _build/tokenTree.o
 
 test: vgo
+	@#@echo;
+	@# test a basic file
+	@#./vgo test/basic.vgo
+	@#@echo;
+	@# Test without file ending
+	@#./vgo test/basic
+	@#@echo;
+	@# Test an empty file
+	@#./vgo test/empty
+	@#@echo;
+	@# Test a file that's not go
+	@#./vgo test/notgo; true
 	@echo;
-	# test a basic file
-	./vgo test/basic.vgo
+	# Test basic files
+	./vgo test/hello.go
 	@echo;
-	# Test without file ending
-	./vgo test/basic
+	# Test without the file ending
+	./vgo test/hello
 	@echo;
-	# Test an empty file
-	./vgo test/empty
+	# Test comments
+	./vgo test/comments.go; true
 	@echo;
-	# Test a file that's not go
-	./vgo test/notgo; true
+	# Test float64
+	./vgo test/float64.go
 	@echo;
-	# Test setting literal values
-	./vgo test/values.go
-	@echo;
-	# Test setting variables
-	./vgo test/variables.go
-	@echo;
-	# Test setting constants
-	./vgo test/constants.go
-	@echo;
-	# Test for loops
-	./vgo test/for.go
+	# Test ascii art
+	./vgo test/art.go
 
 
 val: vgo
@@ -84,6 +87,6 @@ val: vgo
 	@echo;echo;
 	valgrind $(valgrindopts) ./vgo test/empty
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/notgo
+	valgrind $(valgrindopts) ./vgo test/notgo;true
 
 

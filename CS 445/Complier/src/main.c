@@ -11,7 +11,7 @@
 extern FILE *yyin;
 extern int yyparse();
 extern int yylex();
-extern void yy_buffer_cleanup();
+extern void yy_buffer_cleanup(int);
 extern char * yytext;
 extern int yydebug;
 
@@ -107,7 +107,7 @@ int main ( int argc, char **argv ){
 			yyfilename=NULL;
 		}
 		// cleanup after flex
-		yy_buffer_cleanup();
+		yy_buffer_cleanup(1);
 	}
 	return 0;
 }

@@ -37,8 +37,8 @@ extern tTree *gtree;
 %option nounput
 %%
 
-"/*"					{ comment(); return yychar;}
-\/\/[^\n\r]*			{ /* eat the comment */ }
+"/*"					{ /* eat the comment */ yyerror("C comments not allowed in VGo"); comment();  return yychar;}
+\/\/[^\n\r]*			{ /* eat the comment */ return T_COMMENT; }
 
 ^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
 
@@ -134,10 +134,10 @@ void make_token(int category){
 	gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 }
 
-void yy_buffer_cleanup(){
+void yy_buffer_cleanup(int clean_yytext){
 	// flex doesn't cleanup after itself
 	// So this function is the cleanup.
-	if(yytext != NULL){
+	if(yytext != NULL && clean_yytext == 1){
 		// if yytext exists, free it
 		free(yytext);
 		yytext = NULL;
@@ -154,7 +154,7 @@ void yy_buffer_cleanup(){
 	}
 	if(yyin != NULL)
 		fclose(yyin);
-	if(!YY_CURRENT_BUFFER)
+	if(!YY_CURRENT_BUFFER || !clean_yytext)
 		// if there is no Buffer, we're done
 		return;
 	// for every buffer, lets clear it.
@@ -172,7 +172,7 @@ void yyerror(char *s) {
 	errors++;
 
 	// print the error to the error file
-	fprintf(stderr, "%s: ", s);
+	fprintf(stderr, "\n%s: \n", s);
 
 	if (yyfilename)
 		// if we have a file, say what file the error was in.
@@ -181,7 +181,7 @@ void yyerror(char *s) {
 	// print the error line and token
 	fprintf(stderr, "line %d, token = \"%s\"\n", line_num, yytext);
 	// before we leave, let's cleanup a bit
-	yy_buffer_cleanup();
+	yy_buffer_cleanup(0);
 	exit(1);
 }
 
@@ -197,7 +197,9 @@ void comment() {
 				break;
 			case '\n':
 				splat_seen = 0;
-				line_num++;
+				// c style comments aren't allowed
+				// so we won't count the lines
+				//line_num++;
 				break;
 			case '*':
 				splat_seen = 1;
