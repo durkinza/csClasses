@@ -15,7 +15,7 @@ IS	(u|U|l|L)
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../src/yytab.h"
+#include "../_build/yacc.tab.h"
 #include "../src/tokenTree.h"
 
 void comment();
@@ -33,6 +33,7 @@ extern int errors;
 // use a global variable to create a token object
 extern token *gtoken;
 extern tTree *gtree;
+extern tTree * gtail;
 %}
 %option nounput
 %%
@@ -63,21 +64,21 @@ extern tTree *gtree;
 "import"				{ make_token(T_IMPORT); return T_IMPORT; }
 "return"				{ make_token(T_RETURN); return T_RETURN; }
 
-"default"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_DEFAULT); return T_DEFAULT; */}
-"interface"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_INTERFACE); return T_INTERFACE;*/ }
-"select"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_SELECT); return T_SELECT;*/ }
-"case"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_CASE); return T_CASE;*/ }
-"defer"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_DEFER); return T_DEFER;*/ }
-"go"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_GO); return T_GO;*/ }
-"chan"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_CHAN); return T_CHAN;*/ }
-"goto"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_GOTO); return T_GOTO;*/ }
-"switch"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_SWITCH); return T_SWITCH;*/ }
-"fallthrough"			{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_FALLTHROUGH); return T_FALLTHROUGH;*/ }
-"range"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_RANGE); return T_RANGE;*/ }
-"continue"				{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_CONTINUE); return T_CONTINUE;*/ }
-"while"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_WHILE); return T_WHILE;*/ }
-"break"					{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_BREAK); return T_BREAK;*/ }
-":"						{ yyerror("Go operator not in VGo"); return T_NOTDEFINED; /*make_token( T_NOTDEFINED); return NOTDEFINED;*/ }
+"default"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
+"interface"				{ yyerror("Go operator not in VGo"); return T_INTERFACE; }
+"select"				{ yyerror("Go operator not in VGo"); return T_SELECT; }
+"case"					{ yyerror("Go operator not in VGo"); return T_CASE; }
+"defer"					{ yyerror("Go operator not in VGo"); return T_DEFER; }
+"go"					{ yyerror("Go operator not in VGo"); return T_GO; }
+"chan"					{ yyerror("Go operator not in VGo"); return T_CHAN; }
+"goto"					{ yyerror("Go operator not in VGo"); return T_GOTO; }
+"switch"				{ yyerror("Go operator not in VGo"); return T_SWITCH; }
+"fallthrough"			{ yyerror("Go operator not in VGo"); return T_FALLTHROUGH; }
+"range"					{ yyerror("Go operator not in VGo"); return T_RANGE; }
+"continue"				{ yyerror("Go operator not in VGo"); return T_CONTINUE; }
+"while"					{ yyerror("Go operator not in VGo"); return T_WHILE; }
+"break"					{ yyerror("Go operator not in VGo"); return T_BREAK; }
+":"						{ yyerror("Go operator not in VGo"); return T_COLON; /*make_token( T_NOTDEFINED); return NOTDEFINED;*/ }
 
 
 "true"					{ make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
@@ -98,7 +99,7 @@ extern tTree *gtree;
 "/"						{ make_token(T_DIVIDE);  return T_DIVIDE; }
 "*"						{ make_token(T_MULTIPLY); return T_MULTIPLY; }
 "%"						{ make_token(T_MOD); return T_MOD; }
-"&&"					{ make_token(T_AND); return T_AND; }
+"&&"					{ make_token(T_ANDAND); return T_ANDAND; }
 "||"					{ make_token(T_OR); return T_OR; }
 ">"						{ make_token(T_GTHAN); return T_GTHAN; }
 "<"						{ make_token(T_LTHAN); return T_LTHAN; }
@@ -130,8 +131,15 @@ extern tTree *gtree;
 
 
 void make_token(int category){
-	// let's make a token, and set it to the global variable.
-	gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
+	// check that the lexime was good
+	if(category != 0 && category != 600){
+		// if the lexime was good, add it to the tree
+		gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
+		gtail = push_to_tree(gtail, gtoken);
+	}
+	// if we don't have a head, set it to look at the tail. 
+	// this should only run when we first get a tail value.
+	if(gtree == NULL && gtail != NULL) gtree = gtail; // setting the head to the first tail
 }
 
 void yy_buffer_cleanup(int clean_yytext){

@@ -1,0 +1,8 @@
+package main
+import "fmt"
+// inline -commnet */
+func main () {
+     fmt.Printf("Hello\tworld\n")
+     fmt.Printf(5)
+     fmt.Printf(5.0)
+}

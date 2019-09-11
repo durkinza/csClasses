@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tokenTree.h"
-#include "yytab.h"
+#include "../_build/yacc.tab.h"
 
 char * clean_sval(char * string){
 	int len = 0;
@@ -15,16 +15,6 @@ char * clean_sval(char * string){
 	// create a space for the new string
 	char * newString = malloc(strlen(string)+1);
 
-	// walk up to the "
-	while(*stringPointer != '\"'){
-		// if we hit the end of the string, return
-		if(*stringPointer == '\0'){
-			newString[len] = '\0';
-			return realloc(newString, 1);
-		}
-		stringPointer++;
-	}
-	
 	// add " to new string
 	stringPointer++;
 
@@ -139,7 +129,23 @@ void print_token(token * leaf){
 		printf("\n");
 }
 
+void _print_tree(tTree * tree, int depth){
+	// print the leaf of this branch
+	print_token(tree->leaf);
+	// now for every branch, print their leafs
+	int i = 0;
+	for( i=0; i < tree->nbranches; i++){
+		if(tree->branches[i] != NULL){
+			_print_tree(tree->branches[i], depth++);
+		}
+	}
+}
+
 void print_tree(tTree * tree){
+
+	// print the header
+	printf("\n\nCategory   Text\t\t        LineNo\t FileName\t   iVal/dVal/sVal\n");
+	printf("-----------------------------------------------------------------------\n");
 	if (tree == NULL){
 		// don't print empty trees
 		printf("Tree is emtpy.\n");
@@ -150,7 +156,7 @@ void print_tree(tTree * tree){
 		int i = 0;
 		for( i=0; i < tree->nbranches; i++){
 			if(tree->branches[i] != NULL){
-				print_tree(tree->branches[i]);
+				_print_tree(tree->branches[i], 0);
 			}
 		}
 	}

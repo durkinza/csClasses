@@ -85,6 +85,9 @@
 
 // For symbols not supported in vg0
 #define T_NOTDEFINED 601	
+#define T_COLON 602		/* :	*/
+#define T_AND 603		/* &	*/
+#define T_DOLLAR 603	/* $	*/
 /* 
 &     &=    |      |=     
 ^     *=    ^=     <-
