@@ -96,13 +96,15 @@ LGE		= T_GTHANEQUAL	>=
  ** Types
 **/
 
+/*
 %type		lbrace import_here
 %type		sym packname
 %type		oliteral
 
 %type		stmt ntype
-%type		arg_type
+%type		arg_type*/
 /*%type		case caseblock*/
+/*
 %type		compound_stmt dotname embed expr complitexpr bare_complitexpr
 %type		expr_or_type
 %type		fndcl hidden_fndcl fnliteral
@@ -112,14 +114,14 @@ LGE		= T_GTHANEQUAL	>=
 %type		new_name dcl_name oexpr typedclname
 %type		onew_name
 %type		osimple_stmt pexpr pexpr_no_paren
-%type		pseudocall range_stmt /*select_stmt*/
+%type		pseudocall range_stmt /*select_stmt*//*
 %type		simple_stmt
-%type		/*switch_stmt*/ uexpr
+%type		/*switch_stmt*//* uexpr
 %type		xfndcl typedcl start_complit
 
 %type		xdcl fnbody fnres loop_body dcl_name_list
 %type		new_name_list expr_list keyval_list braced_keyval_list expr_or_type_list xdcl_list
-%type		oexpr_list/* caseblock_list*/ elseif elseif_list else stmt_list oarg_type_list_ocomma arg_type_list
+%type		oexpr_list/* caseblock_list*//* elseif elseif_list else stmt_list oarg_type_list_ocomma arg_type_list
 %type		interfacedcl_list vardcl vardcl_list structdcl structdcl_list
 %type		common_dcl constdcl constdcl1 constdcl_list typedcl_list
 
@@ -141,7 +143,7 @@ LGE		= T_GTHANEQUAL	>=
 %type		hidden_type hidden_type_misc hidden_pkgtype
 %type		hidden_type_func
 %type		hidden_type_recv_chan hidden_type_non_recv_chan
-
+*/
 %left		LCOMM	/* outside the usual hierarchy; here for good error messages */
 
 %left		LOROR
