@@ -132,7 +132,7 @@ extern tTree * gtail;
 
 void make_token(int category){
 	// check that the lexime was good
-	if(category != 0 && category != 600){
+	if(category != 0 && category != T_COMMENT){
 		// if the lexime was good, add it to the tree
 		gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 		gtail = push_to_tree(gtail, gtoken);

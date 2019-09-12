@@ -22,13 +22,12 @@
 #include <stdio.h>
 //#include <libc.h>
 #include <stdlib.h>
-int yylex();
-void yyerror(const char *s);
+extern int yylex();
+extern void yyerror(const char *s);
 %}
 /* write out a header file containing the token defines */
 %defines
 
-%token		LLITERAL
 %token		LASOP LCOLAS
 
 /* keywords */
@@ -144,6 +143,7 @@ LGE		= T_GTHANEQUAL	>=
 %type		hidden_type_func
 %type		hidden_type_recv_chan hidden_type_non_recv_chan
 */
+
 %left		LCOMM	/* outside the usual hierarchy; here for good error messages */
 
 %left		LOROR
@@ -155,13 +155,13 @@ LGE		= T_GTHANEQUAL	>=
 
 /*
  * manual override of shift/reduce conflicts.
- * the general form is that we assign a precedence
+ * the general form isi that we assign a precedence
  * to the token being shifted and then introduce
  * NotToken with lower precedence or PreferToToken with higher
  * and annotate the reducing rule accordingly.
  */
 %left		NotPackage
-%left		LPACKAGE
+%left		T_PACKAGE
 
 %left		NotParen
 %left		T_LPAREN
@@ -178,19 +178,18 @@ file
 	;
 
 package
-	:  %empty %prec NotPackage 
+	:   NotPackage 
 		{
 			yyerror("package statement must be first");
 			exit(1);
 		}
-	| LPACKAGE sym T_SEMICOLON
+	| T_PACKAGE sym T_SEMICOLON
 	;
 
 imports
 	: %empty
 	| imports import T_SEMICOLON
 	;
-/* no ; */
 
 import
 	: LIMPORT import_stmt
@@ -214,7 +213,7 @@ import_here
 	;
 
 import_package
-	: LPACKAGE LNAME import_safety T_SEMICOLON
+	: T_PACKAGE LNAME import_safety T_SEMICOLON
 	;
 
 import_safety
@@ -225,7 +224,6 @@ import_safety
 import_there
 	: hidden_import_list '$' '$'
 	;
-/* no ; */
 
 /*
  * declarations
@@ -380,14 +378,14 @@ if_header
 
 /* IF cond body (ELSE IF cond body)* (ELSE block)? */
 if_stmt
-	: LIF
+	: T_IF
 		if_header
 		loop_body
 		elseif_list else
 	;
 
 elseif
-	: T_ELSE LIF 
+	: T_ELSE T_IF 
 		if_header loop_body
 	;
 
@@ -416,7 +414,7 @@ select_stmt
  * expressions
  */
 expr
-	: expr
+	: uexpr
 	| expr LOROR expr
 	| expr T_ANDAND expr
 	| expr T_EQUAL expr
@@ -484,7 +482,6 @@ pexpr_no_paren
 		}
 	| fnliteral
 	;
-/* no ;*/
 
 start_complit
 	: %empty {
@@ -519,7 +516,6 @@ expr_or_type
 name_or_type
 	: ntype
 	;
-/* no ; */
 lbrace
 	: LBODY
 	| T_LCURL
@@ -607,7 +603,7 @@ convtype
 	: fntype
 	| othertype
 	;
-/* no ; */
+
 comptype
 	: othertype
 	;
@@ -1009,6 +1005,14 @@ hidden_structdcl_list
 hidden_interfacedcl_list
 	: hidden_interfacedcl
 	| hidden_interfacedcl_list T_SEMICOLON hidden_interfacedcl
+	;
+
+LLITERAL
+	: T_NULLLITERAL 
+	| T_BOOLLITERAL 
+	| T_INTLITERAL 
+	| T_STRINGLITERAL 
+	| T_FLOATLITERAL
 	;
 
 %%

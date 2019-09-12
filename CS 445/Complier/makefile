@@ -9,7 +9,7 @@ ccopts = -g -Wall -Wextra
 lex = flex
 lexopts = 
 yacc = bison
-yaccopts = -W
+yaccopts =
 
 #valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
 valgrindopts =
