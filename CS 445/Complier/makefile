@@ -5,10 +5,11 @@
 
 # variables
 cc = gcc
-ccopts = -g -Wall -Wextra
+ccopts = -g -Wall -Wextra 
 lex = flex
 lexopts = 
 yacc = bison
+#yaccopts = -W
 yaccopts =
 
 #valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
@@ -18,7 +19,7 @@ zipname = durk7832.zip
 
 
 vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o
-	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o $(ccopts) -o vgo
+	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o $(ccopts) -o vgo
 
 _build: 
 	mkdir _build
@@ -32,7 +33,7 @@ _build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h _build/yacc.tab.h
 _build/yacc.tab.o: _build/yacc.tab.c _build/yacc.tab.h
 	$(cc) -c _build/yacc.tab.c $(ccopts) -o _build/yacc.tab.o
 
-_build/lex.yy.o: _build/lex.yy.c
+_build/lex.yy.o: _build/lex.yy.c src/tokenTree.h _build/yacc.tab.h
 	$(cc) -c _build/lex.yy.c $(ccopts) -o _build/lex.yy.o
 
 

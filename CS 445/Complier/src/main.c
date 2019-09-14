@@ -59,13 +59,10 @@ int main ( int argc, char **argv ){
 			// if that fails, open the file+.go
 			if ( (yyin = open_file(argv[i])) != NULL){
 				// keep track of returned categories
-				int cate = -1;
 				// only continue to parse the file while we haven't had
 				// an error, or we haven't reached the end of the file
-				while (cate != 0 && cate != 999 && cate != 601){
-					// parse the next lexime
-					cate = yylex();
-				}
+				// parse the next lexime
+				yyparse();
 				// Let the user know what file we parsed
 				printf("File: %s", yyfilename);
 				// start printing leximes

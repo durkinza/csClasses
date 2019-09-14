@@ -22,25 +22,32 @@
 #include <stdio.h>
 //#include <libc.h>
 #include <stdlib.h>
+
+#include "../src/tokenTree.h"
 extern int yylex();
 extern void yyerror(const char *s);
 %}
 /* write out a header file containing the token defines */
 %defines
 
-%token		LASOP LCOLAS
+%union{
+	struct tTree * node;
+}
+
+
+%token <node> LASOP LCOLAS
 
 /* keywords */
-%token		/*LBREAK LCASE LCHAN LCONST LCONTINUE */LDDD
-%token		/*LDEFAULT LDEFER LELSE */LFALL LFOR /*LFUNC*/ LGO LGOTO
-%token		LIF LIMPORT LINTERFACE LMAP LNAME
-%token		LPACKAGE LRANGE LRETURN LSELECT LSTRUCT LSWITCH
-%token		LTYPE LVAR
+%token <node> /*LBREAK LCASE LCHAN LCONST LCONTINUE */LDDD
+%token <node>/*LDEFAULT LDEFER LELSE */LFALL LFOR /*LFUNC*/ LGO LGOTO
+%token <node> LIF LIMPORT LINTERFACE LMAP LNAME
+%token <node> LPACKAGE LRANGE LRETURN LSELECT LSTRUCT LSWITCH
+%token <node> LTYPE LVAR
 
 
 /* operators */
-%token		/*LANDAND*/ LANDNOT LBODY LCOMM LDEC LEQ LGE LGT
-%token		LIGNORE LINC LLE LLSH LLT LNE LOROR LRSH
+%token <node> /*LANDAND*/ LANDNOT LBODY LCOMM /*LDEC LEQ LGE LGT*/
+%token <node> LIGNORE /*LINC LLE*/ LLSH /*LLT LNE LOROR */LRSH
 
 /*
 LANDAND = T_ANDAND		&&
@@ -63,90 +70,89 @@ LGE		= T_GTHANEQUAL	>=
 **/
 
 /* basic types */
-%token		T_NULL T_BOOLEAN T_INTEGER T_FLOAT64 T_STRING
+%token <node>	T_NULL T_BOOLEAN T_INTEGER T_FLOAT64 T_STRING
 
 /* Literals */
-%token		T_NULLLITERAL T_BOOLLITERAL T_INTLITERAL T_STRINGLITERAL T_FLOATLITERAL
-%token		T_VARIABLE T_HEXLITERAL
+%token <node> T_NULLLITERAL T_BOOLLITERAL T_INTLITERAL T_STRINGLITERAL T_FLOATLITERAL
+%token <node> T_VARIABLE T_HEXLITERAL
 
 /* reserved words */
-%token		T_FUNC T_MAP T_STRUCT T_ELSE T_PACKAGE T_CONST T_IF T_TYPE T_FOR T_IMPORT
-%token		T_RETURN T_VAR
+%token <node> T_FUNC T_MAP T_STRUCT T_ELSE T_PACKAGE T_CONST T_IF T_TYPE T_FOR T_IMPORT
+%token <node> T_RETURN T_VAR
 
 /* non reserved words */
-%token		T_BREAK T_DEFAULT T_INTERFACE T_SELECT T_CASE T_DEFER T_GO T_CHAN 
-%token		T_GOTO T_SWITCH T_FALLTHROUGH T_RANGE T_CONTINUE T_WHILE 
+%token <node> T_BREAK T_DEFAULT T_INTERFACE T_SELECT T_CASE T_DEFER T_GO T_CHAN 
+%token <node> T_GOTO T_SWITCH T_FALLTHROUGH T_RANGE T_CONTINUE T_WHILE 
 /* non-reserved words that still need to be added to flex.l */
-%token		T_COLON T_AND T_DOLLAR
+%token <node> T_COLON T_AND T_DOLLAR
 
 /* operators */
-%token		T_PLUS T_MINUS T_DIVIDE T_MULTIPLY T_MOD T_ANDAND T_OR T_GTHAN T_LTHAN 
-%token		T_GTHANEQUAL T_LTHANEQUAL T_EQUAL T_NOT_EQUAL T_NEGATE T_LPAREN T_RPAREN 
-%token		T_RBRACK T_LBRACK T_LCURL T_RCURL T_ASSIGNMENT T_INCREMENT T_DECREMENT 
-%token		T_DOT T_SEPERATOR T_SEMICOLON 
+%token <node> T_PLUS T_MINUS T_DIVIDE T_MULTIPLY T_MOD T_ANDAND T_OR T_GTHAN T_LTHAN 
+%token <node> T_GTHANEQUAL T_LTHANEQUAL T_EQUAL T_NOT_EQUAL T_NEGATE T_LPAREN T_RPAREN 
+%token <node> T_RBRACK T_LBRACK T_LCURL T_RCURL T_ASSIGNMENT T_INCREMENT T_DECREMENT 
+%token <node> T_DOT T_SEPERATOR T_SEMICOLON 
 
-/* comments */
-%token		T_COMMENT
+/* tokens that yacc shouldn't see */
+%token <node> T_COMMENT T_NLINE
 /* For symbols not supported in vgo */
-%token		T_NOTDEFINED BAD_TOKEN
+%token <node> T_NOTDEFINED BAD_TOKEN
 
 
 /**
  ** Types
 **/
 
-/*
-%type		lbrace import_here
-%type		sym packname
-%type		oliteral
+%type <node> lbrace import_here
+%type <node> sym packname
+%type <node> oliteral
 
-%type		stmt ntype
-%type		arg_type*/
-/*%type		case caseblock*/
-/*
-%type		compound_stmt dotname embed expr complitexpr bare_complitexpr
-%type		expr_or_type
-%type		fndcl hidden_fndcl fnliteral
-%type		for_body for_header for_stmt if_header if_stmt non_dcl_stmt
-%type		interfacedcl keyval labelname name
-%type		name_or_type non_expr_type
-%type		new_name dcl_name oexpr typedclname
-%type		onew_name
-%type		osimple_stmt pexpr pexpr_no_paren
-%type		pseudocall range_stmt /*select_stmt*//*
-%type		simple_stmt
-%type		/*switch_stmt*//* uexpr
-%type		xfndcl typedcl start_complit
+%type <node> stmt ntype
+%type <node> arg_type
+/*%type <node> case caseblock*/
 
-%type		xdcl fnbody fnres loop_body dcl_name_list
-%type		new_name_list expr_list keyval_list braced_keyval_list expr_or_type_list xdcl_list
-%type		oexpr_list/* caseblock_list*//* elseif elseif_list else stmt_list oarg_type_list_ocomma arg_type_list
-%type		interfacedcl_list vardcl vardcl_list structdcl structdcl_list
-%type		common_dcl constdcl constdcl1 constdcl_list typedcl_list
+%type <node> compound_stmt dotname embed expr complitexpr bare_complitexpr
+%type <node> expr_or_type
+%type <node> fndcl hidden_fndcl fnliteral
+%type <node> for_body for_header for_stmt if_header if_stmt non_dcl_stmt
+%type <node> interfacedcl keyval labelname name
+%type <node> name_or_type non_expr_type
+%type <node> new_name dcl_name oexpr typedclname
+%type <node> onew_name
+%type <node> osimple_stmt pexpr pexpr_no_paren
+%type <node> pseudocall range_stmt /*select_stmt*/
+%type <node> simple_stmt
+%type <node> /*switch_stmt*/ uexpr
+%type <node> xfndcl typedcl start_complit
 
-%type		convtype comptype dotdotdot
-%type		indcl interfacetype structtype ptrtype
-%type		recvchantype non_recvchantype othertype fnret_type fntype
+%type <node> xdcl fnbody fnres loop_body dcl_name_list
+%type <node> new_name_list expr_list keyval_list braced_keyval_list expr_or_type_list xdcl_list
+%type <node> oexpr_list/* caseblock_list*/ elseif elseif_list else stmt_list oarg_type_list_ocomma arg_type_list
+%type <node> interfacedcl_list vardcl vardcl_list structdcl structdcl_list
+%type <node> common_dcl constdcl constdcl1 constdcl_list typedcl_list
 
-%type		hidden_importsym hidden_pkg_importsym
+%type <node> convtype comptype dotdotdot
+%type <node> indcl interfacetype structtype ptrtype
+%type <node> recvchantype non_recvchantype othertype fnret_type fntype
 
-%type		hidden_constant hidden_literal hidden_funarg
-%type		hidden_interfacedcl hidden_structdcl
+%type <node> hidden_importsym hidden_pkg_importsym
 
-%type		hidden_funres
-%type		ohidden_funres
-%type		hidden_funarg_list ohidden_funarg_list
-%type		hidden_interfacedcl_list ohidden_interfacedcl_list
-%type		hidden_structdcl_list ohidden_structdcl_list
+%type <node> hidden_constant hidden_literal hidden_funarg
+%type <node> hidden_interfacedcl hidden_structdcl
 
-%type		hidden_type hidden_type_misc hidden_pkgtype
-%type		hidden_type_func
-%type		hidden_type_recv_chan hidden_type_non_recv_chan
-*/
+%type <node> hidden_funres
+%type <node> ohidden_funres
+%type <node> hidden_funarg_list ohidden_funarg_list
+%type <node> hidden_interfacedcl_list ohidden_interfacedcl_list
+%type <node> hidden_structdcl_list ohidden_structdcl_list
+
+%type <node> hidden_type hidden_type_misc hidden_pkgtype
+%type <node> hidden_type_func
+%type <node> hidden_type_recv_chan hidden_type_non_recv_chan
+%type <node> LLITERAL
 
 %left		LCOMM	/* outside the usual hierarchy; here for good error messages */
 
-%left		LOROR
+%left		T_OROR
 %left		T_ANDAND /*LANDAND*/
 /*%left		LEQ LNE LLE LGE LLT LGT*/
 %left		T_EQUAL T_NOT_EQUAL T_LTHANEQUAL T_GTHANEQUAL T_LTHAN T_GTHAN
@@ -178,7 +184,8 @@ file
 	;
 
 package
-	:   NotPackage 
+	: %empty 
+	| NotPackage 
 		{
 			yyerror("package statement must be first");
 			exit(1);
@@ -214,15 +221,17 @@ import_here
 
 import_package
 	: T_PACKAGE LNAME import_safety T_SEMICOLON
+	| %empty
 	;
 
 import_safety
 	: %empty
-	|	LNAME
+	|	LNAME 
 	;
 
 import_there
 	: hidden_import_list '$' '$'
+	| %empty
 	;
 
 /*
@@ -234,8 +243,8 @@ xdcl
 			yyerror("empty top-level declaration");
 			//$$ = nil;
 		}
-	| common_dcl
-	| xfndcl
+	| common_dcl {printf("test\n");}
+	| xfndcl {printf("test\n");}
 	| non_dcl_stmt
 		{
 			yyerror("non-declaration statement outside function body");
@@ -299,8 +308,8 @@ simple_stmt
 	| expr LASOP expr
 	| expr_list T_ASSIGNMENT expr_list
 	| expr_list LCOLAS expr_list
-	| expr LINC
-	| expr LDEC
+	| expr T_INCREMENT
+	| expr T_DECREMENT
 	;
 /*
 case
@@ -415,7 +424,7 @@ select_stmt
  */
 expr
 	: uexpr
-	| expr LOROR expr
+	| expr T_OROR expr
 	| expr T_ANDAND expr
 	| expr T_EQUAL expr
 	| expr T_NOT_EQUAL expr

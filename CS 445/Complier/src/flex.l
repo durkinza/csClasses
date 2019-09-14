@@ -20,15 +20,15 @@ IS	(u|U|l|L)
 
 void comment();
 void yyerror();
-void make_token();
+tTree * make_token();
 int line_num = 1;
+int can_have_semi = 0;
+int swapped_nline = 0;
 char lastid[256];
 
 extern char *yyfilename;
 int yychar = -1;
 extern int errors;
-
-
 
 // use a global variable to create a token object
 extern token *gtoken;
@@ -43,26 +43,27 @@ extern tTree * gtail;
 
 ^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
 
-\n              		{ line_num++;/* eat the newline */ }
+
+\n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){return T_SEMICOLON;}else{ /* eat the newline */} }
 [ \t\f]+        		{ /* eat the whitespace */ }
 
-"boolean"       		{ make_token(T_BOOLEAN); return T_BOOLEAN; }
-"int"           		{ make_token(T_INTEGER); return T_INTEGER; }
-"double"				{ make_token(T_FLOAT64);  return T_FLOAT64; }
-"float64"				{ make_token(T_FLOAT64); return T_FLOAT64; }
-"string"        		{ make_token(T_STRING); return T_STRING; }
+"boolean"       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
+"int"           		{ yylval.node = make_token(T_INTEGER); return T_INTEGER; }
+"double"				{ yylval.node = make_token(T_FLOAT64);  return T_FLOAT64; }
+"float64"				{ yylval.node = make_token(T_FLOAT64); return T_FLOAT64; }
+"string"        		{ yylval.node = make_token(T_STRING); return T_STRING; }
 
-"func"					{ make_token(T_FUNC);return T_FUNC; }
-"map"					{ make_token(T_MAP); return T_MAP; }
-"struct"				{ make_token(T_STRUCT); return T_STRUCT; }
-"else"					{ make_token(T_ELSE); return T_ELSE; }
-"package"				{ make_token(T_PACKAGE); return T_PACKAGE; }
-"const"					{ make_token(T_CONST); return T_CONST; }
-"if"            		{ make_token(T_IF); return T_IF; }
-"type"					{ make_token(T_TYPE); return T_TYPE; }
-"for"           		{ make_token(T_FOR); return T_FOR; }
-"import"				{ make_token(T_IMPORT); return T_IMPORT; }
-"return"				{ make_token(T_RETURN); return T_RETURN; }
+"func"					{ yylval.node = make_token(T_FUNC);return T_FUNC; }
+"map"					{ yylval.node = make_token(T_MAP); return T_MAP; }
+"struct"				{ yylval.node = make_token(T_STRUCT); return T_STRUCT; }
+"else"					{ yylval.node = make_token(T_ELSE); return T_ELSE; }
+"package"				{ yylval.node = make_token(T_PACKAGE); return T_PACKAGE; }
+"const"					{ yylval.node = make_token(T_CONST); return T_CONST; }
+"if"            		{ yylval.node = make_token(T_IF); return T_IF; }
+"type"					{ yylval.node = make_token(T_TYPE); return T_TYPE; }
+"for"           		{ yylval.node = make_token(T_FOR); return T_FOR; }
+"import"				{ yylval.node = make_token(LIMPORT); return LIMPORT; }
+"return"				{ yylval.node = make_token(T_RETURN); return T_RETURN; }
 
 "default"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
 "interface"				{ yyerror("Go operator not in VGo"); return T_INTERFACE; }
@@ -81,45 +82,45 @@ extern tTree * gtail;
 ":"						{ yyerror("Go operator not in VGo"); return T_COLON; /*make_token( T_NOTDEFINED); return NOTDEFINED;*/ }
 
 
-"true"					{ make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
-"false"					{ make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
-"null"					{ make_token(T_NULLLITERAL); return T_NULLLITERAL; }
-{LETTER}({LETTER}|{DIGIT})*				{ make_token(T_VARIABLE); return T_VARIABLE; }
-"0x"{HEXD}+				{ make_token(T_HEXLITERAL); return T_HEXLITERAL; }
-{DIGIT}+{IS}?			{ make_token(T_INTLITERAL); return T_INTLITERAL; }
-{SLITERAL}				{ make_token(T_INTLITERAL); return T_INTLITERAL; }
-{DLITERAL}              { make_token(T_STRINGLITERAL); return T_STRINGLITERAL; }
-{DIGIT}+{EXPONENT}{FS}?					{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
-{DIGIT}*"."{DIGIT}+({EXPONENT})?{FS}?	{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
-{DIGIT}+"."{DIGIT}*({EXPONENT})?{FS}?	{ make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
+"true"					{ yylval.node = make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
+"false"					{ yylval.node = make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
+"null"					{ yylval.node = make_token(T_NULLLITERAL); return T_NULLLITERAL; }
+{LETTER}({LETTER}|{DIGIT})*				{ yylval.node = make_token(LNAME); return LNAME; }
+"0x"{HEXD}+				{ yylval.node = make_token(T_HEXLITERAL); return T_HEXLITERAL; }
+{DIGIT}+{IS}?			{ yylval.node = make_token(T_INTLITERAL); return T_INTLITERAL; }
+{SLITERAL}				{ yylval.node = make_token(T_INTLITERAL); return T_INTLITERAL; }
+{DLITERAL}              { yylval.node = make_token(T_STRINGLITERAL); return T_STRINGLITERAL; }
+{DIGIT}+{EXPONENT}{FS}?					{ yylval.node = make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
+{DIGIT}*"."{DIGIT}+({EXPONENT})?{FS}?	{ yylval.node = make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
+{DIGIT}+"."{DIGIT}*({EXPONENT})?{FS}?	{ yylval.node = make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 
 
-"+"						{ make_token(T_PLUS); return T_PLUS; }
-"-"						{ make_token(T_MINUS); return T_MINUS; }
-"/"						{ make_token(T_DIVIDE);  return T_DIVIDE; }
-"*"						{ make_token(T_MULTIPLY); return T_MULTIPLY; }
-"%"						{ make_token(T_MOD); return T_MOD; }
-"&&"					{ make_token(T_ANDAND); return T_ANDAND; }
-"||"					{ make_token(T_OR); return T_OR; }
-">"						{ make_token(T_GTHAN); return T_GTHAN; }
-"<"						{ make_token(T_LTHAN); return T_LTHAN; }
-">="					{ make_token(T_GTHANEQUAL); return T_GTHANEQUAL; }
-"<="					{ make_token(T_LTHANEQUAL); return T_LTHANEQUAL; }
-"=="					{ make_token(T_EQUAL); return T_EQUAL; }
-"!="					{ make_token(T_NOT_EQUAL); return T_NOT_EQUAL; }
-"!"						{ make_token(T_NEGATE); return T_NEGATE; }
-"("						{ make_token(T_LPAREN); return T_LPAREN; }
-")"						{ make_token(T_RPAREN); return T_RPAREN; }
-"["						{ make_token(T_LBRACK); return T_LBRACK; }
-"]"						{ make_token(T_RBRACK); return T_RBRACK; }
-"{"						{ make_token(T_LCURL); return T_LCURL; }
-"}"						{ make_token(T_RCURL); return T_RCURL; }
-"="						{ make_token(T_ASSIGNMENT); return T_ASSIGNMENT; }
-"+="					{ make_token(T_INCREMENT); return T_INCREMENT; }
-"-="					{ make_token(T_DECREMENT); return T_DECREMENT; }
-"."						{ make_token(T_DOT); return T_DOT; }
-","						{ make_token(T_SEPERATOR); return T_SEPERATOR; }
-";"						{ make_token(T_SEMICOLON); return T_SEMICOLON; }
+"+"						{ yylval.node = make_token(T_PLUS); return T_PLUS; }
+"-"						{ yylval.node = make_token(T_MINUS); return T_MINUS; }
+"/"						{ yylval.node = make_token(T_DIVIDE);  return T_DIVIDE; }
+"*"						{ yylval.node = make_token(T_MULTIPLY); return T_MULTIPLY; }
+"%"						{ yylval.node = make_token(T_MOD); return T_MOD; }
+"&&"					{ yylval.node = make_token(T_ANDAND); return T_ANDAND; }
+"||"					{ yylval.node = make_token(T_OR); return T_OR; }
+">"						{ yylval.node = make_token(T_GTHAN); return T_GTHAN; }
+"<"						{ yylval.node = make_token(T_LTHAN); return T_LTHAN; }
+">="					{ yylval.node = make_token(T_GTHANEQUAL); return T_GTHANEQUAL; }
+"<="					{ yylval.node = make_token(T_LTHANEQUAL); return T_LTHANEQUAL; }
+"=="					{ yylval.node = make_token(T_EQUAL); return T_EQUAL; }
+"!="					{ yylval.node = make_token(T_NOT_EQUAL); return T_NOT_EQUAL; }
+"!"						{ yylval.node = make_token(T_NEGATE); return T_NEGATE; }
+"("						{ yylval.node = make_token(T_LPAREN); return T_LPAREN; }
+")"						{ yylval.node = make_token(T_RPAREN); return T_RPAREN; }
+"["						{ yylval.node = make_token(T_LBRACK); return T_LBRACK; }
+"]"						{ yylval.node = make_token(T_RBRACK); return T_RBRACK; }
+"{"						{ yylval.node = make_token(T_LCURL); return T_LCURL; }
+"}"						{ yylval.node = make_token(T_RCURL); return T_RCURL; }
+"="						{ yylval.node = make_token(T_ASSIGNMENT); return T_ASSIGNMENT; }
+"+="					{ yylval.node = make_token(T_INCREMENT); return T_INCREMENT; }
+"-="					{ yylval.node = make_token(T_DECREMENT); return T_DECREMENT; }
+"."						{ yylval.node = make_token(T_DOT); return T_DOT; }
+","						{ yylval.node = make_token(T_SEPERATOR); return T_SEPERATOR; }
+";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
 
 
 .                       { yyerror("lexical error"); }
@@ -128,18 +129,49 @@ extern tTree * gtail;
 
 
 // Mostly based on main function in notes by Dr. Jeffery
+tTree * make_token(int category){
+	switch(category){
+		case LNAME:
+		case T_RCURL:
+		case T_RBRACK:
+		case T_RPAREN:
+		case T_INTLITERAL:
+		case T_HEXLITERAL:
+		case T_BOOLLITERAL:
+		case T_FLOATLITERAL:
+		case T_STRINGLITERAL:
+			can_have_semi = 1;
+			swapped_nline = 0;
+			break;
+		case T_NLINE:
+			if(can_have_semi == 1){
+				// if we need to add a semicolon, let's do so
+				category = T_SEMICOLON;
+				strcpy(yytext,";\0");
+				swapped_nline = 1;
+			}else{
+				// we don't need to make a token for \n
+				return (tTree *) NULL;
+			}
+			break;
+		default:
+			can_have_semi = 0;
+			swapped_nline = 0;
+	}
 
-
-void make_token(int category){
 	// check that the lexime was good
-	if(category != 0 && category != T_COMMENT){
+	if(category != 0 && category != T_COMMENT && category != T_NLINE){
 		// if the lexime was good, add it to the tree
 		gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 		gtail = push_to_tree(gtail, gtoken);
+
+		// if we don't have a head, set it to look at the tail. 
+		// this should only run when we first get a tail value.
+		if(gtree == NULL && gtail != NULL) gtree = gtail; // setting the head to the first tail
+		return gtail;
+	}else{
+		return (tTree *) NULL;
 	}
-	// if we don't have a head, set it to look at the tail. 
-	// this should only run when we first get a tail value.
-	if(gtree == NULL && gtail != NULL) gtree = gtail; // setting the head to the first tail
 }
 
 void yy_buffer_cleanup(int clean_yytext){

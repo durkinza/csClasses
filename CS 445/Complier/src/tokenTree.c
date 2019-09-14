@@ -88,6 +88,12 @@ token * create_token(int category, char * text, int colno, int lineno, char * fi
 		strncpy(t->sval, val, strlen(val)+1);
 		// clear up the malloc'd space for val
 		free(val);
+	}else if(category == T_BOOLLITERAL){
+		if(strcmp(value, "true") !=  0){
+			t->ival = 0;
+		}else{
+			t->ival = 1;
+		}
 	}
 	return t;
 }
