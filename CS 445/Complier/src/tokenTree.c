@@ -6,8 +6,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "tokenTree.h"
-#include "yytab.h"
+#include "../_build/yacc.tab.h"
+#include "../src/nonDet.h"
+
+extern char * yyfilename;
+extern int line_num;
+extern char * yytext;
+extern char * prod_to_string(int prodrule);
+extern char * cat_to_string(int category);
 
 char * clean_sval(char * string){
 	int len = 0;
@@ -15,16 +23,6 @@ char * clean_sval(char * string){
 	// create a space for the new string
 	char * newString = malloc(strlen(string)+1);
 
-	// walk up to the "
-	while(*stringPointer != '\"'){
-		// if we hit the end of the string, return
-		if(*stringPointer == '\0'){
-			newString[len] = '\0';
-			return realloc(newString, 1);
-		}
-		stringPointer++;
-	}
-	
 	// add " to new string
 	stringPointer++;
 
@@ -98,8 +96,48 @@ token * create_token(int category, char * text, int colno, int lineno, char * fi
 		strncpy(t->sval, val, strlen(val)+1);
 		// clear up the malloc'd space for val
 		free(val);
+	}else if(category == T_BOOLLITERAL){
+		if(strcmp(value, "true") !=  0){
+			t->ival = 0;
+		}else{
+			t->ival = 1;
+		}
 	}
 	return t;
+}
+
+token * quick_token(int category){
+	return create_token(category, yytext, 0, line_num, yyfilename, yytext);
+}
+
+tTree * token_as_tree(int category){
+	tTree * tree = malloc(sizeof(tTree));
+	tree->nbranches = 0;
+	tree->prodrule = 0;
+	tree->leaf = quick_token(category);
+	return tree;
+}
+
+tTree * create_tree(int prodrule, int nbranches, ...){
+	// all extened parameters should be of type (tTree *)
+	// first lets create a token for this element
+	tTree * tree = malloc(sizeof(tTree));
+	tree->nbranches = nbranches;
+	tree->prodrule = prodrule;
+
+	// referenced https://www.thegeekstuff.com/2017/05/c-variadic-functions/
+	// for variadic function layout
+	va_list branches;
+	va_start( branches, nbranches );
+	int i;
+	for (i=0; i<nbranches; i++){
+		tree->branches[i] = va_arg(branches, tTree *);
+	}
+	
+	// optional va_end call. 
+	va_end( branches );
+
+	return tree;
 }
 
 tTree * push_to_tree( tTree * parent, token * leaf){
@@ -121,36 +159,70 @@ tTree * push_to_tree( tTree * parent, token * leaf){
 	return t;
 }
 
-void print_token(token * leaf){
+void print_prodrule(int prodrule, int nbranches, int depth){
+	int i;
+	for (i=0; i<depth; i++){
+		printf("  ");
+	}
+	printf("%s:%d\n", prod_to_string(prodrule), nbranches);
+}
+
+void print_token(token * leaf, int depth){
 	// print out basic info from the token
-	printf("%-10d %-20s %-5d\t %-17s ", leaf->category, leaf->text, leaf->lineno, leaf->filename);
-	
+	int i;
+	for (i=0; i< depth; i++){
+		printf("  ");
+	}
+	/*printf("%-10d %-20s %-5d\t %-17s ", leaf->category, leaf->text, leaf->lineno, leaf->filename);
+	*/	
 	if(leaf->category == T_INTLITERAL)
 		// if we are an int, print the ival
-		printf("%d\n",leaf->ival);
+		printf("%d:%d\n", leaf->category, leaf->ival);
 	else if(leaf->category == T_FLOATLITERAL)
 		// if we are a float, print the dval
-		printf("%f\n", leaf->dval);
+		printf("%d:%f\n", leaf->category, leaf->dval);
 	else if (leaf->category == T_STRINGLITERAL)
 		// if we are a string, print the sval
-		printf("%s\n",leaf->sval);
+		printf("%d:%s\n", leaf->category, leaf->text);
 	else
 		// for anything else, don't print a value
-		printf("\n");
+		printf("%d:%s\n", leaf->category, leaf->text);
+	
+}
+
+void _print_tree(tTree * tree, int depth){
+	if(tree->prodrule == 0){
+		// print the leaf of this branch
+		print_token(tree->leaf, depth);
+	}else{
+		print_prodrule(tree->prodrule, tree->nbranches, depth);
+	}
+	// now for every branch, print their leafs
+	int i = 0;
+	for( i=0; i < tree->nbranches; i++){
+		if(tree->branches[i] != NULL){
+			_print_tree(tree->branches[i], depth+1);
+		}
+	}
 }
 
 void print_tree(tTree * tree){
+
 	if (tree == NULL){
 		// don't print empty trees
 		printf("Tree is emtpy.\n");
 	}else{
-		// print the leaf of this branch
-		print_token(tree->leaf);
+		if(tree->prodrule == 0){
+			// print the leaf of this branch
+			print_token(tree->leaf, 0);
+		}else{
+			print_prodrule(tree->prodrule, tree->nbranches, 0);
+		}
 		// now for every branch, print their leafs
 		int i = 0;
 		for( i=0; i < tree->nbranches; i++){
 			if(tree->branches[i] != NULL){
-				print_tree(tree->branches[i]);
+				_print_tree(tree->branches[i], 0);
 			}
 		}
 	}

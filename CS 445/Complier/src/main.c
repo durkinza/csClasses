@@ -55,31 +55,16 @@ int main ( int argc, char **argv ){
 		for(i=1;i< argc; i++){
 			// copyt the filename over to a string we can manipulate
 			yyfilename=malloc((strlen(argv[i])+4));
-			//strcpy(yyfilename, argv[i]);
 			// try to open the file
 			// if that fails, open the file+.go
 			if ( (yyin = open_file(argv[i])) != NULL){
 				// keep track of returned categories
-				int cate = -1;
 				// only continue to parse the file while we haven't had
 				// an error, or we haven't reached the end of the file
-				while (cate != 0 && cate != 999 && cate != 601){
-					// parse the next lexime
-					cate = yylex();
-					// check that the lexime was good
-					if(cate != 0 && gtoken != NULL && cate != 600){
-						// if the lexime was good, add it to the tree
-						gtail = push_to_tree(gtail, gtoken);
-					}
-					// if we don't have a head, set it to look at the tail. 
-					// this should only run when we first get a tail value.
-					if(gtree == NULL && gtail != NULL) gtree = gtail; // Setting the head to the first tail
-				}
+				// parse the next lexime
+				yyparse();
 				// Let the user know what file we parsed
 				printf("File: %s", yyfilename);
-				// print the header
-				printf("\n\nCategory   Text\t\t        LineNo\t FileName\t   iVal/dVal/sVal\n");
-				printf("-----------------------------------------------------------------------\n");
 				// start printing leximes
 				if(gtail == NULL){
 					// If we have no tokens, say so.

@@ -5,11 +5,12 @@
 
 # variables
 cc = gcc
-ccopts = -g -Wall -Wextra
+ccopts = -g -Wall -Wextra 
 lex = flex
 lexopts = 
 yacc = bison
-yaccopts = -d
+#yaccopts = -W
+yaccopts =
 
 #valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
 valgrindopts =
@@ -17,55 +18,62 @@ valgrindopts =
 zipname = durk7832.zip
 
 
-vgo: _build/main.o _build/lex.yy.o src/yytab.h _build/tokenTree.o #y.tab.c y.tab.h
-	$(cc) _build/main.o _build/lex.yy.o src/yytab.h _build/tokenTree.o $(ccopts) -o vgo
-
-_build/main.o: _build src/main.c 
-	$(cc) -c src/main.c $(ccopts) -o _build/main.o
-
-clean: 
-	rm -f vgo lex.yy.c  *.o  $(zipname) 2> /dev/null
-	rm -f src/tokenTree.h.gch
-	rm -f -r _build 2> /dev/null
-		
-zip: clean 
-	rm -f $(zipname)
-	zip -r $(zipname) .
+vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o
+	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o $(ccopts) -o vgo
 
 _build: 
 	mkdir _build
 
-yacc.c yacc.h: _build yacc.y
-	$(yacc) $(yaccopts) yacc.y
+_build/main.o: _build src/main.c 
+	$(cc) -c src/main.c $(ccopts) -o _build/main.o
 
-_build/lex.yy.c: _build flex/flex.l src/yytab.h 
-	$(lex) -o _build/lex.yy.c $(lexopts) flex/flex.l
+_build/nonDet.o: _build src/nonDet.c src/nonDet.h _build/yacc.tab.h
+	$(cc) -c src/nonDet.c $(ccopts) -o _build/nonDet.o
 
-_build/lex.yy.o: _build/lex.yy.c
-	$(cc) _build/lex.yy.c $(ccopts) -c -o _build/lex.yy.o
+_build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h _build/yacc.tab.h
+	$(cc) -c src/tokenTree.c $(ccopts) -o _build/tokenTree.o
 
-_build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h
-	$(cc) src/tokenTree.c $(ccopts) -c -o _build/tokenTree.o
+_build/yacc.tab.o: _build/yacc.tab.c _build/yacc.tab.h
+	$(cc) -c _build/yacc.tab.c $(ccopts) -o _build/yacc.tab.o
+
+_build/lex.yy.o: _build/lex.yy.c src/tokenTree.h _build/yacc.tab.h
+	$(cc) -c _build/lex.yy.c $(ccopts) -o _build/lex.yy.o
+
+
+
+
+_build/yacc.tab.c _build/yacc.tab.h: _build src/yacc.y
+	$(yacc) --output=_build/yacc.tab.c $(yaccopts) src/yacc.y
+
+_build/lex.yy.c: _build src/flex.l _build/yacc.tab.h
+	$(lex) -o _build/lex.yy.c $(lexopts) src/flex.l
+
+
+
+clean: 
+	rm -f vgo $(zipname) 2> /dev/null
+	rm -f src/tokenTree.h.gch
+	rm -f -r _build 2> /dev/null
+		
+zip: clean 
+	zip -r $(zipname) .
 
 test: vgo
-	@#@echo;
-	@# test a basic file
-	@#./vgo test/basic.vgo
-	@#@echo;
-	@# Test without file ending
-	@#./vgo test/basic
-	@#@echo;
-	@# Test an empty file
-	@#./vgo test/empty
-	@#@echo;
-	@# Test a file that's not go
-	@#./vgo test/notgo; true
 	@echo;
 	# Test basic files
 	./vgo test/hello.go
 	@echo;
 	# Test without the file ending
 	./vgo test/hello
+	@echo;
+	# Test an empty file
+	./vgo empty.go
+	@echo;
+	# Test a file that's not go syntax
+	./vgo notgo.go
+	@echo;
+	# Test two files
+	./vgo test/hello.go test/hello.go
 	@echo;
 	# Test comments
 	./vgo test/comments.go; true
@@ -78,16 +86,20 @@ test: vgo
 
 
 val: vgo
-	valgrind $(valgrindopts) ./vgo test/basic.go
+	valgrind $(valgrindopts) ./vgo test/hello.go
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/basic.vgo
+	valgrind $(valgrindopts) ./vgo test/hello
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/basic.go test/basic.vgo
+	valgrind $(valgrindopts) ./vgo test/empty.go
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/basic test/basic.vgo
+	valgrind $(valgrindopts) ./vgo test/notgo.go
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/empty
+	valgrind $(valgrindopts) ./vgo test/hello.go test/hello.go
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/notgo;true
+	valgrind $(valgrindopts) ./vgo test/comments.go; true;
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/float64.go
+	@echo;echo;
+	valgrind $(valgrindopts) ./vgo test/art.go
 
 
