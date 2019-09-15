@@ -177,16 +177,16 @@ void print_token(token * leaf, int depth){
 	*/	
 	if(leaf->category == T_INTLITERAL)
 		// if we are an int, print the ival
-		printf("%d\n",leaf->ival);
+		printf("%d:%d\n", leaf->category, leaf->ival);
 	else if(leaf->category == T_FLOATLITERAL)
 		// if we are a float, print the dval
-		printf("%f\n", leaf->dval);
+		printf("%d:%f\n", leaf->category, leaf->dval);
 	else if (leaf->category == T_STRINGLITERAL)
 		// if we are a string, print the sval
-		printf("%s\n",leaf->text);
+		printf("%d:%s\n", leaf->category, leaf->text);
 	else
 		// for anything else, don't print a value
-		printf("%s:0\n", leaf->text);
+		printf("%d:%s\n", leaf->category, leaf->text);
 	
 }
 
