@@ -17,6 +17,7 @@ IS	(u|U|l|L)
 
 #include "../_build/yacc.tab.h"
 #include "../src/tokenTree.h"
+#include "../src/nonDet.h"
 
 void comment();
 void yyerror();
@@ -88,7 +89,7 @@ extern tTree * gtail;
 {LETTER}({LETTER}|{DIGIT})*				{ yylval.node = make_token(LNAME); return LNAME; }
 "0x"{HEXD}+				{ yylval.node = make_token(T_HEXLITERAL); return T_HEXLITERAL; }
 {DIGIT}+{IS}?			{ yylval.node = make_token(T_INTLITERAL); return T_INTLITERAL; }
-{SLITERAL}				{ yylval.node = make_token(T_INTLITERAL); return T_INTLITERAL; }
+{SLITERAL}				{ yylval.node = make_token(T_STRINGLITERAL); return T_STRINGLITERAL; }
 {DLITERAL}              { yylval.node = make_token(T_STRINGLITERAL); return T_STRINGLITERAL; }
 {DIGIT}+{EXPONENT}{FS}?					{ yylval.node = make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
 {DIGIT}*"."{DIGIT}+({EXPONENT})?{FS}?	{ yylval.node = make_token(T_FLOATLITERAL); return T_FLOATLITERAL; }
@@ -163,6 +164,7 @@ tTree * make_token(int category){
 	if(category != 0 && category != T_COMMENT && category != T_NLINE){
 		// if the lexime was good, add it to the tree
 		gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
+		gtail = NULL;
 		gtail = push_to_tree(gtail, gtoken);
 
 		// if we don't have a head, set it to look at the tail. 

@@ -9,8 +9,8 @@ ccopts = -g -Wall -Wextra
 lex = flex
 lexopts = 
 yacc = bison
-#yaccopts = -W
-yaccopts =
+yaccopts = -W
+#yaccopts =
 
 #valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
 valgrindopts =
@@ -18,14 +18,17 @@ valgrindopts =
 zipname = durk7832.zip
 
 
-vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o
-	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o $(ccopts) -o vgo
+vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o
+	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o $(ccopts) -o vgo
 
 _build: 
 	mkdir _build
 
 _build/main.o: _build src/main.c 
 	$(cc) -c src/main.c $(ccopts) -o _build/main.o
+
+_build/nonDet.o: _build src/nonDet.c src/nonDet.h _build/yacc.tab.h
+	$(cc) -c src/nonDet.c $(ccopts) -o _build/nonDet.o
 
 _build/tokenTree.o: _build src/tokenTree.c src/tokenTree.h _build/yacc.tab.h
 	$(cc) -c src/tokenTree.c $(ccopts) -o _build/tokenTree.o
