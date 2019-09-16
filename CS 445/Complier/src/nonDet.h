@@ -36,6 +36,7 @@
 #define ND_CONSTDCL			3003
 #define ND_CONSTDCL_LIST	3004
 #define	ND_VARDCL			3005
+#define ND_VARDCL_ASSIGN	2019
 #define	ND_VARDCL_LIST		3006
 #define ND_TYPEDCL			3007
 #define ND_TYPEDCL_LIST		3008
@@ -47,8 +48,7 @@
 #define ND_STMT_LIST		3014
 #define ND_COMPOUND_STMT	3015
 #define ND_NON_DCL_STMT		3016
-#define ND_VAR_DCL			3017
-#define ND_VAR_DCL_LIST		3018
+#define ND_INDCL			3020
 
 // Functions
 #define ND_XFNDCL			4000
@@ -74,7 +74,6 @@
 #define ND_OTHERTYPE		6002
 
 
-char * cat_to_string(int category);
 char * prod_to_string(int prodrule);
 
 

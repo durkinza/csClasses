@@ -140,6 +140,7 @@ tTree * create_tree(int prodrule, int nbranches, ...){
 	return tree;
 }
 
+
 tTree * push_to_tree( tTree * parent, token * leaf){
 	// create a new tree element
 	tTree * t = malloc(sizeof(tTree));
@@ -222,7 +223,7 @@ void print_tree(tTree * tree){
 		int i = 0;
 		for( i=0; i < tree->nbranches; i++){
 			if(tree->branches[i] != NULL){
-				_print_tree(tree->branches[i], 0);
+				_print_tree(tree->branches[i], 1);
 			}
 		}
 	}
@@ -260,12 +261,27 @@ void delete_tree(tTree *tree){
 		for( i=0; i < tree->nbranches; i++){
 			delete_tree(tree->branches[i]);
 		}
-		// throughly clean the leaf.
-		delete_token(tree->leaf);
-		// now remove the leaf
-		free(tree->leaf);
+		if(tree->prodrule == 0){
+			// throughly clean the leaf.
+			delete_token(tree->leaf);
+			// now remove the leaf
+			free(tree->leaf);
+		}
 		// finally remove the branch.
 		free(tree);
 		return;
 	}
+}
+
+void delete_trees(int count, ...){
+	
+	va_list trees;
+	va_start( trees, count );
+	int i;
+	for (i=0; i<count; i++){
+		delete_tree(va_arg(trees, tTree *));
+	}
+	
+	// optional va_end call. 
+	va_end( trees );
 }

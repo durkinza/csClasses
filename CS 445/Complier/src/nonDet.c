@@ -2,46 +2,6 @@
 
 #include "nonDet.h"
 #include "../_build/yacc.tab.h"
-
-char * cat_to_string(int category){
-	switch(category){
-		case T_SEMICOLON:
-			return ";";
-		case T_LPAREN:
-			return "(";
-		case T_RPAREN:
-			return ")";
-		case T_ASSIGNMENT:
-			return "assign";
-		case T_EQUAL:
-			return "compare";
-		case T_ANDAND:
-			return "&&";
-		case T_FUNC:
-			return "func";
-		case T_IF:
-			return "if";
-		case T_FOR:
-			return "for";
-		case T_IMPORT:
-			return "import";
-		case T_RETURN:
-			return "return";
-		case T_PACKAGE:
-			return "package";
-		case T_ELSE:
-			return "else";
-		case T_VAR:
-			return "var";
-		case T_MINUS:
-			return "minus";
-		case T_PLUS:
-			return "plus";
-		default:
-			return "cat. non implemented yet";
-	}
-}
-
 char * prod_to_string(int prodrule){
 	switch(prodrule){
 		case T_SEMICOLON:
@@ -135,13 +95,15 @@ char * prod_to_string(int prodrule){
 		case ND_CONSTDCL_LIST:
 			return "constdcl_list";
 		case ND_VARDCL:
-			return "vardcl";
+			return "variable_declaration";
+		case ND_VARDCL_ASSIGN:
+			return "variable_declaration_and_assignment";
 		case ND_VARDCL_LIST:
-			return "vardcl_list";
+			return "variable_declaration_list";
 		case ND_TYPEDCL:
-			return "typedcl";
+			return "type_declaration";
 		case ND_TYPEDCL_LIST:
-			return "typedcl_list";
+			return "type_declaration_list";
 		case ND_DCL_NAME_LIST:
 			return "dcl_name_list";
 		case ND_DCL_NAME:
@@ -158,10 +120,8 @@ char * prod_to_string(int prodrule){
 			return "compount_stmt";
 		case ND_NON_DCL_STMT:
 			return "non_dcl_stmt";
-		case ND_VAR_DCL:
-			return "variable_declaration";
-		case ND_VAR_DCL_LIST:
-			return "variable_declaration_list";
+		case ND_INDCL:
+			return "indcl";
 
 		
 		case ND_XFNDCL:

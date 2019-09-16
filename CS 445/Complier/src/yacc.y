@@ -92,7 +92,7 @@ LGE		= T_GTHANEQUAL	>=
 %token <node> T_PLUS T_MINUS T_DIVIDE T_MULTIPLY T_MOD T_ANDAND T_OR T_GTHAN T_LTHAN 
 %token <node> T_GTHANEQUAL T_LTHANEQUAL T_EQUAL T_NOT_EQUAL T_NEGATE T_LPAREN T_RPAREN 
 %token <node> T_RBRACK T_LBRACK T_LCURL T_RCURL T_ASSIGNMENT T_INCREMENT T_DECREMENT 
-%token <node> T_DOT T_SEPERATOR T_SEMICOLON T_XOR 
+%token <node> T_DOT T_SEPERATOR T_SEMICOLON T_XOR T_OROR
 
 /* tokens that yacc shouldn't see */
 %token <node> T_COMMENT T_NLINE
@@ -194,18 +194,18 @@ package:
 			yyerror("package statement must be first");
 			exit(1);
 		}
-	| T_PACKAGE sym T_SEMICOLON {$$ = create_tree(ND_PACKAGE, 2, $1, $2);}
+	| T_PACKAGE sym T_SEMICOLON {$$ = create_tree(ND_PACKAGE, 2, $1, $2); delete_tree($3);}
 	;
 
 imports
 	: %empty {$$ = NULL;}
-	| imports import T_SEMICOLON {$$ = create_tree(ND_IMPORTS, 2, $1, $2);}
+	| imports import T_SEMICOLON {$$ = create_tree(ND_IMPORTS, 2, $1, $2); delete_tree($3);}
 	;
 
 import
-	: LIMPORT import_stmt {$$ = create_tree(ND_IMPORT, 1, $2);}
-	| LIMPORT T_LPAREN import_stmt_list osemi T_RPAREN {$$ = create_tree(ND_IMPORT, 2, $1, $3);}
-	| LIMPORT T_LPAREN T_RPAREN {$$ = NULL;}
+	: LIMPORT import_stmt {$$ = create_tree(ND_IMPORT, 1, $2); delete_tree($1);}
+	| LIMPORT T_LPAREN import_stmt_list osemi T_RPAREN {$$ = create_tree(ND_IMPORT, 2, $1, $3); delete_tree($2);}
+	| LIMPORT T_LPAREN T_RPAREN {$$ = NULL; delete_trees(3, $1, $2, $3);}
 	;
 
 import_stmt
@@ -213,18 +213,18 @@ import_stmt
 	;
 
 import_stmt_list
-	: import_stmt {$$ = $1;}
-	| import_stmt_list T_SEMICOLON import_stmt {$$ = create_tree(ND_IMPORT_STMT_LIST, 2, $1, $3);}
+	: import_stmt
+	| import_stmt_list T_SEMICOLON import_stmt {$$ = create_tree(ND_IMPORT_STMT_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 import_here
-	: LLITERAL {$$ = $1;}
+	: LLITERAL
 	| sym LLITERAL {$$ = create_tree(ND_IMPORT_HERE, 2, $1, $2);}
 	| T_DOT LLITERAL {$$ = create_tree(ND_IMPORT_HERE, 2, $1, $2);}
 	;
 
 import_package
-	: T_PACKAGE LNAME import_safety T_SEMICOLON {$$ = create_tree(ND_IMPORT_PACKAGE, 2, $2, $3);}
+	: T_PACKAGE LNAME import_safety T_SEMICOLON {$$ = create_tree(ND_IMPORT_PACKAGE, 2, $2, $3); delete_trees(2, $1, $4);}
 	| %empty {$$ = NULL;}
 	;
 
@@ -247,8 +247,8 @@ xdcl
 			//yyerror("empty top-level declaration");
 			$$ = NULL;
 		}
-	| common_dcl { $$ = $1;}
-	| xfndcl {$$ = $1;}
+	| common_dcl
+	| xfndcl
 	| non_dcl_stmt
 		{
 			yyerror("non-declaration statement outside function body");
@@ -262,16 +262,16 @@ xdcl
 	;
 
 common_dcl
-	: LVAR vardcl {$$ = $2;}
-	| LVAR T_LPAREN vardcl_list osemi T_RPAREN {$$ = $3;}
-	| LVAR T_LPAREN T_RPAREN {$$ = NULL;}
-	| lconst constdcl {$$ = $2;}
-	| lconst T_LPAREN constdcl osemi T_RPAREN {$$ = $3;}
-	| lconst T_LPAREN constdcl T_SEMICOLON constdcl_list osemi T_RPAREN {$$ = create_tree(ND_COMMON_DCL, 2, $3, $5);}
-	| lconst T_LPAREN T_RPAREN {$$ = NULL;}
-	| LTYPE typedcl	{$$ = $2;}
-	| LTYPE T_LPAREN typedcl_list osemi T_RPAREN {$$ = $3;}
-	| LTYPE T_LPAREN T_RPAREN {$$ = NULL;}
+	: LVAR vardcl {$$ = $2; delete_tree($1);}
+	| LVAR T_LPAREN vardcl_list osemi T_RPAREN {$$ = $3; delete_trees(4, $1, $2, $4, $5);}
+	| LVAR T_LPAREN T_RPAREN {$$ = NULL; delete_trees(3, $1, $2, $3);}
+	| lconst constdcl {$$ = $2;delete_tree($1);}
+	| lconst T_LPAREN constdcl osemi T_RPAREN {$$ = $3; delete_trees(4, $1, $2, $4, $5);}
+	| lconst T_LPAREN constdcl T_SEMICOLON constdcl_list osemi T_RPAREN {$$ = create_tree(ND_COMMON_DCL, 2, $3, $5); delete_trees(5, $1, $2, $4, $6, $7);}
+	| lconst T_LPAREN T_RPAREN {$$ = NULL; delete_trees(3, $1, $2, $3);}
+	| LTYPE typedcl	{$$ = $2; delete_tree($1);}
+	| LTYPE T_LPAREN typedcl_list osemi T_RPAREN {$$ = $3; delete_trees(4, $1, $2, $4, $5);}
+	| LTYPE T_LPAREN T_RPAREN {$$ = NULL; delete_trees(3, $1, $2, $3);}
 	;
 
 lconst
@@ -279,9 +279,9 @@ lconst
 	;
 
 vardcl
-	: dcl_name_list ntype
-	| dcl_name_list ntype T_ASSIGNMENT expr_list
-	| dcl_name_list T_ASSIGNMENT expr_list
+	: dcl_name_list ntype {$$ = create_tree(ND_VARDCL, 2, $1, $2);}
+	| dcl_name_list ntype T_ASSIGNMENT expr_list {$$ = create_tree(ND_VARDCL_ASSIGN, 3, $1, $2, $4); delete_tree($3);}
+	| dcl_name_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_VARDCL_ASSIGN, 2, $1, $3);delete_tree($2);}
 	;
 
 constdcl
@@ -309,11 +309,11 @@ typedcl
 
 simple_stmt
 	: expr
-	| expr LASOP expr {$$ = create_tree(ND_ASOP, 2, $1, $3);}
-	| expr_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_ASSIGNMENT, 2, $1, $3);}
-	| expr_list LCOLAS expr_list {$$ = create_tree(ND_COLAS, 2, $1, $3);}
-	| expr T_INCREMENT {$$ = create_tree(ND_INCREMENT, 1, $1);}
-	| expr T_DECREMENT {$$ = create_tree(ND_DECREMENT, 1, $1);}
+	| expr LASOP expr {$$ = create_tree(ND_ASOP, 2, $1, $3); delete_tree($2);}
+	| expr_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_ASSIGNMENT, 2, $1, $3); delete_tree($2);}
+	| expr_list LCOLAS expr_list {$$ = create_tree(ND_COLAS, 2, $1, $3); delete_tree($2);}
+	| expr T_INCREMENT {$$ = create_tree(ND_INCREMENT, 1, $1); delete_tree($2);}
+	| expr T_DECREMENT {$$ = create_tree(ND_DECREMENT, 1, $1); delete_tree($2);}
 	;
 /*
 case
@@ -324,7 +324,7 @@ case
 	;
 */
 compound_stmt
-	:T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_COMPOUND_STMT, 1, $2);}
+	:T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_COMPOUND_STMT, 1, $2); delete_trees(2, $1, $3);}
 	;
 
 /*caseblock:
@@ -428,42 +428,42 @@ select_stmt
  */
 expr
 	: uexpr
-	| expr T_OROR expr {$$ = create_tree(T_OROR, 2, $1, $3);}
-	| expr T_ANDAND expr {$$ = create_tree(T_ANDAND, 2, $1, $3);}
-	| expr T_EQUAL expr {$$ = create_tree(T_EQUAL, 2, $1, $3);}
-	| expr T_NOT_EQUAL expr {$$ = create_tree(T_NOT_EQUAL, 2, $1, $3);}
-	| expr T_LTHAN expr {$$ = create_tree(T_LTHAN, 2, $1, $3);}
-	| expr T_LTHANEQUAL expr {$$ = create_tree(T_LTHANEQUAL, 2, $1, $3);}
-	| expr T_GTHANEQUAL expr {$$ = create_tree(T_GTHANEQUAL, 2, $1, $3);}
-	| expr T_GTHAN expr {$$ = create_tree(T_GTHAN, 2, $1, $3);}
-	| expr T_PLUS expr {$$ = create_tree(T_PLUS, 2, $1, $3);}
-	| expr T_MINUS expr {$$ = create_tree(T_MINUS, 2, $1, $3);}
+	| expr T_OROR expr {$$ = create_tree(T_OROR, 2, $1, $3); delete_tree($2);}
+	| expr T_ANDAND expr {$$ = create_tree(T_ANDAND, 2, $1, $3); delete_tree($2);}
+	| expr T_EQUAL expr {$$ = create_tree(T_EQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_NOT_EQUAL expr {$$ = create_tree(T_NOT_EQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_LTHAN expr {$$ = create_tree(T_LTHAN, 2, $1, $3); delete_tree($2);}
+	| expr T_LTHANEQUAL expr {$$ = create_tree(T_LTHANEQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_GTHANEQUAL expr {$$ = create_tree(T_GTHANEQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_GTHAN expr {$$ = create_tree(T_GTHAN, 2, $1, $3); delete_tree($2);}
+	| expr T_PLUS expr {$$ = create_tree(T_PLUS, 2, $1, $3); delete_tree($2);}
+	| expr T_MINUS expr {$$ = create_tree(T_MINUS, 2, $1, $3); delete_tree($2);}
 	| expr '|' expr {$$ = create_tree(T_OR, 2, $1, $3);}
 	| expr '^' expr {$$ = create_tree(T_XOR, 2, $1, $3);}
-	| expr T_MULTIPLY expr {$$ = create_tree(T_MULTIPLY, 2, $1, $3);}
-	| expr T_DIVIDE expr {$$ = create_tree(T_DIVIDE, 2, $1, $3);}
-	| expr T_MOD expr {$$ = create_tree(T_MOD, 2, $1, $3);}
-	| expr T_AND expr {$$ = create_tree(T_AND, 2, $1, $3);}
-	| expr LANDNOT expr {$$ = create_tree(LANDNOT, 2, $1, $3);}
-	| expr LLSH expr {$$ = create_tree(LLSH, 2, $1, $3);}
-	| expr LRSH expr {$$ = create_tree(LRSH, 2, $1, $3);}
+	| expr T_MULTIPLY expr {$$ = create_tree(T_MULTIPLY, 2, $1, $3); delete_tree($2);}
+	| expr T_DIVIDE expr {$$ = create_tree(T_DIVIDE, 2, $1, $3); delete_tree($2);}
+	| expr T_MOD expr {$$ = create_tree(T_MOD, 2, $1, $3); delete_tree($2);}
+	| expr T_AND expr {$$ = create_tree(T_AND, 2, $1, $3); delete_tree($2);}
+	| expr LANDNOT expr {$$ = create_tree(LANDNOT, 2, $1, $3); delete_tree($2);}
+	| expr LLSH expr {$$ = create_tree(LLSH, 2, $1, $3); delete_tree($2);}
+	| expr LRSH expr {$$ = create_tree(LRSH, 2, $1, $3); delete_tree($2);}
 	 /* not an expression anymore, but left in so we can give a good error */
-	| expr LCOMM expr
+	| expr LCOMM expr{ delete_tree($2);}
 	;
 		
 uexpr
 	: pexpr
-	| T_MULTIPLY uexpr {$$ = create_tree(T_MULTIPLY, 1, $2);}
-	| T_AND uexpr {$$ = create_tree(T_AND, 1, $2);}
-	| T_PLUS uexpr {$$ = create_tree(T_PLUS, 1, $2);}
-	| T_MINUS uexpr {$$ = create_tree(T_MINUS, 1, $2);}
-	| T_NEGATE uexpr {$$ = create_tree(T_NEGATE, 1, $2);}
+	| T_MULTIPLY uexpr {$$ = create_tree(T_MULTIPLY, 1, $2); delete_tree($1);}
+	| T_AND uexpr {$$ = create_tree(T_AND, 1, $2); delete_tree($1);}
+	| T_PLUS uexpr {$$ = create_tree(T_PLUS, 1, $2); delete_tree($1);}
+	| T_MINUS uexpr {$$ = create_tree(T_MINUS, 1, $2); delete_tree($1);}
+	| T_NEGATE uexpr {$$ = create_tree(T_NEGATE, 1, $2); delete_tree($1);}
 	| '~' uexpr
 		{
 			yyerror("the bitwise complement operator is ^");
 		}
 	| '^' uexpr {$$ = create_tree(ND_XOR, 1, $2);}
-	| LCOMM uexpr {$$ = create_tree(LCOMM, 1, $2);}
+	| LCOMM uexpr {$$ = create_tree(LCOMM, 1, $2); delete_tree($1);}
 	;
 
 /*
@@ -472,21 +472,21 @@ uexpr
  */
 pseudocall
 	: pexpr T_LPAREN T_RPAREN
-	| pexpr T_LPAREN expr_or_type_list ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 2, $1, $3);}
-	| pexpr T_LPAREN expr_or_type_list LDDD ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 3, $1, $3, $4);}
+	| pexpr T_LPAREN expr_or_type_list ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 2, $1, $3); delete_trees(3, $2, $4, $5);}
+	| pexpr T_LPAREN expr_or_type_list LDDD ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 3, $1, $3, $4); delete_trees(3, $2, $5, $6);}
 	;
 
 pexpr_no_paren
 	: LLITERAL
 	| name
-	| pexpr T_DOT sym {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3);}
-	| pexpr T_DOT T_LPAREN expr_or_type T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4);}
-	| pexpr T_DOT T_LPAREN LTYPE T_RPAREN  {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4);}
-	| pexpr T_LBRACK expr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $2);}
-	| pexpr T_LBRACK oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 3, $1, $3, $5);}
-	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7);}
+	| pexpr T_DOT sym {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_tree($2);}
+	| pexpr T_DOT T_LPAREN expr_or_type T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4); delete_trees(3, $2, $3, $5);}
+	| pexpr T_DOT T_LPAREN LTYPE T_RPAREN  {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4);delete_trees(3, $2, $3, $5);}
+	| pexpr T_LBRACK expr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(2,$2,$4);}
+	| pexpr T_LBRACK oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 3, $1, $3, $5);delete_trees(3, $2, $4, $6);}
+	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7); delete_trees(4, $2, $4, $5,$8 );}
 	| pseudocall
-	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3);}
+	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(3, $2, $4, $5);}
 	| comptype lbrace start_complit braced_keyval_list T_RCURL
 	| pexpr_no_paren T_LCURL start_complit braced_keyval_list T_RCURL
 	| T_LPAREN expr_or_type T_RPAREN T_LCURL start_complit braced_keyval_list T_RCURL
@@ -520,7 +520,7 @@ complitexpr
 
 pexpr
 	: pexpr_no_paren
-	| T_LPAREN expr_or_type T_RPAREN {$$ = $2;}
+	| T_LPAREN expr_or_type T_RPAREN {$$ = $2; delete_trees(2, $1, $3);}
 	;
 
 expr_or_type
@@ -529,9 +529,8 @@ expr_or_type
 
 name_or_type
 	: ntype
-	| type
 	;
-/* added in, along with ^ type option in name_or_type */
+/* added in, along with `type` option in othertype */
 type
 	: T_INTEGER
 	| T_FLOAT64
@@ -569,7 +568,7 @@ sym
 	;
 
 hidden_importsym
-	: '@' LLITERAL T_DOT LNAME {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, $3);}
+	: '@' LLITERAL T_DOT LNAME {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, $4);}
 	| '@' LLITERAL T_DOT '?' {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, NULL);}
 	;
 
@@ -578,7 +577,7 @@ name
 	;
 
 labelname
-	: new_name {$$ = $1;}
+	: new_name
 	;
 
 /*
@@ -604,14 +603,14 @@ ntype
 	| othertype
 	| ptrtype
 	| dotname
-	| T_LPAREN ntype T_RPAREN {$$ = $2;}
+	| T_LPAREN ntype T_RPAREN {$$ = $2; delete_trees(2, $1, $3);}
 	;
 
 non_expr_type
 	: recvchantype
 	| fntype
 	| othertype
-	| T_MULTIPLY non_expr_type {$$ = create_tree(ND_POINTER, 1, $2);}
+	| T_MULTIPLY non_expr_type {$$ = create_tree(ND_POINTER, 1, $2); delete_tree($1);}
 	;
 
 non_recvchantype
@@ -619,7 +618,7 @@ non_recvchantype
 	| othertype
 	| ptrtype
 	| dotname
-	| T_LPAREN ntype T_RPAREN {$$ = $2;}
+	| T_LPAREN ntype T_RPAREN {$$ = $2; delete_trees(2, $1, $3);}
 	;
 
 convtype
@@ -638,26 +637,26 @@ fnret_type
 	| othertype
 	| ptrtype
 	| dotname
-	| type
 	;
 
 dotname
 	: name
-	| name T_DOT sym {$$ = create_tree(ND_DOTNAME, 2, $1, $3);}
+	| name T_DOT sym {$$ = create_tree(ND_DOTNAME, 2, $1, $3); delete_tree($2);}
 	;
 
 othertype
-	: T_LBRACK oexpr T_RBRACK ntype {$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);}
-	| T_LBRACK LDDD T_RBRACK ntype	{$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);}
+	: T_LBRACK oexpr T_RBRACK ntype {$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);delete_trees(2, $1, $3);}
+	| T_LBRACK LDDD T_RBRACK ntype	{$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);delete_trees(2, $1, $4);}
 	| T_CHAN non_recvchantype
 	| T_CHAN LCOMM ntype
 	| T_MAP T_LBRACK ntype T_RBRACK ntype
 	| structtype
 	| interfacetype
+	| type
 	;
 
 ptrtype
-	: T_MULTIPLY ntype {$$ = create_tree(ND_POINTER, 1, $2);}
+	: T_MULTIPLY ntype {$$ = create_tree(ND_POINTER, 1, $2); delete_tree($1);}
 	;
 
 recvchantype
@@ -679,12 +678,12 @@ interfacetype
  * all in one place to show how crappy it all is
  */
 xfndcl
-	: T_FUNC fndcl fnbody {$$ = create_tree(ND_XFNDCL, 2, $2, $3);}
+	: T_FUNC fndcl fnbody {$$ = create_tree(ND_XFNDCL, 2, $2, $3);delete_tree($1);}
 	;
 
 fndcl
-	: sym T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNDCL, 3, $1, $3, $5);}
-	| T_LPAREN oarg_type_list_ocomma T_RPAREN sym T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNDCL, 4, $4, $2, $8, $6);}
+	: sym T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNDCL, 3, $1, $3, $5);delete_trees(2, $2, $4);}
+	| T_LPAREN oarg_type_list_ocomma T_RPAREN sym T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNDCL, 4, $4, $2, $8, $6); delete_trees(4, $1, $3, $5, $7);}
 	;
 
 hidden_fndcl
@@ -693,18 +692,18 @@ hidden_fndcl
 	;
 
 fntype
-	: T_FUNC T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNTYPE, 3, $1, $3, $5);}
+	: T_FUNC T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_FNTYPE, 3, $1, $3, $5); delete_trees(3, $1, $2, $4);}
 	;
 
 fnbody
 	: %empty {$$ = NULL;}
-	| T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_FNBODY, 1, $2);}
+	| T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_FNBODY, 1, $2); delete_trees(2, $1, $3);}
 	;
 
 fnres
 	:  %empty %prec NotParen {$$ = NULL;}
 	| fnret_type {$$ = create_tree(ND_FNRES, 1, $1);}
-	| T_LPAREN oarg_type_list_ocomma T_RPAREN {$$ = $2;}
+	| T_LPAREN oarg_type_list_ocomma T_RPAREN {$$ = $2; delete_trees(2, $1, $3);}
 	;
 
 fnlitdcl
@@ -712,7 +711,7 @@ fnlitdcl
 	;
 
 fnliteral
-	: fnlitdcl lbrace stmt_list T_RCURL {$$ = create_tree(ND_FNLITERAL, 2, $1, $3);}
+	: fnlitdcl lbrace stmt_list T_RCURL {$$ = create_tree(ND_FNLITERAL, 2, $1, $3); delete_trees(2, $2, $4);}
 	| fnlitdcl error {$$ = create_tree(ND_FNLITERAL, 2, $1, $2);}
 	;
 
@@ -723,12 +722,12 @@ fnliteral
  */
 xdcl_list
 	: %empty {$$ = NULL;}
-	| xdcl_list xdcl T_SEMICOLON {$$ = create_tree(ND_XDCL_LIST, 2, $1, $2);}
+	| xdcl_list xdcl T_SEMICOLON {$$ = create_tree(ND_XDCL_LIST, 2, $1, $2); delete_tree($3);}
 	;
 
 vardcl_list
 	: vardcl
-	| vardcl_list T_SEMICOLON vardcl {$$ = create_tree(ND_VARDCL_LIST, 2, $1, $3);}
+	| vardcl_list T_SEMICOLON vardcl {$$ = create_tree(ND_VARDCL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 constdcl_list
@@ -776,7 +775,7 @@ interfacedcl
 	;
 
 indcl
-	: T_LPAREN oarg_type_list_ocomma T_RPAREN fnres
+	: T_LPAREN oarg_type_list_ocomma T_RPAREN fnres {$$ = create_tree(ND_INDCL, 2, $2, $4); delete_trees(2, $1, $3);}
 	;
 
 /*
@@ -791,12 +790,12 @@ arg_type
 
 arg_type_list
 	: arg_type
-	| arg_type_list T_SEPERATOR arg_type {$$ = create_tree(ND_ARG_TYPE_LIST, 2, $1, $3);}
+	| arg_type_list T_SEPERATOR arg_type {$$ = create_tree(ND_ARG_TYPE_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 oarg_type_list_ocomma
 	: %empty {$$ = NULL;}
-	| arg_type_list ocomma
+	| arg_type_list ocomma {delete_tree($2);}
 	;
 
 /*
@@ -814,14 +813,14 @@ non_dcl_stmt
 	: simple_stmt
 	| for_stmt
 	| if_stmt
-	| labelname T_COLON	stmt {$$ = create_tree(ND_NON_DCL_STMT, 2, $1, $3);}
+	| labelname T_COLON	stmt {$$ = create_tree(ND_NON_DCL_STMT, 2, $1, $3); delete_tree($2);}
 	| LFALL
-	| T_BREAK onew_name {$$ = create_tree(T_BREAK, 1, $2);}
-	| T_CONTINUE onew_name {$$ = create_tree(T_CONTINUE, 1, $2);}
+	| T_BREAK onew_name {$$ = create_tree(T_BREAK, 1, $2); delete_tree($1);}
+	| T_CONTINUE onew_name {$$ = create_tree(T_CONTINUE, 1, $2); delete_tree($1);}
 	| LGO pseudocall
 	| T_DEFER pseudocall
 	| LGOTO new_name
-	| T_RETURN oexpr_list {$$ = create_tree(T_RETURN, 1, $2);}
+	| T_RETURN oexpr_list {$$ = create_tree(T_RETURN, 1, $2); delete_tree($1);}
 	;
 /*
 	| switch_stmt
@@ -830,7 +829,7 @@ non_dcl_stmt
 
 stmt_list
 	: stmt
-	| stmt_list T_SEMICOLON stmt {$$ = create_tree(ND_STMT_LIST, 2, $1, $3);}
+	| stmt_list T_SEMICOLON stmt {$$ = create_tree(ND_STMT_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 new_name_list
@@ -840,7 +839,7 @@ new_name_list
 
 dcl_name_list
 	: dcl_name
-	| dcl_name_list T_SEPERATOR dcl_name
+	| dcl_name_list T_SEPERATOR dcl_name {$$ = create_tree(ND_DCL_NAME_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 expr_list

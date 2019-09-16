@@ -29,6 +29,7 @@ tTree * create_tree(int prodrule, int nbranches, ...);
 tTree * push_to_tree(tTree * parent, token * leaf);
 
 void delete_tree(tTree * tree);
+void delete_trees(int count, ...);
 void delete_token(token * leaf);
 void print_token(token * leaf, int depth);
 void print_prodrule(int prodrule, int nbranches, int depth);

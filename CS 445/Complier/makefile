@@ -67,10 +67,10 @@ test: vgo
 	./vgo test/hello
 	@echo;
 	# Test an empty file
-	./vgo empty.go
+	./vgo test/empty.go; true
 	@echo;
 	# Test a file that's not go syntax
-	./vgo notgo.go
+	./vgo test/notgo.go; true
 	@echo;
 	# Test two files
 	./vgo test/hello.go test/hello.go
@@ -90,9 +90,9 @@ val: vgo
 	@echo;echo;
 	valgrind $(valgrindopts) ./vgo test/hello
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/empty.go
+	valgrind $(valgrindopts) ./vgo test/empty.go; true;
 	@echo;echo;
-	valgrind $(valgrindopts) ./vgo test/notgo.go
+	valgrind $(valgrindopts) ./vgo test/notgo.go; true;
 	@echo;echo;
 	valgrind $(valgrindopts) ./vgo test/hello.go test/hello.go
 	@echo;echo;

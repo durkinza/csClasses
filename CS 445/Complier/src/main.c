@@ -64,7 +64,7 @@ int main ( int argc, char **argv ){
 				// parse the next lexime
 				yyparse();
 				// Let the user know what file we parsed
-				printf("File: %s", yyfilename);
+				printf("File: %s\n", yyfilename);
 				// start printing leximes
 				if(gtail == NULL){
 					// If we have no tokens, say so.

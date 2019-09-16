@@ -40,7 +40,7 @@ extern tTree * gtail;
 %%
 
 "/*"					{ /* eat the comment */ yyerror("C comments not allowed in VGo"); comment();  return yychar;}
-\/\/[^\n\r]*			{ /* eat the comment */ return T_COMMENT; }
+\/\/[^\n\r]*			{ /* eat the comment */  }
 
 ^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
 
@@ -65,6 +65,7 @@ extern tTree * gtail;
 "for"           		{ yylval.node = make_token(T_FOR); return T_FOR; }
 "import"				{ yylval.node = make_token(LIMPORT); return LIMPORT; }
 "return"				{ yylval.node = make_token(T_RETURN); return T_RETURN; }
+"var"					{ yylval.node = make_token(LVAR); return LVAR; }
 
 "default"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
 "interface"				{ yyerror("Go operator not in VGo"); return T_INTERFACE; }
@@ -81,6 +82,8 @@ extern tTree * gtail;
 "while"					{ yyerror("Go operator not in VGo"); return T_WHILE; }
 "break"					{ yyerror("Go operator not in VGo"); return T_BREAK; }
 ":"						{ yyerror("Go operator not in VGo"); return T_COLON; /*make_token( T_NOTDEFINED); return NOTDEFINED;*/ }
+"float32"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
+"int32"					{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
 
 
 "true"					{ yylval.node = make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
@@ -141,6 +144,10 @@ tTree * make_token(int category){
 		case T_BOOLLITERAL:
 		case T_FLOATLITERAL:
 		case T_STRINGLITERAL:
+		case T_FLOAT64:
+		case T_STRING:
+		case T_INTEGER:
+		case T_BOOLEAN:
 			can_have_semi = 1;
 			swapped_nline = 0;
 			break;
