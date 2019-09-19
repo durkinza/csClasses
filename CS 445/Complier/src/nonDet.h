@@ -16,6 +16,9 @@
 #define ND_INCREMENT		1011
 #define ND_DECREMENT		1012
 #define ND_OROR				1013
+#define ND_ANDAND			1014
+#define ND_EQUAL			1015
+#define ND_NOT_EQUAL		1016
 
 // Packages
 #define ND_FILE				1999
@@ -49,6 +52,12 @@
 #define ND_COMPOUND_STMT	3015
 #define ND_NON_DCL_STMT		3016
 #define ND_INDCL			3020
+
+#define ND_IF				3100
+#define ND_ELSE_IF			3101
+#define ND_ELSE				3102
+#define ND_ELSE_IF_LIST		3103
+
 
 // Functions
 #define ND_XFNDCL			4000

@@ -66,16 +66,16 @@ int main ( int argc, char **argv ){
 				// Let the user know what file we parsed
 				printf("File: %s\n", yyfilename);
 				// start printing leximes
-				if(gtail == NULL){
+				if(gtree == NULL){
 					// If we have no tokens, say so.
 					printf("No Tokens\n");
 				} else {
 					print_tree(gtree);
+					delete_tree(gtree);
 				}
 				// make some padding at bottom
 				printf("\n\n");
 				// clean up our variables
-				delete_tree(gtree);
 				gtree = NULL;
 				gtail = NULL;
 				// close the file

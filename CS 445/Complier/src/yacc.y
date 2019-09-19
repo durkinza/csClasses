@@ -104,7 +104,7 @@ LGE		= T_GTHANEQUAL	>=
  ** Types
 **/
 
-%type <node> lbrace import_here
+%type <node> import_here
 %type <node> sym packname
 %type <node> oliteral
 
@@ -194,7 +194,7 @@ package:
 			yyerror("package statement must be first");
 			exit(1);
 		}
-	| T_PACKAGE sym T_SEMICOLON {$$ = create_tree(ND_PACKAGE, 2, $1, $2); delete_tree($3);}
+	| T_PACKAGE sym T_SEMICOLON {$$ = create_tree(ND_PACKAGE, 1, $2); delete_trees(2, $1, $3);}
 	;
 
 imports
@@ -361,8 +361,7 @@ caseblock_list
 	;
 */
 loop_body
-	: LBODY
-		stmt_list T_RCURL
+	: T_LCURL stmt_list T_RCURL
 	;
 
 range_stmt
@@ -394,33 +393,37 @@ if_stmt
 	: T_IF
 		if_header
 		loop_body
-		elseif_list else
+		elseif_list else 
+		{
+			$$ = create_tree(ND_IF, 5, $2, $3, $4, $5);
+			delete_tree($1);
+		}
 	;
 
 elseif
-	: T_ELSE T_IF 
-		if_header loop_body
+	: T_ELSE T_IF if_header loop_body {$$ = create_tree(ND_ELSE_IF, 2, $3, $4); delete_trees(2, $1, $2);}
 	;
 
 elseif_list
 	: %empty {$$ = NULL;}
-	| elseif_list elseif
+	| elseif_list elseif {$$ = create_tree(ND_ELSE_IF_LIST, 2, $1, $2);}
 	;
 
 else
 	: %empty {$$ = NULL;}
-	|	T_ELSE compound_stmt
+	|	T_ELSE compound_stmt {$$ = create_tree(ND_ELSE, 1, $2);}
+
 	;
 /*
 switch_stmt
 	: LSWITCH
 		if_header
-		LBODY caseblock_list T_RCURL
+		T_LCURL caseblock_list T_RCURL
 	;
 
 select_stmt
 	:LSELECT
-		LBODY caseblock_list T_RCURL
+		T_LCURL caseblock_list T_RCURL
 	;
 */
 /*
@@ -487,14 +490,19 @@ pexpr_no_paren
 	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7); delete_trees(4, $2, $4, $5,$8 );}
 	| pseudocall
 	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(3, $2, $4, $5);}
-	| comptype lbrace start_complit braced_keyval_list T_RCURL
+	| comptype T_LCURL start_complit braced_keyval_list T_RCURL
+	| fnliteral
+	;
+	/* In order to remove the LBRACE symbol, these rules must be removed from the grammer
+		 - This allows if/while/switch/etc. statments to have a `T_LCURL loop_body T_RCURL`
+	*/
+	/* 
 	| pexpr_no_paren T_LCURL start_complit braced_keyval_list T_RCURL
 	| T_LPAREN expr_or_type T_RPAREN T_LCURL start_complit braced_keyval_list T_RCURL
 		{
 			yyerror("cannot parenthesize type in composite literal");
 		}
-	| fnliteral
-	;
+	*/
 
 start_complit
 	: %empty {
@@ -536,11 +544,6 @@ type
 	| T_FLOAT64
 	| T_STRING
 	| T_BOOLEAN
-	;
-
-lbrace
-	: LBODY
-	| T_LCURL
 	;
 
 /*
@@ -664,13 +667,13 @@ recvchantype
 	;
 
 structtype
-	: LSTRUCT lbrace structdcl_list osemi T_RCURL
-	| LSTRUCT lbrace T_RCURL
+	: LSTRUCT T_LCURL structdcl_list osemi T_RCURL
+	| LSTRUCT T_LCURL T_RCURL
 	;
 
 interfacetype
-	: LINTERFACE lbrace interfacedcl_list osemi T_RCURL
-	| LINTERFACE lbrace T_RCURL
+	: LINTERFACE T_LCURL interfacedcl_list osemi T_RCURL
+	| LINTERFACE T_LCURL T_RCURL
 	;
 
 /*
@@ -711,7 +714,7 @@ fnlitdcl
 	;
 
 fnliteral
-	: fnlitdcl lbrace stmt_list T_RCURL {$$ = create_tree(ND_FNLITERAL, 2, $1, $3); delete_trees(2, $2, $4);}
+	: fnlitdcl T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_FNLITERAL, 2, $1, $3); delete_trees(2, $2, $4);}
 	| fnlitdcl error {$$ = create_tree(ND_FNLITERAL, 2, $1, $2);}
 	;
 
@@ -782,7 +785,7 @@ indcl
  * function arguments.
  */
 arg_type
-	: name_or_type
+	: name_or_type {$$ = create_tree(ND_ARG_TYPE, 1, $1);}
 	| sym name_or_type {$$ = create_tree(ND_ARG_TYPE, 2, $1, $2);}
 	| sym dotdotdot {$$ = create_tree(ND_ARG_TYPE, 2, $1, $2);}
 	| dotdotdot

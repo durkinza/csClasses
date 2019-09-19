@@ -39,7 +39,7 @@ extern tTree * gtail;
 %option nounput
 %%
 
-"/*"					{ /* eat the comment */ yyerror("C comments not allowed in VGo"); comment();  return yychar;}
+"/*"					{ /* eat the comment */ yyerror("C comments not allowed in VGo"); /*comment();*/}
 \/\/[^\n\r]*			{ /* eat the comment */  }
 
 ^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
@@ -81,7 +81,7 @@ extern tTree * gtail;
 "continue"				{ yyerror("Go operator not in VGo"); return T_CONTINUE; }
 "while"					{ yyerror("Go operator not in VGo"); return T_WHILE; }
 "break"					{ yyerror("Go operator not in VGo"); return T_BREAK; }
-":"						{ yyerror("Go operator not in VGo"); return T_COLON; /*make_token( T_NOTDEFINED); return NOTDEFINED;*/ }
+":"						{ yyerror("Go operator not in VGo"); return T_COLON; }
 "float32"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
 "int32"					{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
 
@@ -120,8 +120,10 @@ extern tTree * gtail;
 "{"						{ yylval.node = make_token(T_LCURL); return T_LCURL; }
 "}"						{ yylval.node = make_token(T_RCURL); return T_RCURL; }
 "="						{ yylval.node = make_token(T_ASSIGNMENT); return T_ASSIGNMENT; }
-"+="					{ yylval.node = make_token(T_INCREMENT); return T_INCREMENT; }
-"-="					{ yylval.node = make_token(T_DECREMENT); return T_DECREMENT; }
+"++"					{ yylval.node = make_token(T_INCREMENT); return T_INCREMENT; }
+"--"					{ yylval.node = make_token(T_DECREMENT); return T_DECREMENT; }
+"+="					{ yylval.node = make_token(LASOP); return LASOP; }
+"-="					{ yylval.node = make_token(LCOLAS); return LCOLAS; }
 "."						{ yylval.node = make_token(T_DOT); return T_DOT; }
 ","						{ yylval.node = make_token(T_SEPERATOR); return T_SEPERATOR; }
 ";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
@@ -144,6 +146,8 @@ tTree * make_token(int category){
 		case T_BOOLLITERAL:
 		case T_FLOATLITERAL:
 		case T_STRINGLITERAL:
+		case T_INCREMENT:
+		case T_DECREMENT:
 		case T_FLOAT64:
 		case T_STRING:
 		case T_INTEGER:
@@ -176,7 +180,6 @@ tTree * make_token(int category){
 
 		// if we don't have a head, set it to look at the tail. 
 		// this should only run when we first get a tail value.
-		if(gtree == NULL && gtail != NULL) gtree = gtail; // setting the head to the first tail
 		return gtail;
 	}else{
 		return (tTree *) NULL;

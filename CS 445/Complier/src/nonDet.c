@@ -1,47 +1,32 @@
 
-
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "nonDet.h"
 #include "../_build/yacc.tab.h"
 char * prod_to_string(int prodrule){
 	switch(prodrule){
-		case T_SEMICOLON:
-			return ";";
-		case T_LPAREN:
-			return "(";
-		case T_RPAREN:
-			return ")";
-		case T_ASSIGNMENT:
-			return "assign";
-		case T_EQUAL:
-			return "compare";
 		case T_ANDAND:
 			return "&&";
-		case T_FUNC:
-			return "func";
-		case T_IF:
-			return "if";
-		case T_FOR:
-			return "for";
-		case T_IMPORT:
-			return "import";
+		case T_EQUAL:
+			return "equal_comparisson";
+		case T_NOT_EQUAL:
+			return "Not Equal";
+		case T_LTHAN:
+			return "<";
+		case T_GTHAN:
+			return ">";
+		case T_LTHANEQUAL:
+			return "<";
+		case T_GTHANEQUAL:
+			return ">=";	
 		case T_RETURN:
 			return "return";
-		case T_PACKAGE:
-			return "package";
-		case T_ELSE:
-			return "else";
-		case T_VAR:
-			return "var";
-		case T_MINUS:
-			return "minus";
+
 		case T_PLUS:
-			return "plus";
-	
-
-
-
 		case ND_PLUS:
 			return "plus";
+		case T_MINUS:
 		case ND_MINUS:
 			return "minus";
 		case ND_DIVIDE:
@@ -55,12 +40,13 @@ char * prod_to_string(int prodrule){
 		case ND_COLAS:
 			return "colas";
 		case ND_ASSIGNMENT:
-			return "assignement";
+			return "assignment";
 		case ND_INCREMENT:
-			return "Increment";
+			return "increment";
 		case ND_DECREMENT:
-			return "dectement";
+			return "detriment";
 		case ND_OROR:
+		case T_OROR:
 			return "||";
 
 		case ND_FILE:
@@ -123,6 +109,14 @@ char * prod_to_string(int prodrule){
 		case ND_INDCL:
 			return "indcl";
 
+		case ND_IF:
+			return "if";
+		case ND_ELSE_IF:
+			return "else_if";
+		case ND_ELSE:
+			return "else";
+		case ND_ELSE_IF_LIST:
+			return "else_if_list";
 		
 		case ND_XFNDCL:
 			return "xfndcl";
@@ -160,10 +154,8 @@ char * prod_to_string(int prodrule){
 			return "pointer";
 		case ND_OTHERTYPE:
 			return "other_type";
-
-
-		default:
-			return "prodrule. Not implemented yet";
-		
 	}	
+	static char ret[30];
+	sprintf(ret, "%d:not_implemented_yet", prodrule);
+	return ret;
 }
