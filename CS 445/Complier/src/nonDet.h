@@ -10,8 +10,8 @@
 #define ND_AND				1005
 #define ND_NEGATE			1006
 #define ND_XOR				1007
-#define ND_ASOP				1008
-#define ND_COLAS			1009
+#define ND_ADDEQ			1008
+#define ND_SUBEQ			1009
 #define ND_ASSIGNMENT		1010
 #define ND_INCREMENT		1011
 #define ND_DECREMENT		1012
@@ -19,6 +19,7 @@
 #define ND_ANDAND			1014
 #define ND_EQUAL			1015
 #define ND_NOT_EQUAL		1016
+#define ND_COLAS			1017
 
 // Packages
 #define ND_FILE				1999
@@ -46,17 +47,34 @@
 #define ND_DCL_NAME_LIST	3009
 #define ND_DCL_NAME			3010
 #define ND_NEW_NAME			3011
-#define ND_HIDDEN_IMPORTSYM	3012
-#define ND_STMT				3013
-#define ND_STMT_LIST		3014
-#define ND_COMPOUND_STMT	3015
-#define ND_NON_DCL_STMT		3016
-#define ND_INDCL			3020
+#define ND_NEW_NAME_LIST	3012
+#define ND_HIDDEN_IMPORTSYM	3013
+#define ND_STMT				3014
+#define ND_STMT_LIST		3015
+#define ND_COMPOUND_STMT	3016
+#define ND_NON_DCL_STMT		3017
+#define ND_INDCL			3021
+#define ND_LOOP_BODY		3031
+#define ND_RANGE_STMT		3032
 
-#define ND_IF				3100
-#define ND_ELSE_IF			3101
-#define ND_ELSE				3102
-#define ND_ELSE_IF_LIST		3103
+
+#define ND_KEYVAL			3105
+#define ND_BARE_COMPLITEXPR	3106
+#define ND_COMPLITEXPR		3107
+#define ND_KEYVAL_LIST		3108
+#define ND_BRACED_KEYVAL_LIST	3109
+#define ND_PACKNAME			3110
+
+#define ND_IF				3200
+#define ND_ELSE_IF			3201
+#define ND_ELSE				3202
+#define ND_ELSE_IF_LIST		3203
+#define ND_IF_HEADER		3204
+
+#define ND_FOR				3300
+#define ND_FOR_STMT			3301
+#define ND_FOR_HEADER		3302
+#define ND_FOR_BODY			3303
 
 
 // Functions
@@ -71,6 +89,8 @@
 
 // Expresions
 #define ND_EXPR				5000
+#define ND_EXPR_OR_TYPE_LIST	5001
+#define ND_EXPR_LIST		5002
 #define ND_UEXPR			5100
 #define ND_PEXPR			5200
 #define ND_PEXPR_NO_PAREN	5201

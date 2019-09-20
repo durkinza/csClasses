@@ -12,8 +12,8 @@ yacc = bison
 #yaccopts = -W
 yaccopts =
 
-#valgrindopts = --leak-check=full --track-origins=yes  --show-leak-kinds=all
-valgrindopts =
+valgrindopts = --leak-check=full --track-origins=yes
+#valgrindopts =
 
 zipname = durk7832.zip
 

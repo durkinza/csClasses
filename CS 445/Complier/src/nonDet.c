@@ -11,13 +11,13 @@ char * prod_to_string(int prodrule){
 		case T_EQUAL:
 			return "equal_comparisson";
 		case T_NOT_EQUAL:
-			return "Not Equal";
+			return "not_equal";
 		case T_LTHAN:
 			return "<";
 		case T_GTHAN:
 			return ">";
 		case T_LTHANEQUAL:
-			return "<";
+			return "<=";
 		case T_GTHANEQUAL:
 			return ">=";	
 		case T_RETURN:
@@ -35,8 +35,10 @@ char * prod_to_string(int prodrule){
 			return "multiply";
 		case ND_MOD:
 			return "mod";
-		case ND_ASOP:
-			return "asop";
+		case ND_ADDEQ:
+			return "+=";
+		case ND_SUBEQ:
+			return "-=";
 		case ND_COLAS:
 			return "colas";
 		case ND_ASSIGNMENT:
@@ -68,7 +70,7 @@ char * prod_to_string(int prodrule){
 		case ND_IMPORT_THERE:
 			return "import_there";
 		case ND_IMPORT_SAFETY:
-			return "import safety";
+			return "import_safety";
 
 		case ND_XDCL_LIST:
 			return "xdcl_list";
@@ -103,11 +105,28 @@ char * prod_to_string(int prodrule){
 		case ND_STMT_LIST:
 			return "stmt_list";
 		case ND_COMPOUND_STMT:
-			return "compount_stmt";
+			return "compound_stmt";
 		case ND_NON_DCL_STMT:
 			return "non_dcl_stmt";
 		case ND_INDCL:
 			return "indcl";
+		case ND_LOOP_BODY:
+			return "loop_body";
+		case ND_RANGE_STMT:
+			return "Range_stmt";
+
+		case ND_KEYVAL:
+			return "keyval";
+		case ND_BARE_COMPLITEXPR:
+			return "bare_complitexpr";
+		case ND_COMPLITEXPR:
+			return "complitexpr";
+		case ND_KEYVAL_LIST:
+			return "keyval_list";
+		case ND_BRACED_KEYVAL_LIST:
+			return "braced_keyval_list";
+		case ND_PACKNAME:
+			return "packname";
 
 		case ND_IF:
 			return "if";
@@ -117,6 +136,17 @@ char * prod_to_string(int prodrule){
 			return "else";
 		case ND_ELSE_IF_LIST:
 			return "else_if_list";
+		case ND_IF_HEADER:
+			return "if_header";
+		
+		case ND_FOR:
+			return "for";
+		case ND_FOR_STMT:
+			return "for_stmt";
+		case ND_FOR_HEADER:
+			return "for_header";
+		case ND_FOR_BODY:
+			return "for_body";
 		
 		case ND_XFNDCL:
 			return "xfndcl";
@@ -138,6 +168,8 @@ char * prod_to_string(int prodrule){
 		
 		case ND_EXPR:
 			return "expr";
+		case ND_EXPR_OR_TYPE_LIST:
+			return "expression_type_list";
 		case ND_UEXPR:
 			return "uexpr";
 		case ND_PEXPR:

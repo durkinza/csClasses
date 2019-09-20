@@ -45,7 +45,7 @@ extern tTree * gtail;
 ^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
 
 
-\n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){return T_SEMICOLON;}else{ /* eat the newline */} }
+\n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){return T_SEMICOLON;}else{/* eat the newline */} }
 [ \t\f]+        		{ /* eat the whitespace */ }
 
 "boolean"       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
@@ -122,8 +122,8 @@ extern tTree * gtail;
 "="						{ yylval.node = make_token(T_ASSIGNMENT); return T_ASSIGNMENT; }
 "++"					{ yylval.node = make_token(T_INCREMENT); return T_INCREMENT; }
 "--"					{ yylval.node = make_token(T_DECREMENT); return T_DECREMENT; }
-"+="					{ yylval.node = make_token(LASOP); return LASOP; }
-"-="					{ yylval.node = make_token(LCOLAS); return LCOLAS; }
+"+="					{ yylval.node = make_token(T_ADDEQ); return T_ADDEQ; }
+"-="					{ yylval.node = make_token(T_SUBEQ); return T_SUBEQ; }
 "."						{ yylval.node = make_token(T_DOT); return T_DOT; }
 ","						{ yylval.node = make_token(T_SEPERATOR); return T_SEPERATOR; }
 ";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
@@ -163,7 +163,7 @@ tTree * make_token(int category){
 				swapped_nline = 1;
 			}else{
 				// we don't need to make a token for \n
-				return (tTree *) NULL;
+				return NULL;
 			}
 			break;
 		default:
@@ -176,13 +176,13 @@ tTree * make_token(int category){
 		// if the lexime was good, add it to the tree
 		gtoken = create_token(category, yytext, 0, line_num, yyfilename, yytext);
 		gtail = NULL;
-		gtail = push_to_tree(gtail, gtoken);
+		gtail = push_to_tree(gtoken);
 
 		// if we don't have a head, set it to look at the tail. 
 		// this should only run when we first get a tail value.
 		return gtail;
 	}else{
-		return (tTree *) NULL;
+		return NULL;
 	}
 }
 

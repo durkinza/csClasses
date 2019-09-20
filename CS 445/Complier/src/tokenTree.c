@@ -141,22 +141,13 @@ tTree * create_tree(int prodrule, int nbranches, ...){
 }
 
 
-tTree * push_to_tree( tTree * parent, token * leaf){
+tTree * push_to_tree(token * leaf){
 	// create a new tree element
 	tTree * t = malloc(sizeof(tTree));
 	t->nbranches = 0;
 	t->prodrule = 0;
 	// set the token to be the leaf of the branch
 	t->leaf = leaf;
-	
-	if( parent == NULL){
-		// if we are the element of the tree, become the tree
-		parent = t;
-	}else{
-		// if we can become a branch, do so.
-		parent->branches[parent->nbranches] = t;
-		parent->nbranches++;
-	}
 	return t;
 }
 
@@ -176,33 +167,36 @@ void print_token(token * leaf, int depth){
 	}
 	/*printf("%-10d %-20s %-5d\t %-17s ", leaf->category, leaf->text, leaf->lineno, leaf->filename);
 	*/	
-	if(leaf->category == T_INTLITERAL)
-		// if we are an int, print the ival
-		printf("%d:%d\n", leaf->category, leaf->ival);
-	else if(leaf->category == T_FLOATLITERAL)
-		// if we are a float, print the dval
-		printf("%d:%f\n", leaf->category, leaf->dval);
-	else if (leaf->category == T_STRINGLITERAL)
-		// if we are a string, print the sval
-		printf("%d:%s\n", leaf->category, leaf->text);
-	else
-		// for anything else, don't print a value
-		printf("%d:%s\n", leaf->category, leaf->text);
-	
+	if(leaf != NULL){
+		if(leaf->category == T_INTLITERAL)
+			// if we are an int, print the ival
+			printf("%d:%d\n", leaf->category, leaf->ival);
+		else if(leaf->category == T_FLOATLITERAL)
+			// if we are a float, print the dval
+			printf("%d:%f\n", leaf->category, leaf->dval);
+		else if (leaf->category == T_STRINGLITERAL)
+			// if we are a string, print the sval
+			printf("%d:%s\n", leaf->category, leaf->text);
+		else
+			// for anything else, don't print a value
+			printf("%d:%s\n", leaf->category, leaf->text);
+	}
 }
 
 void _print_tree(tTree * tree, int depth){
-	if(tree->prodrule == 0){
-		// print the leaf of this branch
-		print_token(tree->leaf, depth);
-	}else{
-		print_prodrule(tree->prodrule, tree->nbranches, depth);
-	}
-	// now for every branch, print their leafs
-	int i = 0;
-	for( i=0; i < tree->nbranches; i++){
-		if(tree->branches[i] != NULL){
-			_print_tree(tree->branches[i], depth+1);
+	if(tree != NULL){
+		if(tree->prodrule == 0){
+			// print the leaf of this branch
+			print_token(tree->leaf, depth);
+		}else{
+			print_prodrule(tree->prodrule, tree->nbranches, depth);
+		}
+		// now for every branch, print their leafs
+		int i = 0;
+		for( i=0; i < tree->nbranches; i++){
+			if(tree->branches[i] != NULL){
+				_print_tree(tree->branches[i], depth+1);
+			}
 		}
 	}
 }
@@ -213,7 +207,7 @@ void print_tree(tTree * tree){
 		// don't print empty trees
 		printf("Tree is emtpy.\n");
 	}else{
-		if(tree->prodrule == 0){
+		if(tree->prodrule == 0 && tree->leaf != NULL){
 			// print the leaf of this branch
 			print_token(tree->leaf, 0);
 		}else{

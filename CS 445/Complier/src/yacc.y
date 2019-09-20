@@ -37,8 +37,12 @@ extern tTree * gtree;
 }
 
 
-%token <node> LASOP LCOLAS
-
+%token <node> LCOLAS
+/* go grammar has 
+	LASOP  as `+=` and `-=` 
+	LCOLAS as `:=`
+*/
+   
 /* keywords */
 %token <node> /*LBREAK LCASE LCHAN LCONST LCONTINUE */LDDD
 %token <node>/*LDEFAULT LDEFER LELSE */LFALL LFOR /*LFUNC*/ LGO LGOTO
@@ -93,6 +97,7 @@ LGE		= T_GTHANEQUAL	>=
 %token <node> T_GTHANEQUAL T_LTHANEQUAL T_EQUAL T_NOT_EQUAL T_NEGATE T_LPAREN T_RPAREN 
 %token <node> T_RBRACK T_LBRACK T_LCURL T_RCURL T_ASSIGNMENT T_INCREMENT T_DECREMENT 
 %token <node> T_DOT T_SEPERATOR T_SEMICOLON T_XOR T_OROR
+%token <node> T_ADDEQ T_SUBEQ
 
 /* tokens that yacc shouldn't see */
 %token <node> T_COMMENT T_NLINE
@@ -309,13 +314,15 @@ typedcl
 
 simple_stmt
 	: expr
-	| expr LASOP expr {$$ = create_tree(ND_ASOP, 2, $1, $3); delete_tree($2);}
+	| expr T_ADDEQ expr {$$ = create_tree(ND_ADDEQ, 2, $1, $3); delete_tree($2);}
+	| expr T_SUBEQ expr {$$ = create_tree(ND_SUBEQ, 2, $1, $3); delete_tree($2);}
 	| expr_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_ASSIGNMENT, 2, $1, $3); delete_tree($2);}
 	| expr_list LCOLAS expr_list {$$ = create_tree(ND_COLAS, 2, $1, $3); delete_tree($2);}
 	| expr T_INCREMENT {$$ = create_tree(ND_INCREMENT, 1, $1); delete_tree($2);}
 	| expr T_DECREMENT {$$ = create_tree(ND_DECREMENT, 1, $1); delete_tree($2);}
 	;
 /*
+	| expr LASOP expr {$$ = create_tree(ND_ASOP, 2, $1, $3); delete_tree($2);}
 case
 	: T_CASE expr_or_type_list T_COLON
 	| T_CASE expr_or_type_list T_ASSIGNMENT expr T_COLON
@@ -361,31 +368,31 @@ caseblock_list
 	;
 */
 loop_body
-	: T_LCURL stmt_list T_RCURL
+	: T_LCURL stmt_list T_RCURL {$$ = create_tree(ND_LOOP_BODY, 1, $2); delete_trees(2, $1, $3);}
 	;
 
 range_stmt
-	: expr_list T_ASSIGNMENT LRANGE expr
-	| expr_list LCOLAS LRANGE expr
+	: expr_list T_ASSIGNMENT LRANGE expr {$$ = create_tree(ND_RANGE_STMT, 4, $1, $2, $3, $4);}
+	| expr_list LCOLAS LRANGE expr {$$ = create_tree(ND_RANGE_STMT, 4, $1, $2, $3, $4);}
 	;
 
 for_header
-	: osimple_stmt T_SEMICOLON osimple_stmt T_SEMICOLON osimple_stmt
-	| osimple_stmt
-	| range_stmt
+	: osimple_stmt T_SEMICOLON osimple_stmt T_SEMICOLON osimple_stmt {$$ = create_tree(ND_FOR_HEADER, 3, $1, $3, $5); delete_trees(2,$2, $4);}
+	| osimple_stmt {$$ = create_tree(ND_FOR_HEADER, 1, $1);}
+	| range_stmt {$$ = create_tree(ND_FOR_HEADER, 1, $1);}
 	;
 
 for_body
-	: for_header loop_body
+	: for_header loop_body {$$ = create_tree(ND_FOR_BODY, 2, $1, $2);}
 	;
 
 for_stmt
-	: T_FOR for_body
+	: T_FOR for_body {$$ = $2; delete_tree($1);}
 	;
 
 if_header
 	: osimple_stmt
-	| osimple_stmt T_SEMICOLON osimple_stmt
+	| osimple_stmt T_SEMICOLON osimple_stmt {$$ = create_tree(ND_IF_HEADER, 2, $1, $3); delete_tree($2);}
 	;
 
 /* IF cond body (ELSE IF cond body)* (ELSE block)? */
@@ -395,7 +402,7 @@ if_stmt
 		loop_body
 		elseif_list else 
 		{
-			$$ = create_tree(ND_IF, 5, $2, $3, $4, $5);
+			$$ = create_tree(ND_IF, 4, $2, $3, $4, $5);
 			delete_tree($1);
 		}
 	;
@@ -411,8 +418,7 @@ elseif_list
 
 else
 	: %empty {$$ = NULL;}
-	|	T_ELSE compound_stmt {$$ = create_tree(ND_ELSE, 1, $2);}
-
+	| T_ELSE compound_stmt {$$ = create_tree(ND_ELSE, 1, $2);delete_tree($1);}
 	;
 /*
 switch_stmt
@@ -487,7 +493,7 @@ pexpr_no_paren
 	| pexpr T_DOT T_LPAREN LTYPE T_RPAREN  {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4);delete_trees(3, $2, $3, $5);}
 	| pexpr T_LBRACK expr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(2,$2,$4);}
 	| pexpr T_LBRACK oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 3, $1, $3, $5);delete_trees(3, $2, $4, $6);}
-	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7); delete_trees(4, $2, $4, $5,$8 );}
+	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7); delete_trees(4, $2, $4, $6, $8 );}
 	| pseudocall
 	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(3, $2, $4, $5);}
 	| comptype T_LCURL start_complit braced_keyval_list T_RCURL
@@ -513,17 +519,17 @@ start_complit
 	;
 
 keyval
-	: expr T_COLON complitexpr
+	: expr T_COLON complitexpr {$$ = create_tree(ND_KEYVAL, 2, $1, $3); delete_tree($2);}
 	;
 
 bare_complitexpr
 	: expr
-	| T_LCURL start_complit braced_keyval_list T_RCURL
+	| T_LCURL start_complit braced_keyval_list T_RCURL {$$ = create_tree(ND_BARE_COMPLITEXPR, 2, $2, $3); delete_trees(2, $1, $4);}
 	;
 
 complitexpr
 	: expr
-	| T_LCURL start_complit braced_keyval_list T_RCURL
+	| T_LCURL start_complit braced_keyval_list T_RCURL {$$ = create_tree(ND_COMPLITEXPR, 2, $2, $3); delete_trees(2, $1, $4);}
 	;
 
 pexpr
@@ -571,8 +577,8 @@ sym
 	;
 
 hidden_importsym
-	: '@' LLITERAL T_DOT LNAME {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, $4);}
-	| '@' LLITERAL T_DOT '?' {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, NULL);}
+	: '@' LLITERAL T_DOT LNAME {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 2, $2, $4);delete_tree($3);}
+	| '@' LLITERAL T_DOT '?' {$$ = create_tree(ND_HIDDEN_IMPORTSYM, 1, $2); delete_tree($3);}
 	;
 
 name
@@ -764,7 +770,7 @@ structdcl
 
 packname
 	: LNAME
-	| LNAME T_DOT sym
+	| LNAME T_DOT sym {$$ = create_tree(ND_PACKNAME, 3, $1, $2, $3);}
 	;
 
 embed
@@ -808,8 +814,8 @@ stmt
 	: %empty {$$ = NULL;}
 	| compound_stmt {$$ = create_tree(ND_COMPOUND_STMT, 1, $1);}
 	| common_dcl {$$ = create_tree(ND_COMMON_DCL, 1, $1);}
-	| non_dcl_stmt
-	| error
+	| non_dcl_stmt {$$ = create_tree(ND_NON_DCL_STMT, 1, $1);}
+	| error {$$ = NULL;}
 	;
 
 non_dcl_stmt
@@ -847,12 +853,12 @@ dcl_name_list
 
 expr_list
 	: expr
-	| expr_list T_SEPERATOR expr
+	| expr_list T_SEPERATOR expr {$$ = create_tree(ND_EXPR_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 expr_or_type_list
 	: expr_or_type
-	| expr_or_type_list T_SEPERATOR expr_or_type
+	| expr_or_type_list T_SEPERATOR expr_or_type {$$ = create_tree(ND_EXPR_OR_TYPE_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 /*
@@ -867,7 +873,7 @@ keyval_list
 
 braced_keyval_list
 	: %empty {$$ = NULL;}
-	| keyval_list ocomma
+	| keyval_list ocomma {$$ = create_tree(ND_BRACED_KEYVAL_LIST, 2, $1, $2);}
 	;
 
 /*
@@ -1041,6 +1047,4 @@ LLITERAL
 	| T_STRINGLITERAL 
 	| T_FLOATLITERAL
 	;
-
 %%
-

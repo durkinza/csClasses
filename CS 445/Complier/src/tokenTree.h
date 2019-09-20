@@ -1,6 +1,6 @@
 #ifndef TOKEN_H
 #define TOKEN_H
-#define MAX_BRANCHES 9
+#define MAX_BRANCHES 30
 typedef struct token {
 	int category;	/* the integer code returned by yylex */
 	char *text;		/* the actual string(lexeme) matched */
@@ -26,7 +26,7 @@ tTree * token_as_tree(int category);
 // all branches must be of (tTree *) type
 tTree * create_tree(int prodrule, int nbranches, ...);
 
-tTree * push_to_tree(tTree * parent, token * leaf);
+tTree * push_to_tree(token * leaf);
 
 void delete_tree(tTree * tree);
 void delete_trees(int count, ...);
