@@ -28,6 +28,10 @@
 extern int yylex();
 extern void yyerror(const char *s);
 extern tTree * gtree;
+
+extern char * yyfilename;
+extern char * yytext;
+extern int line_num;
 %}
 /* write out a header file containing the token defines */
 %defines
@@ -197,7 +201,7 @@ package:
 	NotPackage 
 		{
 			yyerror("package statement must be first");
-			exit(1);
+			//exit(1);
 		}
 	| T_PACKAGE sym T_SEMICOLON {$$ = create_tree(ND_PACKAGE, 1, $2); delete_trees(2, $1, $3);}
 	;

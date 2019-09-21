@@ -20,7 +20,8 @@ IS	(u|U|l|L)
 #include "../src/nonDet.h"
 
 void comment();
-void yyerror();
+void _yyerror(char *, int);
+void yyerror(char *);
 tTree * make_token();
 int line_num = 1;
 int can_have_semi = 0;
@@ -39,10 +40,10 @@ extern tTree * gtail;
 %option nounput
 %%
 
-"/*"					{ /* eat the comment */ yyerror("C comments not allowed in VGo"); /*comment();*/}
+"/*"					{ /* eat the comment */ _yyerror("C comments not allowed in VGo", 1); /*comment();*/}
 \/\/[^\n\r]*			{ /* eat the comment */  }
 
-^{WSP}#.*\n				{ yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?"); }
+^{WSP}#.*\n				{ _yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?", 1); }
 
 
 \n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){return T_SEMICOLON;}else{/* eat the newline */} }
@@ -67,23 +68,23 @@ extern tTree * gtail;
 "return"				{ yylval.node = make_token(T_RETURN); return T_RETURN; }
 "var"					{ yylval.node = make_token(LVAR); return LVAR; }
 
-"default"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
-"interface"				{ yyerror("Go operator not in VGo"); return T_INTERFACE; }
-"select"				{ yyerror("Go operator not in VGo"); return T_SELECT; }
-"case"					{ yyerror("Go operator not in VGo"); return T_CASE; }
-"defer"					{ yyerror("Go operator not in VGo"); return T_DEFER; }
-"go"					{ yyerror("Go operator not in VGo"); return T_GO; }
-"chan"					{ yyerror("Go operator not in VGo"); return T_CHAN; }
-"goto"					{ yyerror("Go operator not in VGo"); return T_GOTO; }
-"switch"				{ yyerror("Go operator not in VGo"); return T_SWITCH; }
-"fallthrough"			{ yyerror("Go operator not in VGo"); return T_FALLTHROUGH; }
-"range"					{ yyerror("Go operator not in VGo"); return T_RANGE; }
-"continue"				{ yyerror("Go operator not in VGo"); return T_CONTINUE; }
-"while"					{ yyerror("Go operator not in VGo"); return T_WHILE; }
-"break"					{ yyerror("Go operator not in VGo"); return T_BREAK; }
-":"						{ yyerror("Go operator not in VGo"); return T_COLON; }
-"float32"				{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
-"int32"					{ yyerror("Go operator not in VGo"); return T_DEFAULT; }
+"default"				{ _yyerror("Go operator not in VGo", 1); return T_DEFAULT; }
+"interface"				{ _yyerror("Go operator not in VGo", 1); return T_INTERFACE; }
+"select"				{ _yyerror("Go operator not in VGo", 1); return T_SELECT; }
+"case"					{ _yyerror("Go operator not in VGo", 1); return T_CASE; }
+"defer"					{ _yyerror("Go operator not in VGo", 1); return T_DEFER; }
+"go"					{ _yyerror("Go operator not in VGo", 1); return T_GO; }
+"chan"					{ _yyerror("Go operator not in VGo", 1); return T_CHAN; }
+"goto"					{ _yyerror("Go operator not in VGo", 1); return T_GOTO; }
+"switch"				{ _yyerror("Go operator not in VGo", 1); return T_SWITCH; }
+"fallthrough"			{ _yyerror("Go operator not in VGo", 1); return T_FALLTHROUGH; }
+"range"					{ _yyerror("Go operator not in VGo", 1); return T_RANGE; }
+"continue"				{ _yyerror("Go operator not in VGo", 1); return T_CONTINUE; }
+"while"					{ _yyerror("Go operator not in VGo", 1); return T_WHILE; }
+"break"					{ _yyerror("Go operator not in VGo", 1); return T_BREAK; }
+":"						{ _yyerror("Go operator not in VGo", 1); return T_COLON; }
+"float32"				{ _yyerror("Go operator not in VGo", 1); return T_DEFAULT; }
+"int32"					{ _yyerror("Go operator not in VGo", 1); return T_DEFAULT; }
 
 
 "true"					{ yylval.node = make_token(T_BOOLLITERAL); return T_BOOLLITERAL; }
@@ -129,7 +130,7 @@ extern tTree * gtail;
 ";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
 
 
-.                       { yyerror("lexical error"); }
+.                       { _yyerror("lexical error", 1); }
 
 %%
 
@@ -218,8 +219,10 @@ void yy_buffer_cleanup(int clean_yytext){
 	free(yy_buffer_stack);
 }
 
-
-void yyerror(char *s) {
+void yyerror(char *s){
+	_yyerror(s, 2);
+}
+void _yyerror(char *s, int err) {
 	// lets say there was an error
 	errors++;
 
@@ -234,7 +237,7 @@ void yyerror(char *s) {
 	fprintf(stderr, "line %d, token = \"%s\"\n", line_num, yytext);
 	// before we leave, let's cleanup a bit
 	yy_buffer_cleanup(0);
-	exit(1);
+	exit(err);
 }
 
 void comment() {
@@ -266,7 +269,7 @@ void comment() {
 			case 0: 
 			{
 				yychar = BAD_TOKEN;
-				yyerror("Unterminated comment");
+				_yyerror("Unterminated comment", 1);
 				exit(-(++errors));
 			}
 		}
