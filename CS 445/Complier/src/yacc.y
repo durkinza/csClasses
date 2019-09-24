@@ -294,13 +294,13 @@ vardcl
 	;
 
 constdcl
-	: dcl_name_list ntype T_ASSIGNMENT expr_list
-	| dcl_name_list T_ASSIGNMENT expr_list
+	: dcl_name_list ntype T_ASSIGNMENT expr_list {$$ = create_tree(ND_CONSTDCL, 3, $1, $2, $3); delete_tree($4);}
+	| dcl_name_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_CONSTDCL, 2, $1, $3); delete_tree($2);}
 	;
 
 constdcl1
 	: constdcl
-	| dcl_name_list ntype
+	| dcl_name_list ntype {$$ = create_tree(ND_CONSTDCL1, 2, $1, $2);}
 	| dcl_name_list
 	;
 
@@ -313,7 +313,7 @@ typedclname
 	;
 
 typedcl
-	: typedclname ntype
+	: typedclname ntype {$$ = create_tree(ND_TYPEDCL, 2, $1, $2);}
 	;
 
 simple_stmt

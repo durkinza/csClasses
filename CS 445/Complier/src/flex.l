@@ -105,8 +105,12 @@ extern tTree * gtail;
 "/"						{ yylval.node = make_token(T_DIVIDE);  return T_DIVIDE; }
 "*"						{ yylval.node = make_token(T_MULTIPLY); return T_MULTIPLY; }
 "%"						{ yylval.node = make_token(T_MOD); return T_MOD; }
+"^"						{ yylval.node = make_token('^'); return (int)'^';}
+"~"						{ yylval.node = make_token('~'); return (int)'~';}
 "&&"					{ yylval.node = make_token(T_ANDAND); return T_ANDAND; }
-"||"					{ yylval.node = make_token(T_OR); return T_OR; }
+"&"						{ yylval.node = make_token(T_AND); return T_AND; }
+"||"					{ yylval.node = make_token(T_OROR); return T_OROR; }
+"|"						{ yylval.node = make_token(T_OR); return T_OR; }
 ">"						{ yylval.node = make_token(T_GTHAN); return T_GTHAN; }
 "<"						{ yylval.node = make_token(T_LTHAN); return T_LTHAN; }
 ">="					{ yylval.node = make_token(T_GTHANEQUAL); return T_GTHANEQUAL; }
