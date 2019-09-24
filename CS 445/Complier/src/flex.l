@@ -23,7 +23,7 @@ void comment();
 void _yyerror(char *, int);
 void yyerror(char *);
 tTree * make_token();
-int line_num = 1;
+extern int line_num;
 int can_have_semi = 0;
 int swapped_nline = 0;
 char lastid[256];

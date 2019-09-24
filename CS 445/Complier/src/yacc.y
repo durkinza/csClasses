@@ -213,7 +213,7 @@ imports
 
 import
 	: LIMPORT import_stmt {$$ = create_tree(ND_IMPORT, 1, $2); delete_tree($1);}
-	| LIMPORT T_LPAREN import_stmt_list osemi T_RPAREN {$$ = create_tree(ND_IMPORT, 2, $1, $3); delete_tree($2);}
+	| LIMPORT T_LPAREN import_stmt_list osemi T_RPAREN {$$ = create_tree(ND_IMPORT, 2, $3, $4); delete_trees(3, $1, $2, $5);}
 	| LIMPORT T_LPAREN T_RPAREN {$$ = NULL; delete_trees(3, $1, $2, $3);}
 	;
 

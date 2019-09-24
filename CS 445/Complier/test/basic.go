@@ -1,5 +1,8 @@
 package main
-import "fmt"
+import (
+		"fmt"
+		"print"
+		)
 func main ( ) {
      fmt.Printf("Hello\tworld\n")
 	d = 0.3

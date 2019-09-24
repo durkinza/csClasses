@@ -16,6 +16,7 @@ extern char * yytext;
 extern int yydebug;
 
 // my global vars
+int line_num = 1;
 char * yyfilename;
 token * gtoken = NULL;  
 tTree * gtree = NULL;
@@ -63,6 +64,7 @@ int main ( int argc, char **argv ){
 				// an error, or we haven't reached the end of the file
 				// parse the next lexime
 				yyparse();
+				line_num = 1;
 				// Let the user know what file we parsed
 				printf("File: %s\n", yyfilename);
 				// start printing leximes
