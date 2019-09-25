@@ -50,6 +50,8 @@ char * prod_to_string(int prodrule){
 		case ND_OROR:
 		case T_OROR:
 			return "||";
+		case ND_MAP:
+			return "map";
 
 		case ND_FILE:
 			return "file";
@@ -186,6 +188,8 @@ char * prod_to_string(int prodrule){
 			return "pointer";
 		case ND_OTHERTYPE:
 			return "other_type";
+		case ND_COMPTYPE:
+			return "comptype";
 	}	
 	static char ret[30];
 	sprintf(ret, "%d:not_implemented_yet", prodrule);

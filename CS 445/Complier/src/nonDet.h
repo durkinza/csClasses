@@ -20,6 +20,7 @@
 #define ND_EQUAL			1015
 #define ND_NOT_EQUAL		1016
 #define ND_COLAS			1017
+#define ND_MAP				1019
 
 // Packages
 #define ND_FILE				1999
@@ -102,6 +103,8 @@
 #define ND_DOTNAME			6000
 #define ND_POINTER			6001
 #define ND_OTHERTYPE		6002
+#define ND_COMPTYPE			6003	
+#define ND_DDD				6004
 
 
 char * prod_to_string(int prodrule);

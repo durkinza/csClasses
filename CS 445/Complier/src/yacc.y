@@ -20,7 +20,6 @@
 
 %{
 #include <stdio.h>
-//#include <libc.h>
 #include <stdlib.h>
 
 #include "../src/tokenTree.h"
@@ -484,7 +483,7 @@ uexpr
  * can be preceded by 'defer' and 'go'
  */
 pseudocall
-	: pexpr T_LPAREN T_RPAREN
+	: pexpr T_LPAREN T_RPAREN {$$ = $1; delete_trees(2, $2, $3);}
 	| pexpr T_LPAREN expr_or_type_list ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 2, $1, $3); delete_trees(3, $2, $4, $5);}
 	| pexpr T_LPAREN expr_or_type_list LDDD ocomma T_RPAREN {$$ = create_tree(ND_PSEUDOCALL, 3, $1, $3, $4); delete_trees(3, $2, $5, $6);}
 	;
@@ -500,7 +499,7 @@ pexpr_no_paren
 	| pexpr T_LBRACK oexpr T_COLON oexpr T_COLON oexpr T_RBRACK {$$ = create_tree(ND_PEXPR_NO_PAREN, 4, $1, $3, $5, $7); delete_trees(4, $2, $4, $6, $8 );}
 	| pseudocall
 	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(3, $2, $4, $5);}
-	| comptype T_LCURL start_complit braced_keyval_list T_RCURL
+	| comptype T_LCURL start_complit braced_keyval_list T_RCURL {$$ = create_tree(ND_COMPTYPE, 3, $1, $3, $4); delete_trees(2, $2, $5);}
 	| fnliteral
 	;
 	/* In order to remove the LBRACE symbol, these rules must be removed from the grammer
@@ -607,7 +606,7 @@ dotdotdot
 		{
 			yyerror("final argument in variadic function missing type");
 		}
-	| LDDD ntype
+	| LDDD ntype {$$ = create_tree(ND_DDD, 2, $1, $2 );}
 	;
 
 ntype
@@ -643,7 +642,6 @@ comptype
 	: othertype
 	;
 
-/* added type option */
 fnret_type
 	: recvchantype
 	| fntype
@@ -659,10 +657,10 @@ dotname
 
 othertype
 	: T_LBRACK oexpr T_RBRACK ntype {$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);delete_trees(2, $1, $3);}
-	| T_LBRACK LDDD T_RBRACK ntype	{$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);delete_trees(2, $1, $4);}
+	| T_LBRACK LDDD T_RBRACK ntype	{$$ = create_tree(ND_OTHERTYPE, 2, $2, $4);delete_trees(2, $1, $3);}
 	| T_CHAN non_recvchantype
 	| T_CHAN LCOMM ntype
-	| T_MAP T_LBRACK ntype T_RBRACK ntype
+	| T_MAP T_LBRACK ntype T_RBRACK ntype {$$ = create_tree(ND_MAP, 2, $3, $5); delete_trees(3, $1, $2, $4);}
 	| structtype
 	| interfacetype
 	| type
@@ -871,13 +869,13 @@ expr_or_type_list
 keyval_list
 	: keyval
 	| bare_complitexpr
-	| keyval_list T_SEPERATOR keyval
-	| keyval_list T_SEPERATOR bare_complitexpr
+	| keyval_list T_SEPERATOR keyval {$$ = create_tree(ND_KEYVAL_LIST, 2, $1, $3); delete_tree($2);}
+	| keyval_list T_SEPERATOR bare_complitexpr {$$ = create_tree(ND_KEYVAL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 braced_keyval_list
 	: %empty {$$ = NULL;}
-	| keyval_list ocomma {$$ = create_tree(ND_BRACED_KEYVAL_LIST, 2, $1, $2);}
+	| keyval_list ocomma {$$ = create_tree(ND_BRACED_KEYVAL_LIST, 1, $1); delete_tree($2);}
 	;
 
 /*
@@ -966,9 +964,9 @@ hidden_type_non_recv_chan
 hidden_type_misc
 	: hidden_importsym
 	| LNAME
-	| T_LBRACK T_RBRACK hidden_type
-	| T_LBRACK LLITERAL T_RBRACK hidden_type
-	| T_MAP T_LBRACK hidden_type T_RBRACK hidden_type
+	| T_LBRACK T_RBRACK hidden_type {$$ = NULL; delete_trees(3, $1, $2, $3);}
+	| T_LBRACK LLITERAL T_RBRACK hidden_type {$$ = NULL; delete_trees(4, $1, $2, $3, $4);}
+	| T_MAP T_LBRACK hidden_type T_RBRACK hidden_type {$$ = NULL; delete_trees(5, $1, $2, $3, $4, $5);}
 	| LSTRUCT T_LCURL ohidden_structdcl_list T_RCURL
 	| LINTERFACE T_LCURL ohidden_interfacedcl_list T_RCURL
 	| T_MULTIPLY hidden_type

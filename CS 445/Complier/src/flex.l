@@ -148,6 +148,7 @@ tTree * make_token(int category){
 		case T_RPAREN:
 		case T_INTLITERAL:
 		case T_HEXLITERAL:
+		case T_NULLLITERAL:
 		case T_BOOLLITERAL:
 		case T_FLOATLITERAL:
 		case T_STRINGLITERAL:
