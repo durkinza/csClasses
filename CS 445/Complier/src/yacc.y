@@ -675,8 +675,8 @@ recvchantype
 	;
 
 structtype
-	: LSTRUCT T_LCURL structdcl_list osemi T_RCURL
-	| LSTRUCT T_LCURL T_RCURL
+	: LSTRUCT T_LCURL structdcl_list osemi T_RCURL {$$ = create_tree(ND_STRUCT, 1, $3); delete_trees(4, $1, $2, $4, $5);}
+	| LSTRUCT T_LCURL T_RCURL {$$ = NULL; delete_trees(3, $1, $2, $3);}
 	;
 
 interfacetype
@@ -743,31 +743,31 @@ vardcl_list
 
 constdcl_list
 	: constdcl1
-	| constdcl_list T_SEMICOLON constdcl1
+	| constdcl_list T_SEMICOLON constdcl1 {$$ = create_tree(ND_CONSTDCL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 typedcl_list
 	: typedcl
-	| typedcl_list T_SEMICOLON typedcl
+	| typedcl_list T_SEMICOLON typedcl {$$ = create_tree(ND_TYPEDCL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 structdcl_list
 	: structdcl
-	| structdcl_list T_SEMICOLON structdcl
+	| structdcl_list T_SEMICOLON structdcl {$$ = create_tree(ND_STRUCTDCL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 interfacedcl_list
 	: interfacedcl
-	| interfacedcl_list T_SEMICOLON interfacedcl
+	| interfacedcl_list T_SEMICOLON interfacedcl {$$ = create_tree(ND_INTERFACEDCL_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 structdcl
-	: new_name_list ntype oliteral
-	| embed oliteral
-	| T_LPAREN embed T_RPAREN oliteral
-	| T_MULTIPLY embed oliteral
-	| T_LPAREN T_MULTIPLY embed T_RPAREN oliteral
-	| T_MULTIPLY T_LPAREN embed T_RPAREN oliteral
+	: new_name_list ntype oliteral {$$ = create_tree(ND_STRUCTDCL, 3, $1, $2, $3);}
+	| embed oliteral {$$ = create_tree(ND_STRUCTDCL, 2, $1, $2);}
+	| T_LPAREN embed T_RPAREN oliteral {$$ = create_tree(ND_STRUCTDCL, 3, $1, $2, $3);}
+	| T_MULTIPLY embed oliteral {$$ = create_tree(ND_STRUCTDCL, 3, $1, $2, $3);}
+	| T_LPAREN T_MULTIPLY embed T_RPAREN oliteral {$$ = create_tree(ND_STRUCTDCL, 6, $1, $2, $3, $4, $5);}
+	| T_MULTIPLY T_LPAREN embed T_RPAREN oliteral {$$ = create_tree(ND_STRUCTDCL, 6, $1, $2, $3, $4, $5);}
 	;
 
 packname

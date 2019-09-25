@@ -39,6 +39,11 @@ func add(x int, y int) int {
     return x + y
 }
 
+type person struct {
+    name string
+    age  int
+}
+
 func addtwo(x, y int) int {
 	c = 0
 	x == z

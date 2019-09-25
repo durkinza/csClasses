@@ -23,6 +23,8 @@ char * prod_to_string(int prodrule){
 		case T_RETURN:
 			return "return";
 
+
+		// Operator types
 		case T_PLUS:
 		case ND_PLUS:
 			return "plus";
@@ -53,6 +55,8 @@ char * prod_to_string(int prodrule){
 		case ND_MAP:
 			return "map";
 
+
+		// Packages
 		case ND_FILE:
 			return "file";
 		case ND_PACKAGE:
@@ -74,6 +78,8 @@ char * prod_to_string(int prodrule){
 		case ND_IMPORT_SAFETY:
 			return "import_safety";
 
+
+		// Body
 		case ND_XDCL_LIST:
 			return "xdcl_list";
 		case ND_XDCL:
@@ -149,7 +155,16 @@ char * prod_to_string(int prodrule){
 			return "for_header";
 		case ND_FOR_BODY:
 			return "for_body";
-		
+			
+		case ND_STRUCT:
+			return "struct";
+		case ND_STRUCTDCL_LIST:
+			return "structdcl_list";
+		case ND_STRUCTDCL:
+			return "structdcl";
+
+
+		// Functions
 		case ND_XFNDCL:
 			return "xfndcl";
 		case ND_FNDCL:
@@ -167,7 +182,7 @@ char * prod_to_string(int prodrule){
 		case ND_ARG_TYPE_LIST:
 			return "arg_type_list";
 		
-		
+		// Expressions
 		case ND_EXPR:
 			return "expr";
 		case ND_EXPR_OR_TYPE_LIST:
@@ -181,7 +196,7 @@ char * prod_to_string(int prodrule){
 		case ND_PSEUDOCALL:
 			return "pseudocall";
 
-
+		// Namings
 		case ND_DOTNAME:
 			return "dotname";
 		case ND_POINTER:

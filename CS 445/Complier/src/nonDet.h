@@ -66,6 +66,7 @@
 #define ND_KEYVAL_LIST		3108
 #define ND_BRACED_KEYVAL_LIST	3109
 #define ND_PACKNAME			3110
+#define ND_INTERFACEDCL_LIST	3111
 
 #define ND_IF				3200
 #define ND_ELSE_IF			3201
@@ -77,6 +78,10 @@
 #define ND_FOR_STMT			3301
 #define ND_FOR_HEADER		3302
 #define ND_FOR_BODY			3303
+
+#define ND_STRUCT			3400
+#define ND_STRUCTDCL_LIST	3401	
+#define ND_STRUCTDCL		3402	
 
 
 // Functions

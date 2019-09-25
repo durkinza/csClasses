@@ -57,12 +57,12 @@ extern tTree * gtail;
 
 "func"					{ yylval.node = make_token(T_FUNC);return T_FUNC; }
 "map"					{ yylval.node = make_token(T_MAP); return T_MAP; }
-"struct"				{ yylval.node = make_token(T_STRUCT); return T_STRUCT; }
+"struct"				{ yylval.node = make_token(LSTRUCT); return LSTRUCT; }
 "else"					{ yylval.node = make_token(T_ELSE); return T_ELSE; }
 "package"				{ yylval.node = make_token(T_PACKAGE); return T_PACKAGE; }
 "const"					{ yylval.node = make_token(T_CONST); return T_CONST; }
 "if"            		{ yylval.node = make_token(T_IF); return T_IF; }
-"type"					{ yylval.node = make_token(T_TYPE); return T_TYPE; }
+"type"					{ yylval.node = make_token(LTYPE); return LTYPE; }
 "for"           		{ yylval.node = make_token(T_FOR); return T_FOR; }
 "import"				{ yylval.node = make_token(LIMPORT); return LIMPORT; }
 "return"				{ yylval.node = make_token(T_RETURN); return T_RETURN; }
