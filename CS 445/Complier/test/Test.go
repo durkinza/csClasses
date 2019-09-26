@@ -32,7 +32,7 @@ func main() {
 	   fmt.Println(add(42, 13))
 	} else {
 	   fmt.Println(add(42, 13))
-	}  
+	} 
 }
 
 func add(x int, y int) int {
@@ -78,7 +78,7 @@ func addtwo(x, y int) int {
 	return x + y
 	var a [32]int
 
-	var m map[string]int
-	m["Bell Labs"] = int{ 40.68433, -74.39967, }
-	m["Google"] = int{37.42202, -122.08408 }
+	var m map[string]Vertex
+	m["Bell Labs"] = Vertex{ 40.68433, -74.39967, }
+	m["Google"] = Vertex{37.42202, -122.08408 }
 }

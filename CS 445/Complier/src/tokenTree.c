@@ -14,8 +14,6 @@
 extern char * yyfilename;
 extern int line_num;
 extern char * yytext;
-extern char * prod_to_string(int prodrule);
-extern char * cat_to_string(int category);
 
 char * clean_sval(char * string){
 	int len = 0;

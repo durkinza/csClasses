@@ -48,9 +48,9 @@ extern int line_num;
    
 /* keywords */
 %token <node> /*LBREAK LCASE LCHAN LCONST LCONTINUE */LDDD
-%token <node>/*LDEFAULT LDEFER LELSE */LFALL LFOR /*LFUNC*/ LGO LGOTO
+%token <node>/*LDEFAULT LDEFER LELSE */LFALL /*LFOR LFUNC*/ LGO LGOTO
 %token <node> LIF LIMPORT LINTERFACE LMAP LNAME
-%token <node> LPACKAGE LRANGE LRETURN LSELECT LSTRUCT LSWITCH
+%token <node> LPACKAGE LRANGE LRETURN LSELECT LSTRUCT /*LSWITCH*/
 %token <node> LTYPE LVAR
 
 
@@ -500,6 +500,8 @@ pexpr_no_paren
 	| pseudocall
 	| convtype T_LPAREN expr ocomma T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_trees(3, $2, $4, $5);}
 	| comptype T_LCURL start_complit braced_keyval_list T_RCURL {$$ = create_tree(ND_COMPTYPE, 3, $1, $3, $4); delete_trees(2, $2, $5);}
+	/* Added following rule to support arbitrary type definitions. ie.`Vertex{ 23.23, -24.2 }` */
+	| LNAME T_LCURL start_complit braced_keyval_list T_RCURL {$$ = create_tree(ND_COMPTYPE, 3, $1, $3, $4); delete_trees(2, $2, $5);}
 	| fnliteral
 	;
 	/* In order to remove the LBRACE symbol, these rules must be removed from the grammer
