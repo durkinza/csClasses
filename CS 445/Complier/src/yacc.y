@@ -293,7 +293,7 @@ vardcl
 	;
 
 constdcl
-	: dcl_name_list ntype T_ASSIGNMENT expr_list {$$ = create_tree(ND_CONSTDCL, 3, $1, $2, $3); delete_tree($4);}
+	: dcl_name_list ntype T_ASSIGNMENT expr_list {$$ = create_tree(ND_CONSTDCL, 3, $1, $2, $4); delete_tree($3);}
 	| dcl_name_list T_ASSIGNMENT expr_list {$$ = create_tree(ND_CONSTDCL, 2, $1, $3); delete_tree($2);}
 	;
 
@@ -490,7 +490,7 @@ pseudocall
 
 pexpr_no_paren
 	: LLITERAL
-	| name
+	| name {$$ = create_tree(ND_VAR_CALL, 1, $1);}
 	| pexpr T_DOT sym {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $3); delete_tree($2);}
 	| pexpr T_DOT T_LPAREN expr_or_type T_RPAREN {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4); delete_trees(3, $2, $3, $5);}
 	| pexpr T_DOT T_LPAREN LTYPE T_RPAREN  {$$ = create_tree(ND_PEXPR_NO_PAREN, 2, $1, $4);delete_trees(3, $2, $3, $5);}

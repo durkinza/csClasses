@@ -1,6 +1,9 @@
 package main
 import "fmt"
+	var y string
+
 func main() {
-   fmt.Println("hey there")
+	var x int
+	x = 0
 }
 

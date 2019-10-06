@@ -123,6 +123,9 @@ char * prod_to_string(int prodrule){
 		case ND_RANGE_STMT:
 			return "Range_stmt";
 
+		case ND_VAR_CALL:
+			return "variable Call";
+
 		case ND_KEYVAL:
 			return "keyval";
 		case ND_BARE_COMPLITEXPR:

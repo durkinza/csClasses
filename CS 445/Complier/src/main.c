@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tokenTree.h"
+#include "symtab.h"
 
 // flex global vars
 extern FILE *yyin;
@@ -14,6 +15,9 @@ extern int yylex();
 extern void yy_buffer_cleanup(int);
 extern char * yytext;
 extern int yydebug;
+
+// symtab.h functions
+extern void populate_symboltables ( tTree * );
 
 // my global vars
 int line_num = 1;
@@ -72,7 +76,9 @@ int main ( int argc, char **argv ){
 					// If we have no tokens, say so.
 					printf("No Tokens\n");
 				} else {
-					print_tree(gtree);
+						
+					populate_symboltables ( gtree );
+					//print_tree(gtree);
 					delete_tree(gtree);
 				}
 				// make some padding at bottom
