@@ -808,7 +808,7 @@ arg_type_list
 
 oarg_type_list_ocomma
 	: %empty {$$ = NULL;}
-	| arg_type_list ocomma {delete_tree($2);}
+	| arg_type_list ocomma {$$ = $1; delete_tree($2);}
 	;
 
 /*

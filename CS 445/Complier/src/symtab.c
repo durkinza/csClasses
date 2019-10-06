@@ -156,7 +156,7 @@ void populate_symboltables ( tTree * node ) {
 			current = globals;
 			break;
 		case ND_XFNDCL:
-			printf("---\n");
+			printf("---\n\n");
 			printf("--- symbol table for: func %s ---\n", node->branches[0]->branches[0]->leaf->text);
 			enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
 			break;
@@ -167,6 +167,24 @@ void populate_symboltables ( tTree * node ) {
 		case ND_DCL_NAME:
 		case ND_VARDCL:
 			break;
+		case ND_ARG_TYPE_LIST:
+			if ( !( node->branches[1] ) || !( node->branches[1]->branches[1] ) ) {
+				printf("argument no type \n");
+				fflush(stdout);
+			}
+			tTree * temp = node;
+			while( temp && temp->prodrule == ND_ARG_TYPE_LIST ) {
+				printf("    %s %s \n", temp->branches[1]->branches[0]->leaf->text, node->branches[1]->branches[1]->leaf->text );
+				dovariabledeclarator( temp->branches[1]->branches[0], node->branches[1]->branches[1]->leaf->category );
+				temp = temp->branches[0];
+			}
+			if ( temp ){
+
+				printf("    %s %s \n", temp->branches[0]->leaf->text, node->branches[1]->branches[1]->leaf->text );
+				dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1]->leaf->category );
+			}
+			return;
+
 		case ND_VAR_CALL:{
 			// Lets check if the element is already in the symbol table.
 			sym_entry * ste = NULL;
@@ -213,6 +231,10 @@ void populate_symboltables ( tTree * node ) {
 		case ND_FILE:
 			printf("---\n");
 			break;
+		case ND_ARG_TYPE:
+				printf("    %s %s \n", node->branches[0]->leaf->text, node->branches[1]->leaf->text );
+				dovariabledeclarator( node->branches[0], node->branches[1]->leaf->category );
+			break;
 		case ND_VARDCL:
 		case ND_CONSTDCL:
 		case ND_VARDCL_ASSIGN:{
@@ -220,16 +242,33 @@ void populate_symboltables ( tTree * node ) {
 			// ie. var x int = 0
 			// add variable to the symbol table
 			tTree * temp = node->branches[0];
-			if( !( node->branches[1] ) || !( node->branches[0]->prodrule == 0 ) ) {
-				printf("fielddecl no type \n");
+			if( !( node->branches[1] ) 
+				||
+				( 
+					node->branches[1]->prodrule == ND_OTHERTYPE 
+					&&
+					!( node->branches[1]->branches[1] )
+
+				)
+			) {
+					
+				printf("vardcl/constdcl no type \n");
 				fflush(stdout);
-			} else {
-				printf("    %s %s \n", node->branches[0]->leaf->text, node->branches[1]->leaf->text );
+				
+			} else{
 				while ( temp && temp->prodrule == ND_DCL_NAME_LIST) {
+					printf("    %s %s \n", temp->branches[1]->leaf->text, node->branches[1]->leaf->text );
 					dovariabledeclarator( temp->branches[1], node->branches[1]->leaf->category );
 					temp = temp->branches[0];
 				}
-				if ( temp ) {
+				if ( temp && node->branches[1]->prodrule == ND_OTHERTYPE) {
+					// This is for arrays
+					printf("    %s [%d] %s \n", temp->leaf->text, node->branches[1]->branches[0]->leaf->ival, node->branches[1]->branches[1]->leaf->text );
+					dovariabledeclarator( temp->branches[1], node->branches[1]->branches[1]->leaf->category );
+
+				} else if ( temp ) {
+					// This is for regular variables
+					printf("    %s %s \n", temp->leaf->text, node->branches[1]->leaf->text );
 					dovariabledeclarator( temp, node->branches[1]->leaf->category );
 				}
 			}
@@ -239,7 +278,7 @@ void populate_symboltables ( tTree * node ) {
 }
 
 void dovariabledeclarator( tTree * node, int category  ) {
-	if ( ! node ){
+	if ( !(node) ){
 		return;
 	}
 	if ( node->prodrule == ND_OTHERTYPE) {

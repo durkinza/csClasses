@@ -77,12 +77,12 @@ int main ( int argc, char **argv ){
 					printf("No Tokens\n");
 				} else {
 						
-					populate_symboltables ( gtree );
 					//print_tree(gtree);
+					populate_symboltables ( gtree );
 					delete_tree(gtree);
 				}
 				// make some padding at bottom
-				printf("\n\n");
+				//printf("\n\n");
 				// clean up our variables
 				gtree = NULL;
 				gtail = NULL;

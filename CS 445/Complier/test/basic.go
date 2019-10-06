@@ -10,7 +10,6 @@ var z string = "test"
 const a = 0
 const c string = "test"
 
-var e,f = 2
 var g,h int
 
 const i, j = 3
@@ -20,10 +19,14 @@ var m [4] int
 
 func main ( ) {
 	var d = 0.3
-     fmt.Printf("Hello\tworld\n")
+//     fmt.Printf("Hello\tworld\n")
 	d = 0.4
 }
 
-func add(x, y int) int {
+func inc(y int) int {
+    return y+1
+}
+
+func add(x, y, z int) int {
     return x + y
 }
