@@ -14,7 +14,7 @@
 #define MAP_TYPE		100200
 #define ARRAY_TYPE		100300
 #define STRUCT_TYPE		100400
-struct type {
+typedef struct type {
 	// the basetype will tell us what type of struct to use
 	// types INT, FLOAT, String, etc. Will not use the union
 	int basetype;
@@ -70,12 +70,13 @@ struct type {
 		struct tTree * t;
 	}u;
 
-};
+} type;
+
 typedef struct sym_table {
 	int nBuckets;				/* # of buckets */
 	int nEntries;				/* # of total elements in the table */
 	struct sym_table * parent;	/* The parent scope */
-	struct type * scope;				/* The type we blong to */
+	struct type * scope;		/* The type we blong to */
 	struct sym_entry ** table;	/* Hash table of elements*/
 } sym_table;
 
@@ -86,13 +87,12 @@ typedef struct sym_table {
 typedef struct sym_entry {
 	struct sym_table * table;	/* Our parent symbol entry */
 	char *s;					/* The string / key / name of this element */
-	struct type * type;				/* The type / value of this entry */
+	struct type * type;			/* The type / value of this entry */
 	struct sym_entry * next;	/* The pointer to the next entry in the liked list */
 } sym_entry;
 
 
 
-typedef struct type type;
 
 void * balloc(int size);
 type * newType(char *s, int btype);

@@ -17,6 +17,11 @@ const k, l string = "test"
 
 var m [4] int
 
+//type person struct {
+//    name string
+//    age  int
+//}
+
 func main ( ) {
 	var d = 0.3
 //     fmt.Printf("Hello\tworld\n")
@@ -24,7 +29,7 @@ func main ( ) {
 }
 
 func inc(y int) int {
-    return y+1
+    return y+h
 }
 
 func add(x, y, z int) int {
