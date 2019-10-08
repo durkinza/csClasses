@@ -29,6 +29,8 @@ tTree * gtail;// = gtree;
 // paramater variables
 int show_parse_tree = 0;
 int show_symtab_tree = 0;
+int show_symtab_tree_verbose = 0;
+int show_parse_tree_verbose = 0;
 
 int errors;
 FILE *outfile;
@@ -61,6 +63,7 @@ vgo [<options>] <filename> [<filename>...] \n\
     -h              This help screen\n\
     -s --symtab     Show symbol table\n\
     -p --parse      Show parse tree\n\
+    -v --verbose    Show verbose information\n\
 	\n" );
 }
 
@@ -74,13 +77,16 @@ int main ( int argc, char **argv ){
 		for( i=1; i< argc; i++ ) {
 			if ( argv[i][0] == '-' ) {
 				// if it starts with '-' then it's probably a flag parameter			
-				if ( !strcmp( argv[i], "-h" ) ) {
+				if ( !strncmp( argv[i], "-h", 2 ) ) {
 					printHelp();
 					exit(0);
-				} else if ( !strcmp( argv[i], "-s" ) || !strcmp( argv[i], "--symtab" ) ) {
+				} else if ( !strncmp( argv[i], "-s", 2) || !strncmp( argv[i], "--symtab", 8 ) ) {
 					show_symtab_tree = 1;
-				} else if ( !strcmp( argv[i], "-p" ) || !strcmp( argv[i], "--parse" ) ) {
+				} else if ( !strncmp( argv[i], "-p", 2) || !strncmp( argv[i], "--parse", 7 ) ) {
 					show_parse_tree = 1;
+				} else if ( !strncmp( argv[i], "-v", 2) || !strncmp( argv[i], "--verbose", 7 ) ) {
+					show_parse_tree_verbose = 1;
+					show_symtab_tree_verbose = 1;
 				} else {
 					fprintf(stderr, "Argument not found `%s`\n", argv[i]);
 					printHelp();

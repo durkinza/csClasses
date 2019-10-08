@@ -17,18 +17,27 @@ const k, l string = "test"
 
 var m [4] int
 
-//type person struct {
-//    name string
-//    age  int
-//}
+type person1 struct {
+    fname string
+}
+
+type person2 struct {
+    fname string
+    age  int
+}
+type person3 struct {
+    fname string
+    lname string
+    age  int
+}
 
 func main ( ) {
 	var d = 0.3
-//     fmt.Printf("Hello\tworld\n")
 	d = 0.4
 }
 
 func inc(y int) int {
+	var q int
     return y+h
 }
 

@@ -19,6 +19,7 @@ extern void yyerror(char *);
 extern void * balloc( int );
 
 extern int show_symtab_tree;
+extern int show_symtab_tree_verbose;
 
 sym_table * globals;
 sym_table * current;
@@ -27,6 +28,7 @@ sym_table * current;
 void semanticerror( char *s, tTree * node );
 void dovariabledeclarator( tTree * node, int category, int, int );
 void printvariable( char *name, char*type, int, int, int );
+char * getType( tTree * node );
 
 
 
@@ -110,7 +112,7 @@ int insert_sym ( sym_table * tb, char *s, type * typ ) {
 	se->table = tb;
 	tb->table[h] = se;
 	se->s = balloc( sizeof( strlen( s )+1 ) );
-	strcpy(se->s , s);	// TODO: possibly do a strcpy here?
+	strcpy(se->s , s);
 	se->type = typ;
 	tb->nEntries++;
 	return 1;
@@ -166,8 +168,14 @@ void populate_symboltables ( tTree * node ) {
 			}
 			enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
 			break;
-		case ND_STRUCT:
-			enter_newscope( node->branches[0]->branches[0]->leaf->text, STRUCT_TYPE );
+		case ND_TYPEDCL:
+			if ( node->branches[1]->prodrule == ND_STRUCT ){
+				if ( show_symtab_tree ){
+					printf("---\n\n");
+					printf( "--- symbol table for: struct %s ---\n", getType( node ) );
+				}
+				enter_newscope( getType( node ), STRUCT_TYPE );
+			}
 			break;
 		case ND_MAP:
 		case ND_DCL_NAME:
@@ -199,8 +207,8 @@ void populate_symboltables ( tTree * node ) {
 			} while ( !ste && st );
 			if ( !ste ) {
 				semanticerror( "undeclared variable", node );
-			}else if( show_symtab_tree ){
-				/*printf( "calling: %s", node->branches[0]->leaf->text );
+			}else if( show_symtab_tree && show_symtab_tree_verbose ){
+				printf( "calling: %s", node->branches[0]->leaf->text );
 				if ( ste->table ) {
 					if ( ste->table->scope ) {
 						if ( ste->table->scope->basetype == FUNC_TYPE )
@@ -217,7 +225,7 @@ void populate_symboltables ( tTree * node ) {
 					if ( ste->type )
 						printf( "\t%s", typename( ste->type ) );
 					printf( "\n" );
-				}*/
+				}
 			}
 			break;
 			}
@@ -241,6 +249,7 @@ void populate_symboltables ( tTree * node ) {
 				printvariable( node->branches[0]->leaf->text, node->branches[1]->leaf->text, node->prodrule, 1, 0);
 				dovariabledeclarator( node->branches[0], node->branches[1]->leaf->category, node->prodrule, 1);
 			break;
+		case ND_STRUCTDCL:
 		case ND_VARDCL:
 		case ND_CONSTDCL:
 		case ND_VARDCL_ASSIGN:{
@@ -260,15 +269,15 @@ void populate_symboltables ( tTree * node ) {
 				semanticerror("vardcl/constdcl no type \n", NULL);
 				fflush(stdout);
 			} else{
-				while ( temp && temp->prodrule == ND_DCL_NAME_LIST) {
-					printvariable( temp->branches[1]->leaf->text, node->branches[1]->leaf->text, node->prodrule, 0, 0);
+				while ( temp && temp->prodrule == ND_DCL_NAME_LIST ) {
+					printvariable( temp->branches[1]->leaf->text, node->branches[1]->leaf->text, node->prodrule, 0, 0 );
 					dovariabledeclarator( temp->branches[1], node->branches[1]->leaf->category, node->prodrule, 0 );
 					temp = temp->branches[0];
 				}
-				if ( temp && node->branches[1]->prodrule == ND_OTHERTYPE) {
+				if ( temp && node->branches[1]->prodrule == ND_OTHERTYPE ) {
 					// This is for arrays
-					printvariable( temp->leaf->text, node->branches[1]->branches[1]->leaf->text, node->prodrule, 0, node->branches[1]->branches[0]->leaf->ival);
-					dovariabledeclarator( temp->branches[1], node->branches[1]->branches[1]->leaf->category, node->prodrule, 0 );
+					printvariable( temp->leaf->text, node->branches[1]->branches[1]->leaf->text, node->prodrule, 0, node->branches[1]->branches[0]->leaf->ival );
+					dovariabledeclarator( temp, node->branches[1]->branches[1]->leaf->category, node->prodrule, 0 );
 
 				} else if ( temp ) {
 					// This is for regular variables
@@ -281,13 +290,10 @@ void populate_symboltables ( tTree * node ) {
 	}
 }
 void dovariabledeclarator( tTree * node, int category, int prodrule, int param ) {
-	if ( !(node) ){
+	if ( node == NULL ){
 		return;
 	}
-	if ( node->prodrule == ND_OTHERTYPE) {
-		yyerror( "Arrays unimplemented" );
-		exit( -1 );
-	}
+	
 	type * new = newType(node->leaf->text, category);
 	new->cons = prodrule == ND_CONSTDCL;
 	new->parameter = param;
@@ -352,4 +358,32 @@ void semanticerror( char *s, tTree * node ) {
 	if ( node && node->prodrule == LNAME ) fprintf(stderr, " %s", node->leaf->text );
 	fprintf(stderr, "\n");
 	errors++;
+}
+
+char * getType( tTree * node ) {
+	switch( node->prodrule ) {
+		case 0:
+			switch( node->leaf->category ) {
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+					return "float64";
+				case T_INTLITERAL:
+				case T_INTEGER:
+					return "int";
+				case T_STRING:
+				case T_STRINGLITERAL:
+					return "string";
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+					return "boolean";
+				case T_NULLLITERAL:
+					return "null";
+			}
+			return node->leaf->text;
+		case ND_STRUCT:
+			return "struct";
+		case ND_TYPEDCL:
+			return node->branches[0]->leaf->text;
+	}
+	return "";
 }
