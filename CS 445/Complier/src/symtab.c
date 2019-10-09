@@ -240,8 +240,12 @@ void populate_symboltables ( tTree * node ) {
 	/* post-order part*/
 	switch ( node->prodrule ) {
 		case ND_XFNDCL:
-		case ND_STRUCT:
 			popscope();
+			break;
+		case ND_TYPEDCL:
+			if ( node->branches[1]->prodrule == ND_STRUCT ){
+				popscope();
+			}
 			break;
 		case ND_FILE:
 			if( show_symtab_tree ){
