@@ -15,7 +15,6 @@
 #include "../_build/yacc.tab.h"
 
 extern int errors;
-extern void yyerror(char *);
 extern void * balloc( int );
 
 extern int show_symtab_tree;
@@ -27,7 +26,7 @@ sym_table * current;
 
 void semanticerror( char *s, tTree * node );
 void dovariabledeclarator( tTree * node, int category, int, int );
-void printvariable( char *name, char*type, int, int, int );
+void printvariable( char *name, char*type, int, int, char * );
 char * getType( tTree * node );
 
 
@@ -77,6 +76,9 @@ int hash ( sym_table * tb,  char * s ) {
 }
 
 sym_entry * lookup ( sym_table * sb, char * s ) {
+	if ( !sb ){
+		return NULL;
+	}
 	int h;
 	sym_entry * se;
 	h = hash(sb, s);
@@ -111,7 +113,7 @@ int insert_sym ( sym_table * tb, char *s, type * typ ) {
 	se->next = tb->table[h];
 	se->table = tb;
 	tb->table[h] = se;
-	se->s = balloc( sizeof( strlen( s )+1 ) );
+	se->s = balloc( sizeof( strlen( s ) + 1 ) );
 	strcpy(se->s , s);
 	se->type = typ;
 	tb->nEntries++;
@@ -159,7 +161,11 @@ void populate_symboltables ( tTree * node ) {
 				printf("--- symbol table for: package %s ---\n", node->branches[0]->leaf->text);		
 			}
 			globals = newSymTable(100);
+			globals->parent = NULL;
 			current = globals;
+			// auto insert fmt since we don't have import
+			type * new = newType("fmt", T_NULLLITERAL );
+			insert_sym( current, "fmt", new );
 			break;
 		case ND_XFNDCL:
 			if( show_symtab_tree ){
@@ -177,9 +183,6 @@ void populate_symboltables ( tTree * node ) {
 				enter_newscope( getType( node ), STRUCT_TYPE );
 			}
 			break;
-		case ND_MAP:
-		case ND_DCL_NAME:
-			break;
 		case ND_ARG_TYPE_LIST:
 			if ( !( node->branches[1] ) || !( node->branches[1]->branches[1] ) ) {
 				semanticerror("argument no type \n", NULL);
@@ -188,12 +191,12 @@ void populate_symboltables ( tTree * node ) {
 			tTree * temp = node;
 			while( temp && temp->prodrule == ND_ARG_TYPE_LIST ) {
 				dovariabledeclarator( temp->branches[1]->branches[0], node->branches[1]->branches[1]->leaf->category, node->prodrule, 1 );
-				printvariable( temp->branches[1]->branches[0]->leaf->text, node->branches[1]->branches[1]->leaf->text, node->prodrule, 1, 0);
+				printvariable( temp->branches[1]->branches[0]->leaf->text, getType(node->branches[1]->branches[1]), node->prodrule, 1, 0);
 				temp = temp->branches[0];
 			}
 			if ( temp ){
 				dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1]->leaf->category, node->prodrule, 1 );
-				printvariable( temp->branches[0]->leaf->text, node->branches[1]->branches[1]->leaf->text, node->prodrule, 1, 0);
+				printvariable( temp->branches[0]->leaf->text, getType(node->branches[1]->branches[1]), node->prodrule, 1, 0);
 			}
 			return;
 
@@ -204,11 +207,11 @@ void populate_symboltables ( tTree * node ) {
 			do {
 				ste = lookup( st, node->branches[0]->leaf->text );
 				st = st->parent;
-			} while ( !ste && st );
+			} while ( !ste && st && st->nBuckets > 0);
 			if ( !ste ) {
 				semanticerror( "undeclared variable", node );
 			}else if( show_symtab_tree && show_symtab_tree_verbose ){
-				printf( "calling: %s", node->branches[0]->leaf->text );
+				printf( "calling: %s", getType(node->branches[0]) );
 				if ( ste->table ) {
 					if ( ste->table->scope ) {
 						if ( ste->table->scope->basetype == FUNC_TYPE )
@@ -246,8 +249,8 @@ void populate_symboltables ( tTree * node ) {
 			}
 			break;
 		case ND_ARG_TYPE:
-				printvariable( node->branches[0]->leaf->text, node->branches[1]->leaf->text, node->prodrule, 1, 0);
 				dovariabledeclarator( node->branches[0], node->branches[1]->leaf->category, node->prodrule, 1);
+				printvariable( node->branches[0]->leaf->text, getType(node->branches[1]), node->prodrule, 1, 0);
 			break;
 		case ND_STRUCTDCL:
 		case ND_VARDCL:
@@ -270,19 +273,19 @@ void populate_symboltables ( tTree * node ) {
 				fflush(stdout);
 			} else{
 				while ( temp && temp->prodrule == ND_DCL_NAME_LIST ) {
-					printvariable( temp->branches[1]->leaf->text, node->branches[1]->leaf->text, node->prodrule, 0, 0 );
 					dovariabledeclarator( temp->branches[1], node->branches[1]->leaf->category, node->prodrule, 0 );
+					printvariable( temp->branches[1]->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0 );
 					temp = temp->branches[0];
 				}
-				if ( temp && node->branches[1]->prodrule == ND_OTHERTYPE ) {
+				if ( temp && ( node->branches[1]->prodrule == ND_OTHERTYPE  || node->branches[1]->prodrule == ND_MAP ) ) {
 					// This is for arrays
-					printvariable( temp->leaf->text, node->branches[1]->branches[1]->leaf->text, node->prodrule, 0, node->branches[1]->branches[0]->leaf->ival );
 					dovariabledeclarator( temp, node->branches[1]->branches[1]->leaf->category, node->prodrule, 0 );
+					printvariable( temp->leaf->text, getType(node->branches[1]->branches[1]), node->branches[1]->prodrule, 0, node->branches[1]->branches[0]->leaf->text );
 
 				} else if ( temp ) {
 					// This is for regular variables
-					printvariable( temp->leaf->text, node->branches[1]->leaf->text, node->prodrule, 0, 0);
 					dovariabledeclarator( temp, node->branches[1]->leaf->category, node->prodrule, 0 );
+					printvariable( temp->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0);
 				}
 			}
 			break;
@@ -301,12 +304,12 @@ void dovariabledeclarator( tTree * node, int category, int prodrule, int param )
 	insert_sym( current, node->leaf->text, new );
 }
 
-void printvariable( char * name, char * type, int prodrule, int param, int arr_size){
+void printvariable( char * name, char * type, int prodrule, int param, char * arr_size){
 	if ( ! show_symtab_tree )
 		return;
-	if ( arr_size > 0 ) {
+	if ( prodrule == ND_MAP || prodrule == ND_OTHERTYPE) {
 		// for arrays
-		printf("   %s [%d] %s ", name, arr_size, type);
+		printf("   %s [%s] %s ", name, arr_size, type);
 	} else {
 		// for other types
 		printf("   %s %s ", name, type);
@@ -357,7 +360,7 @@ void semanticerror( char *s, tTree * node ) {
 	fprintf(stderr, "%s", s);
 	if ( node && node->prodrule == LNAME ) fprintf(stderr, " %s", node->leaf->text );
 	fprintf(stderr, "\n");
-	errors++;
+	exit(3);
 }
 
 char * getType( tTree * node ) {

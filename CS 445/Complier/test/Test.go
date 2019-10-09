@@ -1,11 +1,13 @@
 package main
 import "math/rand"
-import (
-		"fmt"
-		"time"
-	)
+
+func add(x int, y int) int {
+    return x + y
+}
+
 func main() {
 	var dd float64
+	const yy = 1
 	dd = 0.0
 	dd += 1
 	fmt.Println(dd)
@@ -23,21 +25,20 @@ func main() {
 		sum += sum
 	}
 
-	for {
-	}
+	// infinite loop
+	//for {
+	//}
 
-	if x < 0 {
+	if dd < 0 {
 	   fmt.Println(add(42, 13))
-	} else if x < 10 {
+	} else if dd < 10 {
 	   fmt.Println(add(42, 13))
 	} else {
 	   fmt.Println(add(42, 13))
 	} 
 }
 
-func add(x int, y int) int {
-    return x + y
-}
+
 
 type person struct {
     name string
@@ -45,7 +46,7 @@ type person struct {
 }
 
 func addtwo(x, y int) int {
-	c = 0
+	var z = 2
 	x == z
 	x != z
 	x &&  z
@@ -66,15 +67,10 @@ func addtwo(x, y int) int {
 	x *  z
 	x !=  z
 	x.z
-	array[xz]
-	a = 1
-	b = 1
-	c = 1
-	if{
-	}else{}
+	var b = 1
+	var c = 1
 	for x; x<z; z++ {}
 	for y; y>=2; x+=3 {}
-	const char jimmy = 0
 	return x + y
 	var a [32]int
 

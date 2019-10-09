@@ -84,7 +84,7 @@ int main ( int argc, char **argv ){
 					show_symtab_tree = 1;
 				} else if ( !strncmp( argv[i], "-p", 2) || !strncmp( argv[i], "--parse", 7 ) ) {
 					show_parse_tree = 1;
-				} else if ( !strncmp( argv[i], "-v", 2) || !strncmp( argv[i], "--verbose", 7 ) ) {
+				} else if ( !strncmp( argv[i], "-v", 2) || !strncmp( argv[i], "--verbose", 9 ) ) {
 					show_parse_tree_verbose = 1;
 					show_symtab_tree_verbose = 1;
 				} else {
