@@ -1,6 +1,10 @@
 package main
 import "math/rand"
 
+type something struct {
+	x,y int
+}
+
 func add(x int, y int) int {
     return x + y
 }
@@ -47,6 +51,10 @@ type person struct {
 
 func addtwo(x, y int) int {
 	var z = 2
+	type person2 struct {
+	    name2 string
+	    age2  int
+	}
 	x == z
 	x != z
 	x &&  z

@@ -92,7 +92,7 @@ sym_entry * lookup ( sym_table * sb, char * s ) {
 	return NULL;
 }
 
-int insert_sym ( sym_table * tb, char *s, type * typ ) {
+sym_entry * insert_sym ( sym_table * tb, char *s, type * typ ) {
 	struct sym_entry * se;
 
 	// check that the element doesn't already exist. 
@@ -103,7 +103,7 @@ int insert_sym ( sym_table * tb, char *s, type * typ ) {
 		char * e = balloc( size ); 
 		snprintf(e, size, "Re-declaration of variable `%s`", s);
 		semanticerror( e, NULL );
-		return 0;
+		return se;
 	}
 
 	// if the element doesn't exists, we can add it.
@@ -117,7 +117,7 @@ int insert_sym ( sym_table * tb, char *s, type * typ ) {
 	strcpy(se->s , s);
 	se->type = typ;
 	tb->nEntries++;
-	return 1;
+	return se;
 }
 
 void pushscope( sym_table * stp ){
@@ -127,7 +127,7 @@ void popscope(){
 	current = current->parent;
 }
 
-void enter_newscope( char *s, int typ){
+sym_entry * enter_newscope( char *s, int typ){
 	sym_table * new; 
 	type * t;
 
@@ -147,8 +147,9 @@ void enter_newscope( char *s, int typ){
 	}
 	
 	new->scope = t;
-	insert_sym( current, s, t );
+	sym_entry * se = insert_sym( current, s, t );
 	pushscope( new );
+	return se;
 }
 
 void populate_symboltables ( tTree * node ) {
@@ -164,15 +165,32 @@ void populate_symboltables ( tTree * node ) {
 			globals->parent = NULL;
 			current = globals;
 			// auto insert fmt since we don't have import
-			type * new = newType("fmt", T_NULLLITERAL );
-			insert_sym( current, "fmt", new );
+			type * new = newType("fmt", FUNC_TYPE );
+			sym_entry * fmt_se = insert_sym( current, "fmt", new );
+			type * fmt_ret = newType("", T_NULLLITERAL);
+			fmt_se->type->u.f.ret = fmt_ret; 
 			break;
-		case ND_XFNDCL:
-			if( show_symtab_tree ){
-				printf("---\n\n");
-				printf("--- symbol table for: func %s ---\n", node->branches[0]->branches[0]->leaf->text);
+		case ND_XFNDCL:{
+				// get a type ready for the return type
+				type * func_ret;
+				// build a new scope for this function
+				sym_entry * func_se = enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
+				// determine the return type
+				if ( node->branches[0]->branches[2] && node->branches[0]->branches[2]->prodrule == ND_FNRES ) {
+					// if we're given a return type, use it
+					func_ret = newType( getType( node->branches[0]->branches[2]->branches[0] ) , node->branches[0]->branches[2]->branches[0]->leaf->category );
+				} else {
+					// if we're not given a return type, deafult to void
+					func_ret = newType( "void", T_NULLLITERAL );
+				}
+				// set our return type to the sym_entry 
+				func_se->type->u.f.ret = func_ret; 
+				// now print if we need to
+				if( show_symtab_tree ){
+					printf("---\n\n");
+					printf("--- symbol table for: func %s  returns: %s ---\n", node->branches[0]->branches[0]->leaf->text, func_ret->name);
+				}
 			}
-			enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
 			break;
 		case ND_TYPEDCL:
 			if ( node->branches[1]->prodrule == ND_STRUCT ){
