@@ -257,7 +257,7 @@ void populate_symboltables ( tTree * node ) {
 			// 
 			while( temp && temp->prodrule == ND_ARG_TYPE_LIST ) {
 				// check for type changes in the parameters.
-				if ( temp->branches[1]->branches[1] ){
+				if ( temp->nbranches > 1 && temp->branches[1]->nbranches > 1 ){
 					typ = temp->branches[1]->branches[1];
 				}
 				// create a variable for each parameter
