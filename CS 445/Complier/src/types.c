@@ -26,6 +26,7 @@ type * newUnionType(char * s, struct sym_table * typ, int btype ){
 	type * new = newType(s, btype);
 	switch(btype){
 		case FUNC_TYPE:
+		case PACKAGE_TYPE:
 			new->u.f.table = typ;
 			break;
 		case STRUCT_TYPE:

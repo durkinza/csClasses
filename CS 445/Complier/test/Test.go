@@ -5,7 +5,7 @@ import "math/rand"
 
 
 import (
-		"math/rand"
+		"time"
 		"fmt"
 		)
 
