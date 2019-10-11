@@ -61,6 +61,7 @@ void printHelp() {
 vgo [<options>] <filename> [<filename>...] \n\
 											\n\
     -h              This help screen\n\
+    -d --debugging  Debugging. Show all tables/trees\n\
     -s --symtab     Show symbol table\n\
     -p --parse      Show parse tree\n\
     -v --verbose    Show verbose information\n\
@@ -84,6 +85,11 @@ int main ( int argc, char **argv ){
 					show_symtab_tree = 1;
 				} else if ( !strncmp( argv[i], "-p", 2) || !strncmp( argv[i], "--parse", 7 ) ) {
 					show_parse_tree = 1;
+				} else if ( !strncmp( argv[i], "-d", 2) || !strncmp( argv[i], "--debugging", 11 ) ) {
+					show_symtab_tree = 1;
+					show_parse_tree = 1;
+					show_parse_tree_verbose = 1;
+					show_symtab_tree_verbose = 1;
 				} else if ( !strncmp( argv[i], "-v", 2) || !strncmp( argv[i], "--verbose", 9 ) ) {
 					show_parse_tree_verbose = 1;
 					show_symtab_tree_verbose = 1;

@@ -14,6 +14,7 @@
 #define MAP_TYPE		100200
 #define ARRAY_TYPE		100300
 #define STRUCT_TYPE		100400
+#define PACKAGE_TYPE	100500
 typedef struct type {
 	// the basetype will tell us what type of struct to use
 	// types INT, FLOAT, String, etc. Will not use the union
@@ -65,6 +66,11 @@ typedef struct type {
 			// local variables in the function tbale;
 			struct sym_table * table;
 		}f;
+
+		struct package {
+			// for packages
+			struct sym_table * table;
+		}p;
 
 		// hold token for literal element
 		struct tTree * t;

@@ -106,6 +106,8 @@ char * prod_to_string(int prodrule){
 			return "dcl_name";
 		case ND_NEW_NAME:
 			return "new_name";
+		case ND_NEW_NAME_LIST:
+			return "new_name_list";
 		case ND_HIDDEN_IMPORTSYM:
 			return "hidden_importsym";
 		case ND_STMT:

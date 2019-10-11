@@ -1,17 +1,32 @@
 package main
+
+
 import "math/rand"
+
+
+import (
+		"math/rand"
+		"fmt"
+		)
 
 type something struct {
 	x,y int
 }
 
-func add(x int, y int) int {
+func add( a, x int, z, y float64) int {
     return x + y
+}
+
+var z int
+
+func one(x int) {
+	return z
 }
 
 func main() {
 	var dd float64
-	const yy = 1
+	var a, b int
+	const yy = 0
 	dd = 0.0
 	dd += 1
 	fmt.Println(dd)
@@ -82,7 +97,7 @@ func addtwo(x, y int) int {
 	return x + y
 	var a [32]int
 
-	var m map[string]int
-	m["Bell Labs"] = int{ 40.68433, -74.39967, }
-	m["Google"] = int{37.42202, -122.08408 }
+	var m map[string] Vertex
+	m["Bell Labs"] = Vertex{ 40.68433, -74.39967, }
+	m["Google"] = Vertex{37.42202, -122.08408 }
 }

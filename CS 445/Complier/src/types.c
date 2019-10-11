@@ -6,19 +6,19 @@
 
 // better malloc
 void * balloc( int n ){
-	void *p = malloc( n );
+	char *p = malloc( n );
 	if( p == NULL ){
 		fprintf( stderr, "Out of Memory for request of %d bytes.\n", n );
 		exit( -1 );
 	}
-	return p;
+	return (void *)p;
 }
 
 type * newType( char * s, int btype ){
-	type * new = balloc( sizeof( type ) );
+	type * new = (type *) balloc( sizeof( type ) );
 	new->basetype = btype;
-	new->name = balloc( sizeof( strlen(s)+1 ) );
-	strcpy(new->name, s );
+	new->name = balloc( strlen(s)+1 );
+	strcpy(new->name, s);
 	return new;
 }
 

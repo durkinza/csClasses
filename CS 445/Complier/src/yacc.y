@@ -847,7 +847,7 @@ stmt_list
 
 new_name_list
 	: new_name
-	| new_name_list T_SEPERATOR new_name
+	| new_name_list T_SEPERATOR new_name {$$ = create_tree(ND_NEW_NAME_LIST, 2, $1, $3); delete_tree($2);}
 	;
 
 dcl_name_list
