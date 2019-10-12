@@ -212,8 +212,6 @@ void populate_symboltables ( tTree * node , int depth) {
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
-
-
 			break;
 			
 		case ND_XFNDCL:{
@@ -224,8 +222,25 @@ void populate_symboltables ( tTree * node , int depth) {
 				depth+=2;
 				// determine the return type
 				if ( node->branches[0]->branches[2] && node->branches[0]->branches[2]->prodrule == ND_FNRES ) {
-					// if we're given a return type, use it
-					func_ret = newType( getType( node->branches[0]->branches[2]->branches[0] ) , node->branches[0]->branches[2]->branches[0]->leaf->category );
+					if( node->branches[0]->branches[2]->branches[0]->prodrule == ND_MAP){
+						// for map return types
+						func_ret = newType( getType( node->branches[0]->branches[2]->branches[0] ), node->branches[0]->branches[2]->branches[0]->prodrule);
+						type * map_index_type = newType(getType(node->branches[0]->branches[2]->branches[0]->branches[0]), node->branches[0]->branches[2]->branches[0]->branches[0]->prodrule);
+						type * map_element_type = newType(getType(node->branches[0]->branches[2]->branches[0]->branches[1]), node->branches[0]->branches[2]->branches[0]->branches[1]->prodrule);
+						func_ret->u.m.index_type = map_index_type;
+						func_ret->u.m.element_type = map_element_type;	
+					} else if( node->branches[0]->branches[2]->branches[0]->prodrule == ND_OTHERTYPE ){
+						// for array return types
+	
+						node->branches[0]->branches[2]->branches[0]->prodrule = ARRAY_TYPE;
+						func_ret = newType( getType(node->branches[0]->branches[2]->branches[0]), node->branches[0]->branches[2]->branches[0]->prodrule);
+						func_ret->u.a.size = node->branches[0]->branches[2]->branches[0]->branches[0]->leaf->ival;
+						type * map_element_type = newType(getType(node->branches[0]->branches[2]->branches[0]->branches[1]), node->branches[0]->branches[2]->branches[0]->branches[1]->prodrule);
+						func_ret->u.a.element_type = map_element_type;	
+					} else {
+						// if we're given a return type, use it
+						func_ret = newType( getType( node->branches[0]->branches[2]->branches[0] ) , node->branches[0]->branches[2]->branches[0]->leaf->category );
+					}
 				} else {
 					// if we're not given a return type, deafult to void
 					func_ret = newType( "void", T_NULLLITERAL );
@@ -442,7 +457,7 @@ void printvariable( char * name, char * type, int prodrule, int param, char * ar
 		return;
 	if ( prodrule == ND_MAP || prodrule == ND_OTHERTYPE) {
 		// for arrays and maps
-		printf("  %*s%s [%s] %s ", spaces, "", name, arr_size, type);
+		printf("  %*s%s [ %s ] %s ", spaces, "", name, arr_size, type);
 	} else {
 		// for other types
 		printf("  %*s%s %s ", spaces, "", name, type);
@@ -528,13 +543,17 @@ char * getType( tTree * node ) {
 			return "struct";
 		case ND_MAP:{
 			static char ret[30];
-			sprintf(ret, " map [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
+			sprintf(ret, "map [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
 			return ret;
 		}
 		case ND_OTHERTYPE:{
 			static char ret[30];
-
-			sprintf(ret, " [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
+			sprintf(ret, "[ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
+			return ret;
+		}
+		case ARRAY_TYPE:{
+			static char ret[30];
+			sprintf(ret, "[ %s ] %s ", node->branches[0]->leaf->text, getType(node->branches[1]));
 			return ret;
 		}
 		case ND_TYPEDCL:
