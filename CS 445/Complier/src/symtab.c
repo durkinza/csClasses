@@ -25,8 +25,8 @@ sym_table * current;
 
 
 void semanticerror( char *s, tTree * node );
-void dovariabledeclarator( tTree * node, tTree * category, int, int );
-void printvariable( char *name, char*type, int, int, char * );
+sym_entry * dovariabledeclarator( tTree * node, tTree * category, int, int );
+void printvariable( char *name, char*type, int, int, char * , int);
 char * getType( tTree * node );
 
 
@@ -171,14 +171,15 @@ sym_entry * enter_newscope( char *s, int typ){
 }
 
 
-void populate_symboltables ( tTree * node ) {
+void populate_symboltables ( tTree * node , int depth) {
 	int i;
+	int print_spaces = depth;
 	if ( node == NULL ) return;
 	/* pre-order part */
 	switch ( node->prodrule ) {
 		case ND_PACKAGE:
 			if( show_symtab_tree ){
-				printf("--- symbol table for: package %s ---\n", node->branches[0]->leaf->text);		
+				printf("%*s--- symbol table for: package %s ---\n", print_spaces, "", node->branches[0]->leaf->text);		
 			}
 			// create a global scope 
 			globals = newSymTable(100);
@@ -214,11 +215,13 @@ void populate_symboltables ( tTree * node ) {
 
 
 			break;
+			
 		case ND_XFNDCL:{
 				// get a type ready for the return type
 				type * func_ret;
 				// build a new scope for this function
 				sym_entry * func_se = enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
+				depth+=2;
 				// determine the return type
 				if ( node->branches[0]->branches[2] && node->branches[0]->branches[2]->prodrule == ND_FNRES ) {
 					// if we're given a return type, use it
@@ -231,7 +234,7 @@ void populate_symboltables ( tTree * node ) {
 				func_se->type->u.f.ret = func_ret; 
 				// now print if we need to
 				if( show_symtab_tree ){
-					printf("  --- symbol table for: func %s  returns: %s ---\n", node->branches[0]->branches[0]->leaf->text, func_ret->name);
+					printf("  %*s--- symbol table for: func %s  returns: %s ---\n", print_spaces, "", node->branches[0]->branches[0]->leaf->text, func_ret->name);
 				}
 			}
 			break;
@@ -239,8 +242,9 @@ void populate_symboltables ( tTree * node ) {
 			// for structs, we will deine them with the type keyword
 			if ( node->branches[1]->prodrule == ND_STRUCT ){
 				enter_newscope( getType( node ), STRUCT_TYPE );
+				depth+=2;
 				if ( show_symtab_tree ){
-					printf( "  --- symbol table for: struct %s ---\n", getType( node ) );
+					printf( "  %*s--- symbol table for: struct %s ---\n", print_spaces, "", getType( node ) );
 				}
 			}
 			break;
@@ -262,14 +266,21 @@ void populate_symboltables ( tTree * node ) {
 				}
 				// create a variable for each parameter
 				dovariabledeclarator( temp->branches[1]->branches[0], typ, node->prodrule, 1 );
-				printvariable( temp->branches[1]->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0);
+				printvariable( temp->branches[1]->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
 				// move down the list
 				temp = temp->branches[0];
+			}				// create a variable for each type
+			if ( temp->nbranches > 1 ){
+				typ = temp->branches[1];
 			}
-			if ( temp ){
+			if ( temp && ( typ->prodrule == ND_OTHERTYPE  || typ->prodrule == ND_MAP ) ) {
+				// This is for arrays and map
+				dovariabledeclarator( temp->branches[0], typ, node->prodrule, 1 );
+				printvariable( temp->branches[0]->leaf->text, getType(typ), node->branches[1]->prodrule, 1, node->branches[1]->branches[0]->leaf->text, print_spaces );
+			} else if ( temp ){
 				// create a variable for a parameter
 				dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1], node->prodrule, 1 );
-				printvariable( temp->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0);
+				printvariable( temp->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
 			}
 			return;
 
@@ -314,34 +325,34 @@ void populate_symboltables ( tTree * node ) {
 	}
 	/* visit branches */
 	for ( i=0; i < node->nbranches; i++ ) {
-		populate_symboltables( node->branches[i] );
+		populate_symboltables( node->branches[i], depth );
 	}
 	/* post-order part*/
 	switch ( node->prodrule ) {
 		case ND_XFNDCL:
 			if( show_symtab_tree )
-				printf("  ---\n");
+				printf("  %*s---\n", print_spaces, "");
 			// leave from the scope of the function
 			popscope();
 			break;
 		case ND_TYPEDCL:
 			if ( node->branches[1]->prodrule == ND_STRUCT ){
 				if( show_symtab_tree )
-					printf("  ---\n");
+					printf("  %*s---\n", print_spaces, "");
 				// leave the scope of the struct
 				popscope();
 			}
 			break;
 		case ND_FILE:
 			if( show_symtab_tree ){
-				printf("---\n");
+				printf("%*s---\n", print_spaces, "");
 			}
 			// for the file we won't pop off the final scope
 			break;
 		case ND_ARG_TYPE:
 				// for single parameters, create a variable
 				dovariabledeclarator( node->branches[0], node->branches[1], node->prodrule, 1);
-				printvariable( node->branches[0]->leaf->text, getType(node->branches[1]), node->prodrule, 1, 0);
+				printvariable( node->branches[0]->leaf->text, getType(node->branches[1]), node->prodrule, 1, 0, print_spaces);
 			break;
 		case ND_STRUCTDCL:
 		case ND_VARDCL:
@@ -365,18 +376,18 @@ void populate_symboltables ( tTree * node ) {
 				// loop through the vardcl list
 				while ( temp && ( temp->prodrule == ND_DCL_NAME_LIST || temp->prodrule == ND_NEW_NAME_LIST)) {
 					dovariabledeclarator( temp->branches[1], node->branches[1], node->prodrule, 0 );
-					printvariable( temp->branches[1]->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0 );
+					printvariable( temp->branches[1]->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0, print_spaces );
 					temp = temp->branches[0];
 				}
 				// create a variable for each type
-				if ( temp && ( node->branches[1]->prodrule == ND_OTHERTYPE  || node->branches[1]->prodrule == ND_MAP ) ) {
-					// This is for arrays and map
-					dovariabledeclarator( temp, node->branches[1]->branches[1], node->prodrule, 0 );
-					printvariable( temp->leaf->text, getType(node->branches[1]->branches[1]), node->branches[1]->prodrule, 0, node->branches[1]->branches[0]->leaf->text );
+				if ( temp && (node->branches[1]->prodrule == ND_OTHERTYPE || node->branches[1]->prodrule == ND_MAP ) ) {
+					// This is for arrays
+					dovariabledeclarator( temp, node->branches[1], node->prodrule, 0 );
+					printvariable( temp->leaf->text, getType(node->branches[1]->branches[1]), node->branches[1]->prodrule, 0, node->branches[1]->branches[0]->leaf->text, print_spaces );
 				} else if ( temp ) {
 					// This is for regular variables
 					dovariabledeclarator( temp, node->branches[1], node->prodrule, 0 );
-					printvariable( temp->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0);
+					printvariable( temp->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0, print_spaces );
 				}
 			}
 			break;
@@ -385,31 +396,56 @@ void populate_symboltables ( tTree * node ) {
 }
 
 
-void dovariabledeclarator( tTree * node, tTree * category, int prodrule, int param ) {
+sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, int param ) {
 	// check that we have a node to make into a variable
 	if ( node == NULL ){
-		return;
+		return NULL;
 	}
+	type * new;
 	
-	type * new = newType(node->leaf->text, category->leaf->category);
+	if ( category->prodrule == ND_MAP ) {
+		new = newType(node->leaf->text, category->prodrule );
+		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->prodrule);
+		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		new->u.m.index_type = map_index_type;
+		new->u.m.element_type = map_element_type;	
+
+		if( show_symtab_tree && show_symtab_tree_verbose ){
+			printf("makeing map element\n");
+			printf("index type is: %s\n", getType(category->branches[0]));
+			printf("element type is: %s\n", getType(category->branches[1]));
+		}
+	} else if ( category->prodrule == ND_OTHERTYPE ) {
+		new = newType(node->leaf->text, category->prodrule );
+		type * map_index_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		new->u.a.size = category->branches[0]->leaf->ival;
+		new->u.a.element_type = map_index_type;
+		if( show_symtab_tree && show_symtab_tree_verbose ){
+			printf("makeing array element\n");
+			printf("size is: %d\n", category->branches[0]->leaf->ival);
+			printf("type is: %s\n", getType(category->branches[1]));
+		}
+	} else {
+		new = newType(node->leaf->text, category->leaf->category);
+	}
 	new->cons = prodrule == ND_CONSTDCL;
 	new->parameter = param;
 	new->name = getType(category); 
 	// insert the new symbol into the current hash table
-	insert_sym( current, node->leaf->text, new );
+	return insert_sym( current, node->leaf->text, new );
 }
 
 
-void printvariable( char * name, char * type, int prodrule, int param, char * arr_size){
+void printvariable( char * name, char * type, int prodrule, int param, char * arr_size, int spaces){
 	// we won't print if we don't need to
 	if ( ! show_symtab_tree )
 		return;
 	if ( prodrule == ND_MAP || prodrule == ND_OTHERTYPE) {
 		// for arrays and maps
-		printf("   %s [%s] %s ", name, arr_size, type);
+		printf("  %*s%s [%s] %s ", spaces, "", name, arr_size, type);
 	} else {
 		// for other types
-		printf("   %s %s ", name, type);
+		printf("  %*s%s %s ", spaces, "", name, type);
 	}
 	// for const variables lets say so
 	if ( prodrule == ND_CONSTDCL )
@@ -490,8 +526,19 @@ char * getType( tTree * node ) {
 			return node->leaf->text;
 		case ND_STRUCT:
 			return "struct";
+		case ND_MAP:{
+			static char ret[30];
+			sprintf(ret, " map [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
+			return ret;
+		}
+		case ND_OTHERTYPE:{
+			static char ret[30];
+
+			sprintf(ret, " [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
+			return ret;
+		}
 		case ND_TYPEDCL:
-			return node->branches[0]->leaf->text;
+			return getType(node->branches[0]);
 	}
 	return "";
 }

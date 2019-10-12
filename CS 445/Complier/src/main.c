@@ -17,7 +17,7 @@ extern char * yytext;
 extern int yydebug;
 
 // symtab.h functions
-extern void populate_symboltables ( tTree * );
+extern void populate_symboltables ( tTree *, int depth );
 
 // my global vars
 int line_num = 1;
@@ -120,7 +120,7 @@ int main ( int argc, char **argv ){
 					} else {
 						if ( show_parse_tree )					
 							print_tree( gtree );
-						populate_symboltables ( gtree );
+						populate_symboltables ( gtree , 0);
 						delete_tree( gtree );
 					}
 					// make some padding at bottom
