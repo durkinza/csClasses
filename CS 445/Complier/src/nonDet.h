@@ -58,6 +58,7 @@
 #define ND_INDCL			3023
 #define ND_LOOP_BODY		3033
 #define ND_RANGE_STMT		3034
+#define ND_VAR_CALL			3050
 
 
 #define ND_KEYVAL			3105

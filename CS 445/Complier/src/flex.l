@@ -46,7 +46,7 @@ extern tTree * gtail;
 ^{WSP}#.*\n				{ _yyerror("g0 has no #preprocessor direcives. Are you feeding it C/C++ code?", 1); }
 
 
-\n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){return T_SEMICOLON;}else{/* eat the newline */} }
+\n              		{ yylval.node = make_token(T_NLINE); line_num++; if(swapped_nline == 1){can_have_semi=0;swapped_nline=0;return T_SEMICOLON; }else{/* eat the newline */} }
 [ \t\f]+        		{ /* eat the whitespace */ }
 
 "boolean"       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }

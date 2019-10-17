@@ -18,8 +18,8 @@ valgrindopts = --leak-check=full --track-origins=yes
 zipname = durk7832.zip
 
 
-vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o
-	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o $(ccopts) -o vgo
+vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o
+	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o $(ccopts) -o vgo
 
 _build: 
 	mkdir _build
@@ -39,7 +39,11 @@ _build/yacc.tab.o: _build/yacc.tab.c _build/yacc.tab.h
 _build/lex.yy.o: _build/lex.yy.c src/tokenTree.h _build/yacc.tab.h
 	$(cc) -c _build/lex.yy.c $(ccopts) -o _build/lex.yy.o
 
+_build/types.o: _build src/types.h src/types.c src/types.h src/symtab.h src/tokenTree.h
+	$(cc) -c src/types.c $(ccopts) -o _build/types.o
 
+_build/symtab.o: _build src/symtab.h src/symtab.c _build/yacc.tab.h src/nonDet.h src/types.h
+	$(cc) -c src/symtab.c $(ccopts) -o _build/symtab.o
 
 
 _build/yacc.tab.c _build/yacc.tab.h: _build src/yacc.y

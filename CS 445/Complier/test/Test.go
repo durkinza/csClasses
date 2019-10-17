@@ -1,11 +1,32 @@
 package main
+
+
 import "math/rand"
+
+
 import (
-		"fmt"
 		"time"
-	)
+		"fmt"
+		)
+
+type something struct {
+	x,y int
+}
+
+func add( a, x int, z, y float64) int {
+    return x + y
+}
+
+var z int
+
+func one(x int) {
+	return z
+}
+
 func main() {
 	var dd float64
+	var a, b int
+	const yy = 0
 	dd = 0.0
 	dd += 1
 	fmt.Println(dd)
@@ -23,21 +44,20 @@ func main() {
 		sum += sum
 	}
 
-	for {
-	}
+	// infinite loop
+	//for {
+	//}
 
-	if x < 0 {
+	if dd < 0 {
 	   fmt.Println(add(42, 13))
-	} else if x < 10 {
+	} else if dd < 10 {
 	   fmt.Println(add(42, 13))
 	} else {
 	   fmt.Println(add(42, 13))
 	} 
 }
 
-func add(x int, y int) int {
-    return x + y
-}
+
 
 type person struct {
     name string
@@ -45,7 +65,11 @@ type person struct {
 }
 
 func addtwo(x, y int) int {
-	c = 0
+	var z = 2
+	type person2 struct {
+	    name2 string
+	    age2  int
+	}
 	x == z
 	x != z
 	x &&  z
@@ -66,19 +90,14 @@ func addtwo(x, y int) int {
 	x *  z
 	x !=  z
 	x.z
-	array[xz]
-	a = 1
-	b = 1
-	c = 1
-	if{
-	}else{}
+	var b = 1
+	var c = 1
 	for x; x<z; z++ {}
 	for y; y>=2; x+=3 {}
-	const char jimmy = 0
 	return x + y
 	var a [32]int
 
-	var m map[string]Vertex
+	var m map[string] Vertex
 	m["Bell Labs"] = Vertex{ 40.68433, -74.39967, }
 	m["Google"] = Vertex{37.42202, -122.08408 }
 }
