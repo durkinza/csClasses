@@ -18,6 +18,19 @@ var q,r,s,t map[string]int
 var u,v,w,x [32]int
 
 
+var va = 1
+var vb = "Hello World"
+
+
+var ve,vf = 1
+var vg,vh = "Hello World"
+
+
+var vm,vn,vo,vp = 1
+var vq,vr,vs,vt = "Hello World"
+
+
+
 type aa struct {
 	x int
 }
