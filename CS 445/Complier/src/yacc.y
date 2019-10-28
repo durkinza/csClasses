@@ -400,11 +400,7 @@ if_header
 
 /* IF cond body (ELSE IF cond body)* (ELSE block)? */
 if_stmt
-	: T_IF
-		if_header
-		loop_body
-		elseif_list else 
-		{
+	: T_IF if_header loop_body elseif_list else {
 			$$ = create_tree(ND_IF, 4, $2, $3, $4, $5);
 			delete_tree($1);
 		}
