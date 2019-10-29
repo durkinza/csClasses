@@ -13,10 +13,11 @@ typedef struct token {
 						the string (less quotes and after escapes) here */	
 } token;
 typedef struct tTree {
-   int prodrule;		/* prodrule is the action of this tree (ex. '+' for addition) */
-   int nbranches;
-   struct tTree *branches[MAX_BRANCHES];
-   struct token *leaf;
+	int prodrule;		/* prodrule is the action of this tree (ex. '+' for addition) */
+	int nbranches;
+	int ret_type; /* return types for expr */
+	struct tTree *branches[MAX_BRANCHES];
+	struct token *leaf;
 } tTree;
 
 token * create_token(int category, char *text, int colno, int lineno, char *filename, char * value);

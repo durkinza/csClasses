@@ -88,8 +88,6 @@ int main ( int argc, char **argv ){
 				} else if ( !strncmp( argv[i], "-d", 2) || !strncmp( argv[i], "--debugging", 11 ) ) {
 					show_symtab_tree = 1;
 					show_parse_tree = 1;
-					show_parse_tree_verbose = 1;
-					show_symtab_tree_verbose = 1;
 				} else if ( !strncmp( argv[i], "-v", 2) || !strncmp( argv[i], "--verbose", 9 ) ) {
 					show_parse_tree_verbose = 1;
 					show_symtab_tree_verbose = 1;

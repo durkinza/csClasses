@@ -132,6 +132,8 @@ extern tTree * gtail;
 "."						{ yylval.node = make_token(T_DOT); return T_DOT; }
 ","						{ yylval.node = make_token(T_SEPERATOR); return T_SEPERATOR; }
 ";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
+"<<"					{ yylval.node = make_token(LLSH); return LLSH; }
+">>"					{ yylval.node = make_token(LRSH); return LRSH; }
 
 
 .                       { _yyerror("lexical error", 1); }

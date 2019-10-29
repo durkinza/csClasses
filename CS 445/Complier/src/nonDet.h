@@ -21,6 +21,14 @@
 #define ND_NOT_EQUAL		1016
 #define ND_COLAS			1017
 #define ND_MAP				1019
+#define ND_LTHAN			1020
+#define ND_GTHAN			1021
+#define ND_LTHANEQUAL		1022
+#define ND_GTHANEQUAL		1023
+#define ND_OR				1024
+#define ND_ANDNOT			1025
+#define ND_LSH				1026
+#define ND_RSH				1027
 
 // Packages
 #define ND_FILE				1999
