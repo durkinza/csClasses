@@ -418,12 +418,23 @@ void populate_symboltables ( tTree * node , int depth) {
 		case ND_MINUS:
 		case ND_DIVIDE:
 		case ND_MULTIPLY:
+		case ND_LTHAN:
+		case ND_LTHANEQUAL:
+		case ND_GTHAN:
+		case ND_GTHANEQUAL:
+		case ND_INCREMENT:
+		case ND_DECREMENT:
+		case ND_OROR:
+		case ND_ANDAND:
 		case ND_MOD:
 		case ND_AND:
 		case ND_ASSIGNMENT:
-			if( compareTypes( node ) == 0) {
-				//printf("line: %d\n", node->branches[0]->branches[0]->leaf->lineno);
-			}
+		case ND_EQUAL:
+		case ND_NOT_EQUAL:
+		case ND_NEGATE:
+		case ND_PEXPR_NO_PAREN:
+			compareTypes( node );
+			break;
 	}
 }
 
@@ -437,8 +448,8 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 	
 	if ( category->prodrule == ND_MAP ) {
 		new = newType(node->leaf->text, category->prodrule );
-		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->prodrule);
-		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->leaf->category);
+		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->leaf->category);
 		new->u.m.index_type = map_index_type;
 		new->u.m.element_type = map_element_type;	
 
@@ -449,7 +460,7 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 		}
 	} else if ( category->prodrule == ND_OTHERTYPE ) {
 		new = newType(node->leaf->text, category->prodrule );
-		type * map_index_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		type * map_index_type = newType(getType(category->branches[1]), category->branches[1]->leaf->category);
 		new->u.a.size = category->branches[0]->leaf->ival;
 		new->u.a.element_type = map_index_type;
 		if( show_symtab_tree && show_symtab_tree_verbose ){
@@ -601,19 +612,30 @@ int compareTypes( tTree * node ) {
 	if ( a && a->prodrule == 0 ) {
 		// for literals 
 		a_type = a->leaf->category;
-	} else if ( a && a->nbranches > 1 ) {
+	} else if ( a && a->nbranches > 1 && (a->prodrule != ND_PEXPR_NO_PAREN ) ) {
 		// for return types of child expressions
 		a_type = a->ret_type;
 	} else {
 		// Lets check if the element is already in the symbol table.
 		sym_entry * ste = NULL;
 		sym_table * st = current;
-		do {
-			ste = lookup( st, a->branches[0]->leaf->text );
-			st = st->parent;
-		} while ( !ste && st && st->nBuckets > 0);
-		a_entry = ste;
-		a_type = ste->type->basetype;
+		if ( a->branches[0]->nbranches > 0 ) {
+			do {
+				ste = lookup( st, a->branches[0]->branches[0]->leaf->text );
+				st = st->parent;
+			} while ( !ste && st && st->nBuckets > 0);
+
+			a_entry = ste;
+			a_type = a->ret_type;
+		} else {
+			do {
+				ste = lookup( st, a->branches[0]->leaf->text );
+				st = st->parent;
+			} while ( !ste && st && st->nBuckets > 0);
+
+			a_entry = ste;
+			a_type = ste->type->basetype;
+		}
 	}
 
 	// get b's type
@@ -632,11 +654,23 @@ int compareTypes( tTree * node ) {
 		} while ( !ste && st && st->nBuckets > 0);
 		b_entry = ste;
 		b_type = ste->type->basetype;
+		switch ( b_type) {
+			case FUNC_TYPE:
+				b_type = ste->type->u.f.ret->basetype;
+				break;
+			case MAP_TYPE:
+				b_type = ste->type->u.m.element_type->basetype;
+				break;
+			case ARRAY_TYPE:
+				break;
+			case STRUCT_TYPE:	 
+				break;
+		}
 	}
-
 
 	switch ( op_type ) {
 		case ND_PLUS:
+		case ND_ADDEQ:
 			switch ( a_type ) {
 				case T_INTLITERAL:
 				case T_INTEGER:
@@ -645,8 +679,8 @@ int compareTypes( tTree * node ) {
 						node->ret_type = INT_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of addition is not an integer.\n", node);
-					break;
+					semanticwarning("Right side of addition is not an integer.", node);
+					return 0;
 				case T_FLOATLITERAL:
 				case T_FLOAT64:
 				case FLOAT_TYPE:
@@ -654,8 +688,8 @@ int compareTypes( tTree * node ) {
 						node->ret_type = FLOAT_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of addition is not a float64.\n", node);
-					break;
+					semanticwarning("Right side of addition is not a float64.", node);
+					return 0;
 				case STRING_TYPE:
 				case T_STRINGLITERAL:
 				case T_STRING:
@@ -663,13 +697,13 @@ int compareTypes( tTree * node ) {
 						node->ret_type = STRING_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of concatination is not a string.\n", node);
-					break;
+					semanticwarning("Right side of concatination is not a string.", node);
+					return 0;
 			}
+			semanticwarning("Left side does not support addition or concatination.", node);
 			node->ret_type = NULL_TYPE;
 			return 0;
-		case ND_MINUS:
-		case ND_MULTIPLY:
+		case ND_DIVIDE:
 			switch ( a_type ) {
 				case T_INTLITERAL:
 				case T_INTEGER:
@@ -681,8 +715,45 @@ int compareTypes( tTree * node ) {
 							node->ret_type = INT_TYPE;
 							return 1;
 					}
-					semanticwarning("Right side of multiplication is not an integer.\n", node);
-					break;
+					semanticwarning("Right side of operation is not an integer.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					switch ( b_type ) {
+						case T_FLOATLITERAL:
+						case FLOAT_TYPE:
+						case T_FLOAT64:
+							node->ret_type = FLOAT_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of operation is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_MULTIPLY:
+		case ND_DECREMENT:
+		case ND_MINUS:
+		case ND_INCREMENT:
+		case ND_SUBEQ:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+							node->ret_type = INT_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of operation is not an integer.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
 				case T_FLOATLITERAL:
 				case T_FLOAT64:
 				case FLOAT_TYPE:
@@ -690,19 +761,140 @@ int compareTypes( tTree * node ) {
 						node->ret_type = FLOAT_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of multiplication is not a float64.\n", node);
-					break;
+					semanticwarning("Right side of operation is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
 			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
 			node->ret_type = NULL_TYPE;
 			return 0;
+		case ND_LTHAN:
+		case ND_GTHAN:
+		case ND_LTHANEQUAL:
+		case ND_GTHANEQUAL:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of comparison is not an integer.", node);
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = BOOLEAN_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of comparison is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_ANDAND:
+		case ND_OROR:
+		case ND_XOR:
+		case ND_NOT_EQUAL:
+		case ND_NEGATE:
+			switch ( a_type ) {
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+				case BOOLEAN_TYPE:
+					switch( b_type ) {
+						case T_BOOLLITERAL:
+						case T_BOOLEAN:
+						case BOOLEAN_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+						break;
+						default:		
+							semanticwarning("Right side of && is not a boolean.", node);
+							node->ret_type = NULL_TYPE;
+							return 0;
+					}
+			}
+			semanticwarning("Left side of && is not a boolean.", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_PEXPR_NO_PAREN:{
+			int a_asdf;
+			if ( a_entry->type->basetype == ND_OTHERTYPE){
+				node->ret_type = a_entry->type->u.a.element_type->basetype;
+				a_asdf = INT_TYPE;
+			}else{
+				node->ret_type = a_entry->type->u.m.element_type->basetype;
+				a_asdf = a_entry->type->u.m.index_type->basetype;
+			}
+			switch ( a_asdf ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch ( b_type ) {
+						case T_INTLITERAL:
+						case INT_TYPE:
+						case T_INTEGER:
+							return 1;
+					}
+					semanticwarning("Subscript is not an integer.", node);
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					switch ( b_type ) {
+						case T_FLOATLITERAL:
+						case FLOAT_TYPE:
+						case T_FLOAT64:
+							return 1;
+					}
+					semanticwarning("Right side of addition is not a float64.", node);
+					return 0;
+				case STRING_TYPE:
+				case T_STRINGLITERAL:
+				case T_STRING:
+					switch ( b_type ) {
+						case T_STRINGLITERAL:
+						case STRING_TYPE:
+						case T_STRING:
+							return 1;
+					}
+					semanticwarning("Subscript is not a string.", node);
+					return 0;
+				case BOOLEAN_TYPE:
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+					switch ( b_type ) {
+						case T_BOOLLITERAL:
+						case BOOLEAN_TYPE:
+						case T_BOOLEAN:
+							return 1;
+					}
+					semanticwarning("Subscript is not a boolean.", node);
+					return 0;
+			}
+			printf("index_type: %d\n", a_entry->type->u.m.index_type->basetype);
+			printf("index_type: %s\n", a_entry->type->u.m.index_type->name);
+			printf("element_type: %d\n", b_type);
+			semanticwarning("Subscript is not the correct type.", node);
+			return 0;
+		}
 		case ND_ASSIGNMENT:
 			// check that the left side isn't constant
 			if ( a_entry == NULL ) {
-				semanticwarning("Left side of assignment is not a variable.\n", node);
+				semanticwarning("Left side of assignment is not a variable.", node);
+				node->ret_type = NULL_TYPE;
 				return 0;
 			}
 			if ( a_entry->type->cons == 1) {
-				semanticwarning("Left side of assignment is a constant.\n", node);
+				semanticwarning("Left side of assignment is a constant.", node);
+				node->ret_type = NULL_TYPE;
 				return 0;
 			}
 			switch ( a_type ) {
@@ -713,10 +905,11 @@ int compareTypes( tTree * node ) {
 						case T_INTLITERAL:
 						case T_INTEGER:
 						case INT_TYPE:
+
 							node->ret_type = INT_TYPE;
 							return 1;
 						default:
-							semanticwarning("Right side of assignment is not an integer.\n", node);
+							semanticwarning("Right side of assignment is not an integer.", node);
 							node->ret_type = NULL_TYPE;
 							return 0;
 					}
@@ -724,25 +917,46 @@ int compareTypes( tTree * node ) {
 				case T_FLOAT64:
 				case FLOAT_TYPE:
 					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = FLOAT_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of assignment is not a float64.\n", node);
+					semanticwarning("Right side of assignment is not a float64.", node);
+					node->ret_type = NULL_TYPE;
 					return 0;
 				case STRING_TYPE:
 				case T_STRINGLITERAL:
 				case T_STRING:
 					if ( b_type == T_STRINGLITERAL || b_type == STRING_TYPE || b_type == T_STRING) {
+						node->ret_type = STRING_TYPE;
 						return 1;
 					}
-					semanticwarning("Right side of assignment is not a string.\n", node);
+					semanticwarning("Right side of assignment is not a string.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+				case BOOLEAN_TYPE:
+					switch( b_type ) {
+						case T_BOOLLITERAL:
+						case T_BOOLEAN:
+						case BOOLEAN_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of assignment is not a boolean.", node);
+					node->ret_type = NULL_TYPE;
 					return 0;
 			}
-			if ( a_type != b_type ) {
-				semanticwarning("Non matching types on assignment.\n", node);
-				return 0;
+			if ( a_type == b_type ) {
+				node->ret_type = a_type;
+				return 1;
 			}
-			return 1;
+			semanticwarning("Non matching types on assignment.", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
 		default:
+			semanticwarning("Operation Unkown", node);
+			node->ret_type = NULL_TYPE;
 			return 0;	
 	}
 	return 0;

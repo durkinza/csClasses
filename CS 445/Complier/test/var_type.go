@@ -67,7 +67,7 @@ func add (){
 	// divide
 	x = 1 / 1
 	x = a / 1
-	x = 1 / c
+	x = 1 / b
 	x = a / b
 	x = c / d
 
@@ -116,7 +116,9 @@ func add (){
 
 
 	//
-	// ERRORS
+	// ERRORS line 123 and below.
+	// should have 36 errors
+	// ./vgo test/var_types.go 2>$1 | wc -l   == 37
 	//
 
 	// int + string
@@ -147,7 +149,7 @@ func add (){
 
 
 	// division by zero
-	x / 0
+	// x / 0 // doesn't work for type checking, but will error during runtime
 	// int / float
 	x / w
 	// float / int
@@ -182,7 +184,7 @@ func add (){
 	v || 1
 	// int || string
 	v || y
-	// int || int
+	// int || bool
 	1 || v
 
 	// bool && int
@@ -200,5 +202,4 @@ func add (){
 	// error here of assignemnt to const
 	z = 1
 	z = y
-
 }

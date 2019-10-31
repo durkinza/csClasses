@@ -50,6 +50,7 @@ extern tTree * gtail;
 [ \t\f]+        		{ /* eat the whitespace */ }
 
 "boolean"       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
+"bool"		       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
 "int"           		{ yylval.node = make_token(T_INTEGER); return T_INTEGER; }
 "double"				{ yylval.node = make_token(T_FLOAT64);  return T_FLOAT64; }
 "float64"				{ yylval.node = make_token(T_FLOAT64); return T_FLOAT64; }
