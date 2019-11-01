@@ -63,7 +63,9 @@ typedef struct type {
 			// return type of the function.
 			// Global won't use this.
 			struct type * ret;
-			// local variables in the function tbale;
+			// a linked list structure for parameters
+			struct sym_table * params;
+			// local variables in the function table
 			struct sym_table * table;
 		}f;
 
@@ -82,7 +84,7 @@ typedef struct sym_table {
 	int nBuckets;				/* # of buckets */
 	int nEntries;				/* # of total elements in the table */
 	struct sym_table * parent;	/* The parent scope */
-	struct type * scope;		/* The type we blong to */
+	struct type * scope;		/* The scope we blong to */
 	struct sym_entry ** table;	/* Hash table of elements*/
 } sym_table;
 

@@ -1,7 +1,21 @@
 package main
 import "fmt"
 
-func foo ( x int) {
+func foo0 () int {
+	var x int
+	return x
+}
+
+func foo ( x int) int {
+	return x
+}
+func foo2 ( x, y int) int {
+	return x
+}
+func st_foo ( x string) string {
+	return x
+}
+func st_foo2 ( x, y string) string {
 	return x
 }
 
@@ -61,6 +75,34 @@ func main ( ) {
 	arr_float64[2.3] = 3.2
 
 	in = foo(1)
+	in = foo2(1,3)
+
+	in = foo(in)
+	in = foo2(in, in)
+
+	st = st_foo("test")
+	st = st_foo(st)
+
+	st = st_foo2("test", "test")
+	st = st_foo2(st, st)
+
+	in = foo0()
+
+	in = foo(st)
+	in = foo(bo, fl);
+
+	in = foo("a")
+	in = foo2("a", 0.3)
+
+	in = foo(1,3)
+	in = foo2(1)
+
+	st = st_foo(in)
+	in = st_foo(st)
+
+	st = st_foo2(st, in)
+	st = st_foo2(fl, in)
+	st = st_foo2(in, st)
 }
 
 
