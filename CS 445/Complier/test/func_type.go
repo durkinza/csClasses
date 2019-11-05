@@ -55,6 +55,23 @@ func main ( ) {
 	arr_bool[2] = false
 	arr_float64[2] = 3.2
 
+	in = foo(1)
+	in = foo2(1,3)
+
+	in = foo(in)
+	in = foo2(in, in)
+
+	st = st_foo("test")
+	st = st_foo(st)
+
+	st = st_foo2("test", "test")
+	st = st_foo2(st, st)
+
+	in = foo0()
+	in = foo(foo0())
+
+	fmt.Println("test")
+
 	//
 	// ERRORS
 	// 
@@ -74,20 +91,6 @@ func main ( ) {
 	arr_bool["string"] = false
 	arr_float64[2.3] = 3.2
 
-	in = foo(1)
-	in = foo2(1,3)
-
-	in = foo(in)
-	in = foo2(in, in)
-
-	st = st_foo("test")
-	st = st_foo(st)
-
-	st = st_foo2("test", "test")
-	st = st_foo2(st, st)
-
-	in = foo0()
-
 	in = foo(st)
 	in = foo(bo, fl);
 
@@ -103,6 +106,9 @@ func main ( ) {
 	st = st_foo2(st, in)
 	st = st_foo2(fl, in)
 	st = st_foo2(in, st)
+
+	fmt.Println("test", "test")
+	fmt.Println(1)
 }
 
 

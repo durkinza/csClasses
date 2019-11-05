@@ -28,13 +28,23 @@ func add (){
 	v = true
 	w = 9.9
 
-	// addition
+	// addition int
 	x = 1 + 2
 	x = a + 1
 	x = c + 2
 	x = a + b
 	x = c + d
 	x = a + d
+	x = a + b + c + d
+
+	// addition float
+	w = 1.3 + 2.1
+	w = i + 1.3
+	w = k + 2.3
+	w = i + j
+	w = k + l
+	w = i + l
+	w = i + j + k + l
 
 	// concatination
 	y = "hello" + "world"
@@ -43,6 +53,24 @@ func add (){
 	y = e + f
 	y = g + h
 	y = e + h
+
+	// subtraction int
+	x = 1 - 2
+	x = a - 1
+	x = c - 2
+	x = a - b
+	x = c - d
+	x = a - d
+	x = a - b - c - d
+
+	// subtraction float
+	w = 1.3 - 2.1
+	w = i - 1.3
+	w = k - 2.4
+	w = i - j
+	w = k - l
+	w = i - l
+	w = i - j - k - l
 
 	// multiplication
 	x = 1 * 1
