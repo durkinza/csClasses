@@ -609,6 +609,7 @@ void semanticwarning( char *s, tTree * node ) {
 	fprintf(stderr, "%s", s);
 	if ( node && node->prodrule == LNAME ) fprintf(stderr, " %s", node->leaf->text );
 	fprintf(stderr, "\n");
+	exit(3);
 }
 
 
