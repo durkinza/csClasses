@@ -50,6 +50,7 @@ extern tTree * gtail;
 [ \t\f]+        		{ /* eat the whitespace */ }
 
 "boolean"       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
+"bool"		       		{ yylval.node = make_token(T_BOOLEAN); return T_BOOLEAN; }
 "int"           		{ yylval.node = make_token(T_INTEGER); return T_INTEGER; }
 "double"				{ yylval.node = make_token(T_FLOAT64);  return T_FLOAT64; }
 "float64"				{ yylval.node = make_token(T_FLOAT64); return T_FLOAT64; }
@@ -132,6 +133,8 @@ extern tTree * gtail;
 "."						{ yylval.node = make_token(T_DOT); return T_DOT; }
 ","						{ yylval.node = make_token(T_SEPERATOR); return T_SEPERATOR; }
 ";"						{ yylval.node = make_token(T_SEMICOLON); return T_SEMICOLON; }
+"<<"					{ yylval.node = make_token(LLSH); return LLSH; }
+">>"					{ yylval.node = make_token(LRSH); return LRSH; }
 
 
 .                       { _yyerror("lexical error", 1); }

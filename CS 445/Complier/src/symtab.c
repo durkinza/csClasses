@@ -25,9 +25,12 @@ sym_table * current;
 
 
 void semanticerror( char *s, tTree * node );
+void semanticwarning( char *s, tTree * node );
+sym_entry * doparamdeclarator(sym_table * list,  sym_entry * se_orig);
 sym_entry * dovariabledeclarator( tTree * node, tTree * category, int, int );
 void printvariable( char *name, char*type, int, int, char * , int);
 char * getType( tTree * node );
+int compareTypes(tTree * node);
 
 
 sym_table * newSymTable ( int nbuckets ) {
@@ -35,9 +38,9 @@ sym_table * newSymTable ( int nbuckets ) {
 	sym_table * new;
 	new = balloc( sizeof( sym_table ) );
 	new->table = balloc( nbuckets * sizeof( sym_entry * ) );
-	int i =0; 
+	int i = 0; 
 	// set the buckets to NULL to remove unset pointers
-	for (i=0; i< nbuckets; i++){
+	for (i = 0; i< nbuckets; i++) {
 		new->table[i] = NULL;
 	}
 	new->nBuckets = nbuckets;
@@ -105,16 +108,16 @@ sym_entry * lookup ( sym_table * sb, char * s ) {
 }
 
 
-sym_entry * insert_sym ( sym_table * tb, char *s, type * typ ) {
+sym_entry * insert_sym ( sym_table * tb, char *s, type * typ, tTree * n ) {
 	struct sym_entry * se;
 
 	// check that the element doesn't already exist. 
 
 	se = lookup(tb, s);
 	if ( se != NULL ) {
-		int size = 29 + sizeof( strlen( s ) );
+		int size = 30 + strlen( s ) + strlen( n->leaf->filename );
 		char * e = balloc( size ); 
-		snprintf(e, size, "Re-declaration of variable `%s`", s);
+		snprintf(e, size, "%s : %d : `%s` : Re-declaration", n->leaf->filename, n->leaf->lineno, s);
 		semanticerror( e, NULL );
 		return se;
 	}
@@ -165,7 +168,7 @@ sym_entry * enter_newscope( char *s, int typ){
 	}
 	
 	new->scope = t;
-	sym_entry * se = insert_sym( current, s, t );
+	sym_entry * se = insert_sym( current, s, t , NULL);
 	pushscope( new );
 	return se;
 }
@@ -186,29 +189,64 @@ void populate_symboltables ( tTree * node , int depth) {
 			globals->parent = NULL;
 			type * pkg_typ= newType("", PACKAGE_TYPE);
 			globals->scope = pkg_typ;
+			globals->scope->name = "global";
 			current = globals;
 
 			// auto insert fmt since we don't have import
-			type * new = newType("fmt", PACKAGE_TYPE );
-			sym_entry * fmt_se = insert_sym( current, "fmt", new );
+			type * new = newUnionType("fmt", newSymTable(1), PACKAGE_TYPE );
+			sym_entry * fmt_se = insert_sym( current, "fmt", new, NULL );
 			type * fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
+			// add Println function
+			type * println_type = newUnionType("Println", newSymTable(1), FUNC_TYPE);
+			// Add Println return type to be null
+			println_type->u.f.ret = newType( "void", NULL_TYPE );
+			// Add a linked list for the parameters
+			println_type->u.f.params = newSymTable(1);
+			// Set scope for the println function
+			println_type->u.f.table = newSymTable(1);
+	
+			// Create a string parameter
+			type * println_param_type = newType( "string", T_STRING );
+			// Create an entry for the parameter
+			sym_entry * println_param = balloc( sizeof( sym_entry ) );
+			// fill entry's next 
+			println_param->next = println_type->u.f.table->table[0];
+			// set the name of the parameter
+			println_param->s = balloc(  strlen( "message" ) + 1 );
+			strcpy(println_param->s , "message");
+			// Set the parameter's type
+			println_param->type = println_param_type;
+			// Set entry's scope to be the println's fuctions's scope
+			println_param->table = println_type->u.f.table;
+			// increment the number of entries in the println function
+			println_type->u.f.table->nEntries++;
+			// set the parameter to be a parameter
+			println_param->type->parameter = 1;
+			// setting the parameter name
+			///println_param->type->name = "message"; 
+			// insert the parameter as a symbol 'message' in the println function scope
+			sym_entry * s = insert_sym( println_type->u.f.table, "message", println_param->type , NULL );
+			// insert the symbol into the function parameters
+			doparamdeclarator(println_type->u.f.params, s);
+			// finally insert the function into the fmt package
+			insert_sym(fmt_se->type->u.f.table, "Println", println_type, NULL );
 
 			// auto insert math since we don't have import
 			new = newType("math", PACKAGE_TYPE );
-			fmt_se = insert_sym( current, "math", new );
+			fmt_se = insert_sym( current, "math", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
 			// auto insert random since we don't have import
 			new = newType("random", PACKAGE_TYPE );
-			fmt_se = insert_sym( current, "random", new );
+			fmt_se = insert_sym( current, "random", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
 			// auto insert time since we don't have import
 			new = newType("time", PACKAGE_TYPE );
-			fmt_se = insert_sym( current, "time", new );
+			fmt_se = insert_sym( current, "time", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
@@ -219,6 +257,7 @@ void populate_symboltables ( tTree * node , int depth) {
 				type * func_ret;
 				// build a new scope for this function
 				sym_entry * func_se = enter_newscope( node->branches[0]->branches[0]->leaf->text, FUNC_TYPE );
+
 				depth+=2;
 				// determine the return type
 				if ( node->branches[0]->branches[2] && node->branches[0]->branches[2]->prodrule == ND_FNRES ) {
@@ -247,6 +286,8 @@ void populate_symboltables ( tTree * node , int depth) {
 				}
 				// set our return type to the sym_entry 
 				func_se->type->u.f.ret = func_ret; 
+				// finally add a linked list for parameters
+				func_se->type->u.f.params = newSymTable(1);
 				// now print if we need to
 				if( show_symtab_tree ){
 					printf("  %*s--- symbol table for: func %s  returns: %s ---\n", print_spaces, "", node->branches[0]->branches[0]->leaf->text, func_ret->name);
@@ -273,6 +314,9 @@ void populate_symboltables ( tTree * node , int depth) {
 			tTree * temp = node;
 			// This will point to the variable type
 			tTree * typ = node;
+
+			// This will point to the newly created parameter entry
+			sym_entry * new_entry; 
 			// 
 			while( temp && temp->prodrule == ND_ARG_TYPE_LIST ) {
 				// check for type changes in the parameters.
@@ -280,7 +324,8 @@ void populate_symboltables ( tTree * node , int depth) {
 					typ = temp->branches[1]->branches[1];
 				}
 				// create a variable for each parameter
-				dovariabledeclarator( temp->branches[1]->branches[0], typ, node->prodrule, 1 );
+				new_entry = dovariabledeclarator( temp->branches[1]->branches[0], typ, node->prodrule, 1 );
+				doparamdeclarator(current->scope->u.f.params,  new_entry);
 				printvariable( temp->branches[1]->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
 				// move down the list
 				temp = temp->branches[0];
@@ -290,11 +335,13 @@ void populate_symboltables ( tTree * node , int depth) {
 			}
 			if ( temp && ( typ->prodrule == ND_OTHERTYPE  || typ->prodrule == ND_MAP ) ) {
 				// This is for arrays and map
-				dovariabledeclarator( temp->branches[0], typ, node->prodrule, 1 );
+				new_entry = dovariabledeclarator( temp->branches[0], typ, node->prodrule, 1 );
+				doparamdeclarator(current->scope->u.f.params,  new_entry);
 				printvariable( temp->branches[0]->leaf->text, getType(typ), node->branches[1]->prodrule, 1, node->branches[1]->branches[0]->leaf->text, print_spaces );
 			} else if ( temp ){
 				// create a variable for a parameter
-				dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1], node->prodrule, 1 );
+				new_entry = dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1], node->prodrule, 1 );
+				doparamdeclarator(current->scope->u.f.params,  new_entry);
 				printvariable( temp->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
 			}
 			return;
@@ -364,11 +411,14 @@ void populate_symboltables ( tTree * node , int depth) {
 			}
 			// for the file we won't pop off the final scope
 			break;
-		case ND_ARG_TYPE:
+		case ND_ARG_TYPE:{
+				sym_entry * new_entry;
 				// for single parameters, create a variable
-				dovariabledeclarator( node->branches[0], node->branches[1], node->prodrule, 1);
+				new_entry = dovariabledeclarator( node->branches[0], node->branches[1], node->prodrule, 1);
+				doparamdeclarator(current->scope->u.f.params,  new_entry);
 				printvariable( node->branches[0]->leaf->text, getType(node->branches[1]), node->prodrule, 1, 0, print_spaces);
 			break;
+		}
 		case ND_STRUCTDCL:
 		case ND_VARDCL:
 		case ND_CONSTDCL:
@@ -407,9 +457,50 @@ void populate_symboltables ( tTree * node , int depth) {
 			}
 			break;
 		}
+		case ND_PLUS:
+		case ND_MINUS:
+		case ND_DIVIDE:
+		case ND_MULTIPLY:
+		case ND_LTHAN:
+		case ND_LTHANEQUAL:
+		case ND_GTHAN:
+		case ND_GTHANEQUAL:
+		case ND_INCREMENT:
+		case ND_DECREMENT:
+		case ND_OROR:
+		case ND_ANDAND:
+		case ND_MOD:
+		case ND_AND:
+		case ND_ASSIGNMENT:
+		case ND_EQUAL:
+		case ND_NOT_EQUAL:
+		case ND_NEGATE:
+		case ND_PEXPR_NO_PAREN:
+		case ND_PSEUDOCALL:
+			compareTypes( node );
+			break;
 	}
 }
 
+sym_entry * doparamdeclarator(sym_table * tb,  sym_entry * se_orig) {
+	// check that we have a node to make into a variable
+	if ( se_orig == NULL || tb == NULL ){
+		return NULL;
+	}
+
+	sym_entry *se;
+	// if the element doesn't exists, we can add it.
+	//int h;
+	//h = tb->nEntries;
+	se = balloc( sizeof( sym_entry ) );
+	se->next = tb->table[0];
+	tb->table[0] = se;
+	se->table = se_orig->table;
+	se->s = se_orig->s;
+	se->type = se_orig->type;
+	tb->nEntries++;
+	return se;
+}
 
 sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, int param ) {
 	// check that we have a node to make into a variable
@@ -420,8 +511,8 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 	
 	if ( category->prodrule == ND_MAP ) {
 		new = newType(node->leaf->text, category->prodrule );
-		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->prodrule);
-		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->leaf->category);
+		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->leaf->category);
 		new->u.m.index_type = map_index_type;
 		new->u.m.element_type = map_element_type;	
 
@@ -432,7 +523,7 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 		}
 	} else if ( category->prodrule == ND_OTHERTYPE ) {
 		new = newType(node->leaf->text, category->prodrule );
-		type * map_index_type = newType(getType(category->branches[1]), category->branches[1]->prodrule);
+		type * map_index_type = newType(getType(category->branches[1]), category->branches[1]->leaf->category);
 		new->u.a.size = category->branches[0]->leaf->ival;
 		new->u.a.element_type = map_index_type;
 		if( show_symtab_tree && show_symtab_tree_verbose ){
@@ -447,7 +538,7 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 	new->parameter = param;
 	new->name = getType(category); 
 	// insert the new symbol into the current hash table
-	return insert_sym( current, node->leaf->text, new );
+	return insert_sym( current, node->leaf->text, new, node );
 }
 
 
@@ -505,16 +596,19 @@ void printsymbols( sym_table * st, int level ){
 
 
 void semanticerror( char *s, tTree * node ) {
+	semanticwarning(s, node);
+	exit(3);
+}
+void semanticwarning( char *s, tTree * node ) {
 	// return an error when we find one.
 	while ( node && ( node->nbranches > 0 ) ) node = node->branches[0];
 	if ( node ) {
-		fprintf( stderr, "%s:%d: ", node->leaf->filename, node->leaf->lineno );
-		fprintf( stderr, "`%s` :", node->leaf->text);
+		fprintf( stderr, "%s : %d : ", node->leaf->filename, node->leaf->lineno );
+		fprintf( stderr, "`%s` : ", node->leaf->text);
 	}
 	fprintf(stderr, "%s", s);
 	if ( node && node->prodrule == LNAME ) fprintf(stderr, " %s", node->leaf->text );
 	fprintf(stderr, "\n");
-	exit(3);
 }
 
 
@@ -560,4 +654,571 @@ char * getType( tTree * node ) {
 			return getType(node->branches[0]);
 	}
 	return "";
+}
+
+
+int compareTypes( tTree * node ) {
+	tTree * a = node->branches[0];
+	tTree * b = node->branches[1];
+
+	sym_entry * a_entry = NULL;
+	sym_entry * b_entry = NULL;
+	if( b_entry == NULL ) {};
+
+	int op_type = node->prodrule;
+	int a_type, b_type;
+	if ( a == NULL || b == NULL){
+		return 0;
+	}
+
+	// get a's type
+	if ( a && a->prodrule == 0 ) {
+		// for literals 
+		a_type = a->leaf->category;
+	} else if ( a && a->nbranches > 1 && (a->prodrule != ND_PEXPR_NO_PAREN ) ) {
+		// for return types of child expressions
+		a_type = a->ret_type;
+	} else {
+		// Lets check if the element is already in the symbol table.
+		sym_entry * ste = NULL;
+		sym_table * st = current;
+		if ( a->branches[0]->nbranches > 0 ) {
+			do {
+				ste = lookup( st, a->branches[0]->branches[0]->leaf->text );
+				st = st->parent;
+			} while ( !ste && st && st->nBuckets > 0);
+
+			a_entry = ste;
+			a_type = a->ret_type;
+		} else {
+			do {
+				ste = lookup( st, a->branches[0]->leaf->text );
+				st = st->parent;
+			} while ( !ste && st && st->nBuckets > 0);
+
+			a_entry = ste;
+			a_type = ste->type->basetype;
+			switch ( a_type) {
+				case FUNC_TYPE:
+					a_type = ste->type->u.f.ret->basetype;
+					break;
+				case MAP_TYPE:
+					a_type = ste->type->u.m.element_type->basetype;
+					break;
+				case ARRAY_TYPE:
+					break;
+				case STRUCT_TYPE:	 
+					break;
+			}
+		}
+	}
+
+	// get b's type
+	// TODO: handle special cases for += where right side has only 1 branch.
+	if ( b && b->prodrule == 0 ) {
+		b_type = b->leaf->category;
+	} else if ( b && b->nbranches > 1 ) {
+		b_type = b->ret_type;
+	} else {
+		// Lets check if the element is already in the symbol table.
+		sym_entry * ste = NULL;
+		sym_table * st = current;
+		do {
+			ste = lookup( st, b->branches[0]->leaf->text );
+			st = st->parent;
+		} while ( !ste && st && st->nBuckets > 0);
+		b_entry = ste;
+		b_type = ste->type->basetype;
+		switch ( b_type) {
+			case FUNC_TYPE:
+				b_type = ste->type->u.f.ret->basetype;
+				break;
+			case MAP_TYPE:
+				b_type = ste->type->u.m.element_type->basetype;
+				break;
+			case ARRAY_TYPE:
+				b_type = ste->type->u.a.element_type->basetype;
+				break;
+			case STRUCT_TYPE:	 
+				break;
+		}
+	}
+
+	switch ( op_type ) {
+		case ND_PLUS:
+		case ND_ADDEQ:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					if ( b_type == T_INTLITERAL || b_type == INT_TYPE || b_type == T_INTEGER ) {
+						node->ret_type = INT_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of addition is not an integer.", node);
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = FLOAT_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of addition is not a float64.", node);
+					return 0;
+				case STRING_TYPE:
+				case T_STRINGLITERAL:
+				case T_STRING:
+					if ( b_type == T_STRINGLITERAL || b_type == STRING_TYPE || b_type == T_STRING) {
+						node->ret_type = STRING_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of concatination is not a string.", node);
+					return 0;
+			}
+			semanticwarning("Left side does not support addition or concatination.", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_DIVIDE:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+							node->ret_type = INT_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of operation is not an integer.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					switch ( b_type ) {
+						case T_FLOATLITERAL:
+						case FLOAT_TYPE:
+						case T_FLOAT64:
+							node->ret_type = FLOAT_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of operation is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_MULTIPLY:
+		case ND_DECREMENT:
+		case ND_MINUS:
+		case ND_INCREMENT:
+		case ND_SUBEQ:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+							node->ret_type = INT_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of operation is not an integer.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = FLOAT_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of operation is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_LTHAN:
+		case ND_GTHAN:
+		case ND_LTHANEQUAL:
+		case ND_GTHANEQUAL:
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of comparison is not an integer.", node);
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = BOOLEAN_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of comparison is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			semanticwarning("Left side of comparison must be an integer or float64", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_ANDAND:
+		case ND_OROR:
+		case ND_XOR:
+		case ND_NOT_EQUAL:
+		case ND_NEGATE:
+			switch ( a_type ) {
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+				case BOOLEAN_TYPE:
+					switch( b_type ) {
+						case T_BOOLLITERAL:
+						case T_BOOLEAN:
+						case BOOLEAN_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+						break;
+						default:		
+							semanticwarning("Right side of && is not a boolean.", node);
+							node->ret_type = NULL_TYPE;
+							return 0;
+					}
+			}
+			semanticwarning("Left side of && is not a boolean.", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		case ND_PEXPR_NO_PAREN:{
+			int a_asdf;
+			if ( a_entry->type->basetype == ND_OTHERTYPE){
+				node->ret_type = a_entry->type->u.a.element_type->basetype;
+				a_asdf = INT_TYPE;
+			}else if ( a_entry->type->basetype == PACKAGE_TYPE){
+				node->ret_type = a_entry->type->u.f.ret->basetype;
+				return 1;
+				//a_asdf = a_entry->type->u.f.ret->basetype;
+			}else{
+				node->ret_type = a_entry->type->u.m.element_type->basetype;
+				a_asdf = a_entry->type->u.m.index_type->basetype;
+			}
+			switch ( a_asdf ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch ( b_type ) {
+						case T_INTLITERAL:
+						case INT_TYPE:
+						case T_INTEGER:
+							return 1;
+					}
+					semanticwarning("Subscript is not an integer.", node);
+					return 0;
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					switch ( b_type ) {
+						case T_FLOATLITERAL:
+						case FLOAT_TYPE:
+						case T_FLOAT64:
+							return 1;
+					}
+					semanticwarning("Right side of addition is not a float64.", node);
+					return 0;
+				case STRING_TYPE:
+				case T_STRINGLITERAL:
+				case T_STRING:
+					switch ( b_type ) {
+						case T_STRINGLITERAL:
+						case STRING_TYPE:
+						case T_STRING:
+							return 1;
+					}
+					semanticwarning("Subscript is not a string.", node);
+					return 0;
+				case BOOLEAN_TYPE:
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+					switch ( b_type ) {
+						case T_BOOLLITERAL:
+						case BOOLEAN_TYPE:
+						case T_BOOLEAN:
+							return 1;
+					}
+					semanticwarning("Subscript is not a boolean.", node);
+					return 0;
+			}
+			semanticwarning("Subscript is not the correct type.", node);
+			return 0;
+		}
+		case ND_PSEUDOCALL:{
+				node->ret_type = a_type;
+				int x = 0;
+				int g_ret = 0;
+				tTree * given_param = NULL;
+				sym_entry * func_param = NULL;
+				//printf("func_param: %s\n", a_entry->s);
+				if ( a_entry->type->basetype == PACKAGE_TYPE ){
+					//printf("looking at :%p\n", a_entry->type->u.f.table->table);
+					a_entry = lookup(a_entry->type->u.f.table, a->branches[1]->leaf->text);
+					if ( a_entry == NULL ){
+						printf("function `%s` does not exist in package.\n", a->branches[1]->leaf->text);
+						return 0;
+					}
+					func_param = a_entry->type->u.f.params->table[0];
+				} else {
+					func_param = a_entry->type->u.f.params->table[0];
+				}
+				if ( node->branches[1]->nbranches > 1) {
+					if ( node->branches[1]->nbranches > 0 ) {
+						// if we are calling a function from a package i.e. fmt.println
+						given_param = node->branches[1]->branches[0];
+					} else {
+						// if we have an argument list
+						// ie. foo(2, 3)
+						given_param = node->branches[1]->branches[0];
+					}
+				} else {
+					// if we only have one parameter to a function call
+					// ie. foo(1)
+					given_param = node->branches[1];
+				}
+
+				//printf("number of expected params in %s is %d\n", a_entry->s, a_entry->type->u.f.params->nEntries);
+				while ( x < a_entry->
+						type->
+						u.f.params->
+						nEntries 
+						&& func_param != NULL && given_param != NULL){
+					x++;
+
+	/*				if ( given_param->ret_type != 0 ) {
+						g_ret = given_param->ret_type;
+					}else{
+						g_ret = given_param->leaf->category;
+					}*/
+					if ( given_param->prodrule == 0 ) {
+						g_ret = given_param->leaf->category;
+					} else if ( given_param->nbranches > 1 ) {
+						g_ret = given_param->ret_type;
+					} else {
+						// Lets check if the element is already in the symbol table.
+						sym_entry * ste = NULL;
+						sym_table * st = current;
+						do {
+							ste = lookup( st, given_param->branches[0]->leaf->text );
+							st = st->parent;
+						} while ( !ste && st && st->nBuckets > 0);
+						g_ret = ste->type->basetype;
+						switch ( g_ret) {
+							case FUNC_TYPE:
+								g_ret = ste->type->u.f.ret->basetype;
+								break;
+							case MAP_TYPE:
+								g_ret = ste->type->u.m.element_type->basetype;
+								break;
+							case ARRAY_TYPE:
+								g_ret = ste->type->u.a.element_type->basetype;
+								break;
+							case STRUCT_TYPE:	 
+								break;
+						}
+					}
+					//compare that parameter with the current parameter					
+					switch ( func_param->type->basetype ) {
+						case INT_TYPE:
+						case T_INTEGER:
+						case T_INTLITERAL:
+							switch ( g_ret ) {
+								case INT_TYPE:
+								case T_INTEGER:
+								case T_INTLITERAL:
+									break;
+								default:
+									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+										semanticwarning("Given parameter is not an int.", node->branches[0]->branches[1]);
+									}else{
+										semanticwarning("Given parameter is not an int.", node);
+									}
+									return 0;
+							}
+							break;
+						case FLOAT_TYPE:
+						case T_FLOAT64:
+						case T_FLOATLITERAL:
+							switch ( g_ret ) {
+								case FLOAT_TYPE:
+								case T_FLOAT64:
+								case T_FLOATLITERAL:
+									break;
+								default:
+									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+										semanticwarning("Given parameter is not a float.", node->branches[0]->branches[1]);
+									}else{
+										semanticwarning("Given parameter is not a float.", node);
+									}
+									return 0;
+
+							}
+							break;
+						case STRING_TYPE:
+						case T_STRING:
+						case T_STRINGLITERAL:
+							switch ( g_ret ) {
+								case STRING_TYPE:
+								case T_STRING:
+								case T_STRINGLITERAL:
+									break;
+								default:
+									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+										semanticwarning("Given parameter is not a string.", node->branches[0]->branches[1]);
+									}else{
+										semanticwarning("Given parameter is not a string.", node);
+									}
+									return 0;
+
+							}
+							break;
+						case BOOLEAN_TYPE:
+						case T_BOOLEAN:
+						case T_BOOLLITERAL:
+							switch ( g_ret ) {
+								case BOOLEAN_TYPE:
+								case T_BOOLEAN:
+								case T_BOOLLITERAL:
+									break;
+								default:
+									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+										semanticwarning("Given parameter is not a boolean.", node->branches[0]->branches[1]);
+									}else{
+										semanticwarning("Given parameter is not a boolean.", node);
+									}
+									return 0;
+
+							}
+							break;
+						default:
+							if ( g_ret  != func_param->type->basetype ) {					
+								if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+									semanticwarning("The expected parameter type is unkown.", node->branches[0]->branches[1]);
+								}else{
+									semanticwarning("The expected parameter type is unkown.", node);
+								}
+								return 0;
+							}
+					}
+	
+					// get the next expected parameter from the function
+					func_param = func_param->next;
+					// get the next given parameter
+					if ( node->branches[1]->nbranches > x) {
+						given_param = node->branches[1]->branches[x];
+					}else{
+						given_param = NULL;
+					}
+				}
+				if ( func_param == NULL && given_param != NULL ) {
+					if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+						semanticwarning("To many parameters given in call.", node->branches[0]->branches[1]);
+					}else{
+						semanticwarning("To many parameters given in call.", node);
+					}
+				}
+				if ( func_param != NULL && given_param == NULL ) {
+					if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+						semanticwarning("Missing parameters in call.", node->branches[0]->branches[1]);
+					}else{
+						semanticwarning("Missing parameters in call.", node);
+					}
+				}
+
+				return 0;
+			break;
+		}
+		case ND_ASSIGNMENT:
+			// check that the left side isn't constant
+			if ( a_entry == NULL ) {
+				semanticwarning("Left side of assignment is not a variable.", node);
+				node->ret_type = NULL_TYPE;
+				return 0;
+			}
+			if ( a_entry->type->cons == 1) {
+				semanticwarning("Left side of assignment is a constant.", node);
+				node->ret_type = NULL_TYPE;
+				return 0;
+			}
+			switch ( a_type ) {
+				case T_INTLITERAL:
+				case T_INTEGER:
+				case INT_TYPE:
+					switch( b_type ) {
+						case T_INTLITERAL:
+						case T_INTEGER:
+						case INT_TYPE:
+
+							node->ret_type = INT_TYPE;
+							return 1;
+						default:
+							semanticwarning("Right side of assignment is not an integer.", node);
+							node->ret_type = NULL_TYPE;
+							return 0;
+					}
+				case T_FLOATLITERAL:
+				case T_FLOAT64:
+				case FLOAT_TYPE:
+					if ( b_type == T_FLOATLITERAL || b_type == FLOAT_TYPE || b_type == T_FLOAT64 ) {
+						node->ret_type = FLOAT_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of assignment is not a float64.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case STRING_TYPE:
+				case T_STRINGLITERAL:
+				case T_STRING:
+					if ( b_type == T_STRINGLITERAL || b_type == STRING_TYPE || b_type == T_STRING) {
+						node->ret_type = STRING_TYPE;
+						return 1;
+					}
+					semanticwarning("Right side of assignment is not a string.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+				case T_BOOLLITERAL:
+				case T_BOOLEAN:
+				case BOOLEAN_TYPE:
+					switch( b_type ) {
+						case T_BOOLLITERAL:
+						case T_BOOLEAN:
+						case BOOLEAN_TYPE:
+							node->ret_type = BOOLEAN_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of assignment is not a boolean.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
+			}
+			if ( a_type == b_type ) {
+				node->ret_type = a_type;
+				return 1;
+			}
+			semanticwarning("Non matching types on assignment.", node);
+			node->ret_type = NULL_TYPE;
+			return 0;
+		default:
+			semanticwarning("Operation Unkown", node);
+			node->ret_type = NULL_TYPE;
+			return 0;	
+	}
+	return 0;
 }

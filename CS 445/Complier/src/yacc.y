@@ -436,36 +436,36 @@ select_stmt
  */
 expr
 	: uexpr
-	| expr T_OROR expr {$$ = create_tree(T_OROR, 2, $1, $3); delete_tree($2);}
-	| expr T_ANDAND expr {$$ = create_tree(T_ANDAND, 2, $1, $3); delete_tree($2);}
-	| expr T_EQUAL expr {$$ = create_tree(T_EQUAL, 2, $1, $3); delete_tree($2);}
-	| expr T_NOT_EQUAL expr {$$ = create_tree(T_NOT_EQUAL, 2, $1, $3); delete_tree($2);}
-	| expr T_LTHAN expr {$$ = create_tree(T_LTHAN, 2, $1, $3); delete_tree($2);}
-	| expr T_LTHANEQUAL expr {$$ = create_tree(T_LTHANEQUAL, 2, $1, $3); delete_tree($2);}
-	| expr T_GTHANEQUAL expr {$$ = create_tree(T_GTHANEQUAL, 2, $1, $3); delete_tree($2);}
-	| expr T_GTHAN expr {$$ = create_tree(T_GTHAN, 2, $1, $3); delete_tree($2);}
-	| expr T_PLUS expr {$$ = create_tree(T_PLUS, 2, $1, $3); delete_tree($2);}
-	| expr T_MINUS expr {$$ = create_tree(T_MINUS, 2, $1, $3); delete_tree($2);}
-	| expr '|' expr {$$ = create_tree(T_OR, 2, $1, $3);}
-	| expr '^' expr {$$ = create_tree(T_XOR, 2, $1, $3);}
-	| expr T_MULTIPLY expr {$$ = create_tree(T_MULTIPLY, 2, $1, $3); delete_tree($2);}
-	| expr T_DIVIDE expr {$$ = create_tree(T_DIVIDE, 2, $1, $3); delete_tree($2);}
-	| expr T_MOD expr {$$ = create_tree(T_MOD, 2, $1, $3); delete_tree($2);}
-	| expr T_AND expr {$$ = create_tree(T_AND, 2, $1, $3); delete_tree($2);}
-	| expr LANDNOT expr {$$ = create_tree(LANDNOT, 2, $1, $3); delete_tree($2);}
-	| expr LLSH expr {$$ = create_tree(LLSH, 2, $1, $3); delete_tree($2);}
-	| expr LRSH expr {$$ = create_tree(LRSH, 2, $1, $3); delete_tree($2);}
+	| expr T_OROR expr {$$ = create_tree(ND_OROR, 2, $1, $3); delete_tree($2);}
+	| expr T_ANDAND expr {$$ = create_tree(ND_ANDAND, 2, $1, $3); delete_tree($2);}
+	| expr T_EQUAL expr {$$ = create_tree(ND_EQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_NOT_EQUAL expr {$$ = create_tree(ND_NOT_EQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_LTHAN expr {$$ = create_tree(ND_LTHAN, 2, $1, $3); delete_tree($2);}
+	| expr T_LTHANEQUAL expr {$$ = create_tree(ND_LTHANEQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_GTHANEQUAL expr {$$ = create_tree(ND_GTHANEQUAL, 2, $1, $3); delete_tree($2);}
+	| expr T_GTHAN expr {$$ = create_tree(ND_GTHAN, 2, $1, $3); delete_tree($2);}
+	| expr T_PLUS expr {$$ = create_tree(ND_PLUS, 2, $1, $3); delete_tree($2);}
+	| expr T_MINUS expr {$$ = create_tree(ND_MINUS, 2, $1, $3); delete_tree($2);}
+	| expr '|' expr {$$ = create_tree(ND_OR, 2, $1, $3);}
+	| expr '^' expr {$$ = create_tree(ND_XOR, 2, $1, $3);}
+	| expr T_MULTIPLY expr {$$ = create_tree(ND_MULTIPLY, 2, $1, $3); delete_tree($2);}
+	| expr T_DIVIDE expr {$$ = create_tree(ND_DIVIDE, 2, $1, $3); delete_tree($2);}
+	| expr T_MOD expr {$$ = create_tree(ND_MOD, 2, $1, $3); delete_tree($2);}
+	| expr T_AND expr {$$ = create_tree(ND_AND, 2, $1, $3); delete_tree($2);}
+	| expr LANDNOT expr {$$ = create_tree(ND_ANDNOT, 2, $1, $3); delete_tree($2);}
+	| expr LLSH expr {$$ = create_tree(ND_LSH, 2, $1, $3); delete_tree($2);}
+	| expr LRSH expr {$$ = create_tree(ND_RSH, 2, $1, $3); delete_tree($2);}
 	 /* not an expression anymore, but left in so we can give a good error */
 	| expr LCOMM expr{ delete_tree($2);}
 	;
 		
 uexpr
 	: pexpr
-	| T_MULTIPLY uexpr {$$ = create_tree(T_MULTIPLY, 1, $2); delete_tree($1);}
-	| T_AND uexpr {$$ = create_tree(T_AND, 1, $2); delete_tree($1);}
-	| T_PLUS uexpr {$$ = create_tree(T_PLUS, 1, $2); delete_tree($1);}
-	| T_MINUS uexpr {$$ = create_tree(T_MINUS, 1, $2); delete_tree($1);}
-	| T_NEGATE uexpr {$$ = create_tree(T_NEGATE, 1, $2); delete_tree($1);}
+	| T_MULTIPLY uexpr {$$ = create_tree(ND_MULTIPLY, 1, $2); delete_tree($1);}
+	| T_AND uexpr {$$ = create_tree(ND_AND, 1, $2); delete_tree($1);}
+	| T_PLUS uexpr {$$ = create_tree(ND_PLUS, 1, $2); delete_tree($1);}
+	| T_MINUS uexpr {$$ = create_tree(ND_MINUS, 1, $2); delete_tree($1);}
+	| T_NEGATE uexpr {$$ = create_tree(ND_NEGATE, 1, $2); delete_tree($1);}
 	| '~' uexpr
 		{
 			yyerror("the bitwise complement operator is ^");
