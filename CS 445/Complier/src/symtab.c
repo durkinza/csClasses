@@ -233,20 +233,37 @@ void populate_symboltables ( tTree * node , int depth) {
 			insert_sym(fmt_se->type->u.f.table, "Println", println_type, NULL );
 
 			// auto insert math since we don't have import
+			new = newUnionType("math", newSymTable(1), PACKAGE_TYPE );
 			new = newType("math", PACKAGE_TYPE );
 			fmt_se = insert_sym( current, "math", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
 			// auto insert random since we don't have import
+			new = newUnionType("random", newSymTable(1), PACKAGE_TYPE );
 			new = newType("random", PACKAGE_TYPE );
 			fmt_se = insert_sym( current, "random", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
 			// auto insert time since we don't have import
+			new = newUnionType("time", newSymTable(1), PACKAGE_TYPE );
 			new = newType("time", PACKAGE_TYPE );
 			fmt_se = insert_sym( current, "time", new, NULL );
+			fmt_ret = newType("", T_NULLLITERAL);
+			fmt_se->type->u.f.ret = fmt_ret; 
+
+			// auto insert built-in functions make and len
+
+			new = newUnionType("make", newSymTable(1), FUNC_TYPE );
+			new = newType("make", FUNC_TYPE );
+			fmt_se = insert_sym( current, "make", new, NULL );
+			fmt_ret = newType("", T_NULLLITERAL);
+			fmt_se->type->u.f.ret = fmt_ret; 
+
+			new = newUnionType("len", newSymTable(1), FUNC_TYPE );
+			new = newType("len", FUNC_TYPE );
+			fmt_se = insert_sym( current, "len", new, NULL );
 			fmt_ret = newType("", T_NULLLITERAL);
 			fmt_se->type->u.f.ret = fmt_ret; 
 
@@ -297,9 +314,18 @@ void populate_symboltables ( tTree * node , int depth) {
 		case ND_TYPEDCL:
 			// for structs, we will deine them with the type keyword
 			if ( node->branches[1]->prodrule == ND_STRUCT ){
-				enter_newscope( getType( node ), STRUCT_TYPE );
+				/*sym_entry * struct_se = */enter_newscope( getType( node ), STRUCT_TYPE );
+				/*printf("struct table : %s\n", getType(node));
+				printf("struct table : %d\n", struct_se->type->basetype);
+				printf("struct table : %p\n", struct_se->type->u.s.table);
+				struct_se = lookup(current->parent, getType(node));
+
+				printf("struct table : %s\n", getType(node));
+				printf("struct table : %d\n", struct_se->type->basetype);
+				printf("struct table : %p\n", struct_se->type->u.s.table);
+				*/
 				depth+=2;
-				if ( show_symtab_tree ){
+				if ( show_symtab_tree ) {
 					printf( "  %*s--- symbol table for: struct %s ---\n", print_spaces, "", getType( node ) );
 				}
 			}
@@ -340,9 +366,50 @@ void populate_symboltables ( tTree * node , int depth) {
 				printvariable( temp->branches[0]->leaf->text, getType(typ), node->branches[1]->prodrule, 1, node->branches[1]->branches[0]->leaf->text, print_spaces );
 			} else if ( temp ){
 				// create a variable for a parameter
-				new_entry = dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1], node->prodrule, 1 );
-				doparamdeclarator(current->scope->u.f.params,  new_entry);
-				printvariable( temp->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
+				switch(typ->leaf->category){
+						case T_NULL:
+						case T_BOOLEAN:
+						case T_INTEGER:
+						case T_FLOAT64:
+						case T_STRING:
+						case T_NULLLITERAL:
+						case T_BOOLLITERAL:
+						case T_INTLITERAL:
+						case T_STRINGLITERAL:
+						case T_FLOATLITERAL:
+						case T_VARIABLE:
+						case T_HEXLITERAL:
+							// This is for regular variables
+
+							new_entry = dovariabledeclarator( temp->branches[0], node->branches[1]->branches[1], node->prodrule, 1 );
+							doparamdeclarator(current->scope->u.f.params,  new_entry);
+							printvariable( temp->branches[0]->leaf->text, getType(typ), node->prodrule, 1, 0, print_spaces);
+							break;
+						default:{
+
+							// This is for declaring a variable as a custom type
+							// lookup the type
+							sym_entry * ste = NULL;
+							sym_table * st = current;
+							do {
+								ste = lookup( st, temp->branches[1]->leaf->text );
+								st = st->parent;
+							} while ( !ste && st && st->nBuckets > 0);
+							if ( !ste ) {
+								semanticerror( "undeclared variable", node->branches[1] );
+							} else {
+								type * new = newUnionType(temp->branches[1]->leaf->text, ste->type->u.s.table, STRUCT_TYPE);
+								new->cons = 0;
+								new->parameter = 0;
+								// insert the new symbol into the current hash table
+								new_entry = insert_sym( current, temp->branches[0]->leaf->text, new, temp );
+								doparamdeclarator(current->scope->u.f.params,  new_entry);
+
+								printvariable( temp->branches[0]->leaf->text, getType(typ), ste->type->basetype, 0, 0, print_spaces );
+							}
+					}
+
+					}
 			}
 			return;
 
@@ -450,9 +517,47 @@ void populate_symboltables ( tTree * node , int depth) {
 					dovariabledeclarator( temp, node->branches[1], node->prodrule, 0 );
 					printvariable( temp->leaf->text, getType(node->branches[1]->branches[1]), node->branches[1]->prodrule, 0, node->branches[1]->branches[0]->leaf->text, print_spaces );
 				} else if ( temp ) {
-					// This is for regular variables
-					dovariabledeclarator( temp, node->branches[1], node->prodrule, 0 );
-					printvariable( temp->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0, print_spaces );
+					switch(node->branches[1]->leaf->category){
+						case T_NULL:
+						case T_BOOLEAN:
+						case T_INTEGER:
+						case T_FLOAT64:
+						case T_STRING:
+						case T_NULLLITERAL:
+						case T_BOOLLITERAL:
+						case T_INTLITERAL:
+						case T_STRINGLITERAL:
+						case T_FLOATLITERAL:
+						case T_VARIABLE:
+						case T_HEXLITERAL:
+							// This is for regular variables
+							dovariabledeclarator( temp, node->branches[1], node->prodrule, 0 );
+							printvariable( temp->leaf->text, getType(node->branches[1]), node->prodrule, 0, 0, print_spaces );
+							break;
+						default:{
+
+							// This is for declaring a variable as a custom type
+							// lookup the type
+							sym_entry * ste = NULL;
+							sym_table * st = current;
+							do {
+								ste = lookup( st, node->branches[1]->leaf->text );
+								st = st->parent;
+							} while ( !ste && st && st->nBuckets > 0);
+							if ( !ste ) {
+								semanticerror( "undeclared variable", node->branches[1] );
+							} else {
+						
+								type * new = newUnionType(temp->leaf->text, ste->type->u.s.table, STRUCT_TYPE);
+								new->cons = 0;
+								new->parameter = 0;
+								// insert the new symbol into the current hash table
+								insert_sym( current, temp->leaf->text, new, temp );
+
+								printvariable( temp->leaf->text, getType(node->branches[1]), ste->type->basetype, 0, 0, print_spaces );
+							}
+						}
+					}
 				}
 			}
 			break;
@@ -510,7 +615,7 @@ sym_entry * dovariabledeclarator( tTree * node, tTree * category, int prodrule, 
 	type * new;
 	
 	if ( category->prodrule == ND_MAP ) {
-		new = newType(node->leaf->text, category->prodrule );
+		new = newType(node->leaf->text, MAP_TYPE );
 		type * map_index_type = newType(getType(category->branches[0]), category->branches[0]->leaf->category);
 		type * map_element_type = newType(getType(category->branches[1]), category->branches[1]->leaf->category);
 		new->u.m.index_type = map_index_type;
@@ -636,7 +741,8 @@ char * getType( tTree * node ) {
 			return node->leaf->text;
 		case ND_STRUCT:
 			return "struct";
-		case ND_MAP:{
+		case ND_MAP:
+		case MAP_TYPE:{
 			static char ret[30];
 			sprintf(ret, "map [ %s ] %s ", getType(node->branches[0]), getType(node->branches[1]));
 			return ret;
@@ -684,6 +790,7 @@ int compareTypes( tTree * node ) {
 		sym_entry * ste = NULL;
 		sym_table * st = current;
 		if ( a->branches[0]->nbranches > 0 ) {
+			// for maps, struct.key, arrays, package.function
 			do {
 				ste = lookup( st, a->branches[0]->branches[0]->leaf->text );
 				st = st->parent;
@@ -692,6 +799,7 @@ int compareTypes( tTree * node ) {
 			a_entry = ste;
 			a_type = a->ret_type;
 		} else {
+			// for regular variable name lookups
 			do {
 				ste = lookup( st, a->branches[0]->leaf->text );
 				st = st->parent;
@@ -701,10 +809,10 @@ int compareTypes( tTree * node ) {
 			a_type = ste->type->basetype;
 			switch ( a_type) {
 				case FUNC_TYPE:
-					a_type = ste->type->u.f.ret->basetype;
+					//a_type = ste->type->u.f.ret->basetype;
 					break;
 				case MAP_TYPE:
-					a_type = ste->type->u.m.element_type->basetype;
+					a_type = ste->type->basetype;
 					break;
 				case ARRAY_TYPE:
 					break;
@@ -732,13 +840,12 @@ int compareTypes( tTree * node ) {
 		b_type = ste->type->basetype;
 		switch ( b_type) {
 			case FUNC_TYPE:
-				b_type = ste->type->u.f.ret->basetype;
 				break;
 			case MAP_TYPE:
-				b_type = ste->type->u.m.element_type->basetype;
+				//b_type = ste->type->u.m.element_type->basetype;
 				break;
 			case ARRAY_TYPE:
-				b_type = ste->type->u.a.element_type->basetype;
+				//b_type = ste->type->u.a.element_type->basetype;
 				break;
 			case STRUCT_TYPE:	 
 				break;
@@ -903,16 +1010,33 @@ int compareTypes( tTree * node ) {
 			return 0;
 		case ND_PEXPR_NO_PAREN:{
 			int a_asdf;
-			if ( a_entry->type->basetype == ND_OTHERTYPE){
+			if ( a_entry->type->basetype == ND_OTHERTYPE || a_entry->type->basetype == ARRAY_TYPE ) {
 				node->ret_type = a_entry->type->u.a.element_type->basetype;
 				a_asdf = INT_TYPE;
+			}else if ( a_entry->type->basetype == MAP_TYPE || a_entry->type->basetype == ND_MAP ) {
+				a_asdf = a_entry->type->u.m.index_type->basetype;
+				node->ret_type = a_entry->type->u.m.element_type->basetype;
 			}else if ( a_entry->type->basetype == PACKAGE_TYPE){
 				node->ret_type = a_entry->type->u.f.ret->basetype;
 				return 1;
 				//a_asdf = a_entry->type->u.f.ret->basetype;
 			}else{
-				node->ret_type = a_entry->type->u.m.element_type->basetype;
-				a_asdf = a_entry->type->u.m.index_type->basetype;
+				// if we are looking at a struct
+
+				sym_entry * ste = NULL;
+				sym_table * st = a_entry->type->u.s.table;
+				do {
+					ste = lookup( st, b->leaf->text );
+					st = st->parent;
+				} while ( !ste && st && st->nBuckets > 0);
+				if (!ste){
+					semanticwarning("Subscript does not exist in struct.", node);
+					return 0;
+				}
+				b_entry = ste;
+				b_type = ste->type->basetype;
+				node->ret_type = b_type;
+				return 1;
 			}
 			switch ( a_asdf ) {
 				case T_INTLITERAL:
@@ -935,7 +1059,7 @@ int compareTypes( tTree * node ) {
 						case T_FLOAT64:
 							return 1;
 					}
-					semanticwarning("Right side of addition is not a float64.", node);
+					semanticwarning("Subscript is not a float64.", node);
 					return 0;
 				case STRING_TYPE:
 				case T_STRINGLITERAL:
@@ -964,7 +1088,48 @@ int compareTypes( tTree * node ) {
 			return 0;
 		}
 		case ND_PSEUDOCALL:{
-				node->ret_type = a_type;
+			if (a_entry->type->basetype == FUNC_TYPE){
+				a_type = a_entry->type->u.f.ret->basetype;
+			}
+
+
+				if ( a->branches[0]->prodrule == 0 && strncmp(a->branches[0]->leaf->text, "make", 4) == 0) {
+					// for `make` we will set the return type to be the parameter type, and return
+					int g_ret = 0;
+					tTree * given_param = NULL;
+					given_param = node->branches[1];
+					if ( given_param->prodrule == 0 ) {
+						g_ret = given_param->leaf->category;
+					} else if ( given_param->nbranches > 1 ) {
+						g_ret = given_param->prodrule;
+					} else {
+						// Lets check if the element is already in the symbol table.
+						sym_entry * ste = NULL;
+						sym_table * st = current;
+						do {
+							ste = lookup( st, given_param->branches[0]->leaf->text );
+							st = st->parent;
+						} while ( !ste && st && st->nBuckets > 0);
+						g_ret = ste->type->basetype;
+						switch ( g_ret) {
+							case FUNC_TYPE:
+								g_ret = ste->type->u.f.ret->basetype;
+								break;
+							case MAP_TYPE:
+								g_ret = ste->type->u.m.element_type->basetype;
+								break;
+							case ARRAY_TYPE:
+								g_ret = ste->type->u.a.element_type->basetype;
+								break;
+							case STRUCT_TYPE:	 
+								break;
+						}
+					}
+					node->ret_type = g_ret;
+					return 1;
+				} else {
+					node->ret_type = a_type;
+				}
 				int x = 0;
 				int g_ret = 0;
 				tTree * given_param = NULL;
@@ -982,14 +1147,9 @@ int compareTypes( tTree * node ) {
 					func_param = a_entry->type->u.f.params->table[0];
 				}
 				if ( node->branches[1]->nbranches > 1) {
-					if ( node->branches[1]->nbranches > 0 ) {
-						// if we are calling a function from a package i.e. fmt.println
-						given_param = node->branches[1]->branches[0];
-					} else {
 						// if we have an argument list
 						// ie. foo(2, 3)
 						given_param = node->branches[1]->branches[0];
-					}
 				} else {
 					// if we only have one parameter to a function call
 					// ie. foo(1)
@@ -1024,13 +1184,13 @@ int compareTypes( tTree * node ) {
 						g_ret = ste->type->basetype;
 						switch ( g_ret) {
 							case FUNC_TYPE:
-								g_ret = ste->type->u.f.ret->basetype;
+								//g_ret = ste->type->u.f.ret->basetype;
 								break;
 							case MAP_TYPE:
-								g_ret = ste->type->u.m.element_type->basetype;
+								//g_ret = ste->type->u.m.element_type->basetype;
 								break;
 							case ARRAY_TYPE:
-								g_ret = ste->type->u.a.element_type->basetype;
+								//g_ret = ste->type->u.a.element_type->basetype;
 								break;
 							case STRUCT_TYPE:	 
 								break;
@@ -1123,7 +1283,7 @@ int compareTypes( tTree * node ) {
 					// get the next expected parameter from the function
 					func_param = func_param->next;
 					// get the next given parameter
-					if ( node->branches[1]->nbranches > x) {
+					if ( node->branches[1]->prodrule != ND_PEXPR_NO_PAREN  && node->branches[1]->nbranches > x ) {
 						given_param = node->branches[1]->branches[x];
 					}else{
 						given_param = NULL;
@@ -1208,7 +1368,20 @@ int compareTypes( tTree * node ) {
 					semanticwarning("Right side of assignment is not a boolean.", node);
 					node->ret_type = NULL_TYPE;
 					return 0;
+				case ND_MAP:
+				case MAP_TYPE:
+					switch( b_type ) {
+						case ND_MAP:
+						case MAP_TYPE:
+							node->ret_type = MAP_TYPE;
+							return 1;
+					}
+					semanticwarning("Right side of assignment is not a map.", node);
+					node->ret_type = NULL_TYPE;
+					return 0;
 			}
+			printf("a_type: %d\n", a_type);
+			printf("b_type: %d\n", b_type);
 			if ( a_type == b_type ) {
 				node->ret_type = a_type;
 				return 1;
