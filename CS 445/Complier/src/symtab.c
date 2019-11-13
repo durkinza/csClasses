@@ -314,16 +314,7 @@ void populate_symboltables ( tTree * node , int depth) {
 		case ND_TYPEDCL:
 			// for structs, we will deine them with the type keyword
 			if ( node->branches[1]->prodrule == ND_STRUCT ){
-				/*sym_entry * struct_se = */enter_newscope( getType( node ), STRUCT_TYPE );
-				/*printf("struct table : %s\n", getType(node));
-				printf("struct table : %d\n", struct_se->type->basetype);
-				printf("struct table : %p\n", struct_se->type->u.s.table);
-				struct_se = lookup(current->parent, getType(node));
-
-				printf("struct table : %s\n", getType(node));
-				printf("struct table : %d\n", struct_se->type->basetype);
-				printf("struct table : %p\n", struct_se->type->u.s.table);
-				*/
+				enter_newscope( getType( node ), STRUCT_TYPE );
 				depth+=2;
 				if ( show_symtab_tree ) {
 					printf( "  %*s--- symbol table for: struct %s ---\n", print_spaces, "", getType( node ) );
@@ -667,39 +658,6 @@ void printvariable( char * name, char * type, int prodrule, int param, char * ar
 	printf("\n");
 }
 
-/*
-void printsymbols( sym_table * st, int level ){
-	// 
-	int i, j;
-	sym_entry * ste;
-	if ( st == NULL ) return;
-	for ( i=0; i < st->nBuckets; i++ ) {
-		for ( ste = st->table[i]; ste; ste = ste->next ){
-			for ( j = 0; j < level; j++ ) {
-				printf( "  " );
-			}
-			printf( "%s\n", ste->s );
-			if ( !ste->type ) continue;
-			switch ( ste->type->basetype ) {
-				case FUNC_TYPE:
-					printsymbols( ste->type->u.f.table, level+1 );
-					break;
-				case STRUCT_TYPE:
-					printsymbols( ste->type->u.s.table, level+1 );
-					break;
-				case MAP_TYPE:
-					printsymbols( ste->type->u.m.values, level+1 );
-					break;
-				case ARRAY_TYPE:
-					printsymbols( ste->type->u.a.values, level+1 );
-					break;
-			}	
-		}
-	}
-}
-*/
-
-
 void semanticerror( char *s, tTree * node ) {
 	semanticwarning(s, node);
 	exit(3);
@@ -808,22 +766,14 @@ int compareTypes( tTree * node ) {
 			a_entry = ste;
 			a_type = ste->type->basetype;
 			switch ( a_type) {
-				case FUNC_TYPE:
-					//a_type = ste->type->u.f.ret->basetype;
-					break;
 				case MAP_TYPE:
 					a_type = ste->type->basetype;
-					break;
-				case ARRAY_TYPE:
-					break;
-				case STRUCT_TYPE:	 
 					break;
 			}
 		}
 	}
 
 	// get b's type
-	// TODO: handle special cases for += where right side has only 1 branch.
 	if ( b && b->prodrule == 0 ) {
 		b_type = b->leaf->category;
 	} else if ( b && b->nbranches > 1 ) {
@@ -838,18 +788,6 @@ int compareTypes( tTree * node ) {
 		} while ( !ste && st && st->nBuckets > 0);
 		b_entry = ste;
 		b_type = ste->type->basetype;
-		switch ( b_type) {
-			case FUNC_TYPE:
-				break;
-			case MAP_TYPE:
-				//b_type = ste->type->u.m.element_type->basetype;
-				break;
-			case ARRAY_TYPE:
-				//b_type = ste->type->u.a.element_type->basetype;
-				break;
-			case STRUCT_TYPE:	 
-				break;
-		}
 	}
 
 	switch ( op_type ) {
@@ -1019,10 +957,8 @@ int compareTypes( tTree * node ) {
 			}else if ( a_entry->type->basetype == PACKAGE_TYPE){
 				node->ret_type = a_entry->type->u.f.ret->basetype;
 				return 1;
-				//a_asdf = a_entry->type->u.f.ret->basetype;
 			}else{
 				// if we are looking at a struct
-
 				sym_entry * ste = NULL;
 				sym_table * st = a_entry->type->u.s.table;
 				do {
@@ -1091,8 +1027,6 @@ int compareTypes( tTree * node ) {
 			if (a_entry->type->basetype == FUNC_TYPE){
 				a_type = a_entry->type->u.f.ret->basetype;
 			}
-
-
 				if ( a->branches[0]->prodrule == 0 && strncmp(a->branches[0]->leaf->text, "make", 4) == 0) {
 					// for `make` we will set the return type to be the parameter type, and return
 					int g_ret = 0;
@@ -1147,9 +1081,9 @@ int compareTypes( tTree * node ) {
 					func_param = a_entry->type->u.f.params->table[0];
 				}
 				if ( node->branches[1]->nbranches > 1) {
-						// if we have an argument list
-						// ie. foo(2, 3)
-						given_param = node->branches[1]->branches[0];
+					// if we have an argument list
+					// ie. foo(2, 3)
+					given_param = node->branches[1]->branches[0];
 				} else {
 					// if we only have one parameter to a function call
 					// ie. foo(1)
@@ -1164,11 +1098,6 @@ int compareTypes( tTree * node ) {
 						&& func_param != NULL && given_param != NULL){
 					x++;
 
-	/*				if ( given_param->ret_type != 0 ) {
-						g_ret = given_param->ret_type;
-					}else{
-						g_ret = given_param->leaf->category;
-					}*/
 					if ( given_param->prodrule == 0 ) {
 						g_ret = given_param->leaf->category;
 					} else if ( given_param->nbranches > 1 ) {
@@ -1182,19 +1111,6 @@ int compareTypes( tTree * node ) {
 							st = st->parent;
 						} while ( !ste && st && st->nBuckets > 0);
 						g_ret = ste->type->basetype;
-						switch ( g_ret) {
-							case FUNC_TYPE:
-								//g_ret = ste->type->u.f.ret->basetype;
-								break;
-							case MAP_TYPE:
-								//g_ret = ste->type->u.m.element_type->basetype;
-								break;
-							case ARRAY_TYPE:
-								//g_ret = ste->type->u.a.element_type->basetype;
-								break;
-							case STRUCT_TYPE:	 
-								break;
-						}
 					}
 					//compare that parameter with the current parameter					
 					switch ( func_param->type->basetype ) {
@@ -1380,8 +1296,6 @@ int compareTypes( tTree * node ) {
 					node->ret_type = NULL_TYPE;
 					return 0;
 			}
-			printf("a_type: %d\n", a_type);
-			printf("b_type: %d\n", b_type);
 			if ( a_type == b_type ) {
 				node->ret_type = a_type;
 				return 1;
