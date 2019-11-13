@@ -1027,200 +1027,200 @@ int compareTypes( tTree * node ) {
 			if (a_entry->type->basetype == FUNC_TYPE){
 				a_type = a_entry->type->u.f.ret->basetype;
 			}
-				if ( a->branches[0]->prodrule == 0 && strncmp(a->branches[0]->leaf->text, "make", 4) == 0) {
-					// for `make` we will set the return type to be the parameter type, and return
-					int g_ret = 0;
-					tTree * given_param = NULL;
-					given_param = node->branches[1];
-					if ( given_param->prodrule == 0 ) {
-						g_ret = given_param->leaf->category;
-					} else if ( given_param->nbranches > 1 ) {
-						g_ret = given_param->prodrule;
-					} else {
-						// Lets check if the element is already in the symbol table.
-						sym_entry * ste = NULL;
-						sym_table * st = current;
-						do {
-							ste = lookup( st, given_param->branches[0]->leaf->text );
-							st = st->parent;
-						} while ( !ste && st && st->nBuckets > 0);
-						g_ret = ste->type->basetype;
-						switch ( g_ret) {
-							case FUNC_TYPE:
-								g_ret = ste->type->u.f.ret->basetype;
-								break;
-							case MAP_TYPE:
-								g_ret = ste->type->u.m.element_type->basetype;
-								break;
-							case ARRAY_TYPE:
-								g_ret = ste->type->u.a.element_type->basetype;
-								break;
-							case STRUCT_TYPE:	 
-								break;
-						}
-					}
-					node->ret_type = g_ret;
-					return 1;
-				} else {
-					node->ret_type = a_type;
-				}
-				int x = 0;
+			if ( a->branches[0]->prodrule == 0 && strncmp(a->branches[0]->leaf->text, "make", 4) == 0) {
+				// for `make` we will set the return type to be the parameter type, and return
 				int g_ret = 0;
 				tTree * given_param = NULL;
-				sym_entry * func_param = NULL;
-				//printf("func_param: %s\n", a_entry->s);
-				if ( a_entry->type->basetype == PACKAGE_TYPE ){
-					//printf("looking at :%p\n", a_entry->type->u.f.table->table);
-					a_entry = lookup(a_entry->type->u.f.table, a->branches[1]->leaf->text);
-					if ( a_entry == NULL ){
-						printf("function `%s` does not exist in package.\n", a->branches[1]->leaf->text);
-						return 0;
-					}
-					func_param = a_entry->type->u.f.params->table[0];
+				given_param = node->branches[1];
+				if ( given_param->prodrule == 0 ) {
+					g_ret = given_param->leaf->category;
+				} else if ( given_param->nbranches > 1 ) {
+					g_ret = given_param->prodrule;
 				} else {
-					func_param = a_entry->type->u.f.params->table[0];
-				}
-				if ( node->branches[1]->nbranches > 1) {
-					// if we have an argument list
-					// ie. foo(2, 3)
-					given_param = node->branches[1]->branches[0];
-				} else {
-					// if we only have one parameter to a function call
-					// ie. foo(1)
-					given_param = node->branches[1];
-				}
-
-				//printf("number of expected params in %s is %d\n", a_entry->s, a_entry->type->u.f.params->nEntries);
-				while ( x < a_entry->
-						type->
-						u.f.params->
-						nEntries 
-						&& func_param != NULL && given_param != NULL){
-					x++;
-
-					if ( given_param->prodrule == 0 ) {
-						g_ret = given_param->leaf->category;
-					} else if ( given_param->nbranches > 1 ) {
-						g_ret = given_param->ret_type;
-					} else {
-						// Lets check if the element is already in the symbol table.
-						sym_entry * ste = NULL;
-						sym_table * st = current;
-						do {
-							ste = lookup( st, given_param->branches[0]->leaf->text );
-							st = st->parent;
-						} while ( !ste && st && st->nBuckets > 0);
-						g_ret = ste->type->basetype;
+					// Lets check if the element is already in the symbol table.
+					sym_entry * ste = NULL;
+					sym_table * st = current;
+					do {
+						ste = lookup( st, given_param->branches[0]->leaf->text );
+						st = st->parent;
+					} while ( !ste && st && st->nBuckets > 0);
+					g_ret = ste->type->basetype;
+					switch ( g_ret) {
+						case FUNC_TYPE:
+							g_ret = ste->type->u.f.ret->basetype;
+							break;
+						case MAP_TYPE:
+							g_ret = ste->type->u.m.element_type->basetype;
+							break;
+						case ARRAY_TYPE:
+							g_ret = ste->type->u.a.element_type->basetype;
+							break;
+						case STRUCT_TYPE:	 
+							break;
 					}
-					//compare that parameter with the current parameter					
-					switch ( func_param->type->basetype ) {
-						case INT_TYPE:
-						case T_INTEGER:
-						case T_INTLITERAL:
-							switch ( g_ret ) {
-								case INT_TYPE:
-								case T_INTEGER:
-								case T_INTLITERAL:
-									break;
-								default:
-									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-										semanticwarning("Given parameter is not an int.", node->branches[0]->branches[1]);
-									}else{
-										semanticwarning("Given parameter is not an int.", node);
-									}
-									return 0;
-							}
-							break;
-						case FLOAT_TYPE:
-						case T_FLOAT64:
-						case T_FLOATLITERAL:
-							switch ( g_ret ) {
-								case FLOAT_TYPE:
-								case T_FLOAT64:
-								case T_FLOATLITERAL:
-									break;
-								default:
-									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-										semanticwarning("Given parameter is not a float.", node->branches[0]->branches[1]);
-									}else{
-										semanticwarning("Given parameter is not a float.", node);
-									}
-									return 0;
+				}
+				node->ret_type = g_ret;
+				return 1;
+			} else {
+				node->ret_type = a_type;
+			}
+			int x = 0;
+			int g_ret = 0;
+			tTree * given_param = NULL;
+			sym_entry * func_param = NULL;
+			//printf("func_param: %s\n", a_entry->s);
+			if ( a_entry->type->basetype == PACKAGE_TYPE ){
+				//printf("looking at :%p\n", a_entry->type->u.f.table->table);
+				a_entry = lookup(a_entry->type->u.f.table, a->branches[1]->leaf->text);
+				if ( a_entry == NULL ){
+					printf("function `%s` does not exist in package.\n", a->branches[1]->leaf->text);
+					return 0;
+				}
+				func_param = a_entry->type->u.f.params->table[0];
+			} else {
+				func_param = a_entry->type->u.f.params->table[0];
+			}
+			if ( node->branches[1]->nbranches > 1) {
+				// if we have an argument list
+				// ie. foo(2, 3)
+				given_param = node->branches[1]->branches[0];
+			} else {
+				// if we only have one parameter to a function call
+				// ie. foo(1)
+				given_param = node->branches[1];
+			}
 
-							}
-							break;
-						case STRING_TYPE:
-						case T_STRING:
-						case T_STRINGLITERAL:
-							switch ( g_ret ) {
-								case STRING_TYPE:
-								case T_STRING:
-								case T_STRINGLITERAL:
-									break;
-								default:
-									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-										semanticwarning("Given parameter is not a string.", node->branches[0]->branches[1]);
-									}else{
-										semanticwarning("Given parameter is not a string.", node);
-									}
-									return 0;
+			//printf("number of expected params in %s is %d\n", a_entry->s, a_entry->type->u.f.params->nEntries);
+			while ( x < a_entry->
+					type->
+					u.f.params->
+					nEntries 
+					&& func_param != NULL && given_param != NULL){
+				x++;
 
-							}
-							break;
-						case BOOLEAN_TYPE:
-						case T_BOOLEAN:
-						case T_BOOLLITERAL:
-							switch ( g_ret ) {
-								case BOOLEAN_TYPE:
-								case T_BOOLEAN:
-								case T_BOOLLITERAL:
-									break;
-								default:
-									if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-										semanticwarning("Given parameter is not a boolean.", node->branches[0]->branches[1]);
-									}else{
-										semanticwarning("Given parameter is not a boolean.", node);
-									}
-									return 0;
-
-							}
-							break;
-						default:
-							if ( g_ret  != func_param->type->basetype ) {					
+				if ( given_param->prodrule == 0 ) {
+					g_ret = given_param->leaf->category;
+				} else if ( given_param->nbranches > 1 ) {
+					g_ret = given_param->ret_type;
+				} else {
+					// Lets check if the element is already in the symbol table.
+					sym_entry * ste = NULL;
+					sym_table * st = current;
+					do {
+						ste = lookup( st, given_param->branches[0]->leaf->text );
+						st = st->parent;
+					} while ( !ste && st && st->nBuckets > 0);
+					g_ret = ste->type->basetype;
+				}
+				//compare that parameter with the current parameter					
+				switch ( func_param->type->basetype ) {
+					case INT_TYPE:
+					case T_INTEGER:
+					case T_INTLITERAL:
+						switch ( g_ret ) {
+							case INT_TYPE:
+							case T_INTEGER:
+							case T_INTLITERAL:
+								break;
+							default:
 								if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-									semanticwarning("The expected parameter type is unkown.", node->branches[0]->branches[1]);
+									semanticwarning("Given parameter is not an int.", node->branches[0]->branches[1]);
 								}else{
-									semanticwarning("The expected parameter type is unkown.", node);
+									semanticwarning("Given parameter is not an int.", node);
 								}
 								return 0;
-							}
-					}
-	
-					// get the next expected parameter from the function
-					func_param = func_param->next;
-					// get the next given parameter
-					if ( node->branches[1]->prodrule != ND_PEXPR_NO_PAREN  && node->branches[1]->nbranches > x ) {
-						given_param = node->branches[1]->branches[x];
-					}else{
-						given_param = NULL;
-					}
-				}
-				if ( func_param == NULL && given_param != NULL ) {
-					if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-						semanticwarning("To many parameters given in call.", node->branches[0]->branches[1]);
-					}else{
-						semanticwarning("To many parameters given in call.", node);
-					}
-				}
-				if ( func_param != NULL && given_param == NULL ) {
-					if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
-						semanticwarning("Missing parameters in call.", node->branches[0]->branches[1]);
-					}else{
-						semanticwarning("Missing parameters in call.", node);
-					}
-				}
+						}
+						break;
+					case FLOAT_TYPE:
+					case T_FLOAT64:
+					case T_FLOATLITERAL:
+						switch ( g_ret ) {
+							case FLOAT_TYPE:
+							case T_FLOAT64:
+							case T_FLOATLITERAL:
+								break;
+							default:
+								if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+									semanticwarning("Given parameter is not a float.", node->branches[0]->branches[1]);
+								}else{
+									semanticwarning("Given parameter is not a float.", node);
+								}
+								return 0;
 
-				return 0;
+						}
+						break;
+					case STRING_TYPE:
+					case T_STRING:
+					case T_STRINGLITERAL:
+						switch ( g_ret ) {
+							case STRING_TYPE:
+							case T_STRING:
+							case T_STRINGLITERAL:
+								break;
+							default:
+								if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+									semanticwarning("Given parameter is not a string.", node->branches[0]->branches[1]);
+								}else{
+									semanticwarning("Given parameter is not a string.", node);
+								}
+								return 0;
+
+						}
+						break;
+					case BOOLEAN_TYPE:
+					case T_BOOLEAN:
+					case T_BOOLLITERAL:
+						switch ( g_ret ) {
+							case BOOLEAN_TYPE:
+							case T_BOOLEAN:
+							case T_BOOLLITERAL:
+								break;
+							default:
+								if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+									semanticwarning("Given parameter is not a boolean.", node->branches[0]->branches[1]);
+								}else{
+									semanticwarning("Given parameter is not a boolean.", node);
+								}
+								return 0;
+
+						}
+						break;
+					default:
+						if ( g_ret  != func_param->type->basetype ) {					
+							if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+								semanticwarning("The expected parameter type is unkown.", node->branches[0]->branches[1]);
+							}else{
+								semanticwarning("The expected parameter type is unkown.", node);
+							}
+							return 0;
+						}
+				}
+	
+				// get the next expected parameter from the function
+				func_param = func_param->next;
+				// get the next given parameter
+				if ( node->branches[1]->prodrule != ND_PEXPR_NO_PAREN  && node->branches[1]->nbranches > x ) {
+					given_param = node->branches[1]->branches[x];
+				}else{
+					given_param = NULL;
+				}
+			}
+			if ( func_param == NULL && given_param != NULL ) {
+				if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+					semanticwarning("To many parameters given in call.", node->branches[0]->branches[1]);
+				}else{
+					semanticwarning("To many parameters given in call.", node);
+				}
+			}
+			if ( func_param != NULL && given_param == NULL ) {
+				if (node->nbranches > 1 && node->branches[0]->nbranches > 1){
+					semanticwarning("Missing parameters in call.", node->branches[0]->branches[1]);
+				}else{
+					semanticwarning("Missing parameters in call.", node);
+				}
+			}
+
+			return 0;
 			break;
 		}
 		case ND_ASSIGNMENT:
