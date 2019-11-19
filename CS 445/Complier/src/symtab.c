@@ -536,7 +536,7 @@ void populate_symboltables ( tTree * node , int depth) {
 								st = st->parent;
 							} while ( !ste && st && st->nBuckets > 0);
 							if ( !ste ) {
-								semanticerror( "undeclared variable", node->branches[1] );
+								semanticerror( "undeclared type", node->branches[1] );
 							} else {
 						
 								type * new = newUnionType(temp->leaf->text, ste->type->u.s.table, STRUCT_TYPE);
@@ -961,6 +961,7 @@ int compareTypes( tTree * node ) {
 				// if we are looking at a struct
 				sym_entry * ste = NULL;
 				sym_table * st = a_entry->type->u.s.table;
+				//printf("nentries: %d\n", st->nEntries);
 				do {
 					ste = lookup( st, b->leaf->text );
 					st = st->parent;
