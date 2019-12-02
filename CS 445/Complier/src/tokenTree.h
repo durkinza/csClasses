@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 #define MAX_BRANCHES 30
+#include "../src/tac.h"
+
 typedef struct token {
 	int category;	/* the integer code returned by yylex */
 	char *text;		/* the actual string(lexeme) matched */
@@ -16,8 +18,10 @@ typedef struct tTree {
 	int prodrule;		/* prodrule is the action of this tree (ex. '+' for addition) */
 	int nbranches;
 	int ret_type; /* return types for expr */
-	struct tTree *branches[MAX_BRANCHES];
-	struct token *leaf;
+	struct addr * address;
+	struct instr * code;
+	struct tTree * branches[ MAX_BRANCHES ];
+	struct token * leaf;
 } tTree;
 
 token * create_token(int category, char *text, int colno, int lineno, char *filename, char * value);

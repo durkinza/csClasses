@@ -18,13 +18,13 @@ valgrindopts = --leak-check=full --track-origins=yes
 zipname = durk7832.zip
 
 
-vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o
-	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o $(ccopts) -o vgo
+vgo: _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o _build/tac.o _build/codegen.o
+	$(cc) _build/main.o _build/lex.yy.o _build/tokenTree.o _build/yacc.tab.o _build/nonDet.o _build/types.o _build/symtab.o _build/tac.o _build/codegen.o $(ccopts) -o vgo
 
 _build: 
 	mkdir _build
 
-_build/main.o: _build src/main.c 
+_build/main.o: _build src/main.c
 	$(cc) -c src/main.c $(ccopts) -o _build/main.o
 
 _build/nonDet.o: _build src/nonDet.c src/nonDet.h _build/yacc.tab.h
@@ -45,6 +45,12 @@ _build/types.o: _build src/types.h src/types.c src/types.h src/symtab.h src/toke
 _build/symtab.o: _build src/symtab.h src/symtab.c _build/yacc.tab.h src/nonDet.h src/types.h
 	$(cc) -c src/symtab.c $(ccopts) -o _build/symtab.o
 
+_build/tac.o: _build src/tac.h src/tac.c src/nonDet.h
+	$(cc) -c src/tac.c $(ccopts) -o _build/tac.o
+
+_build/codegen.o: _build src/codegen.c src/codegen.h src/tac.h src/nonDet.h
+	$(cc) -c src/codegen.c $(ccopts) -o _build/codegen.o
+
 
 _build/yacc.tab.c _build/yacc.tab.h: _build src/yacc.y
 	$(yacc) --output=_build/yacc.tab.c $(yaccopts) src/yacc.y
@@ -58,6 +64,7 @@ clean:
 	rm -f vgo $(zipname) 2> /dev/null
 	rm -f src/tokenTree.h.gch
 	rm -f -r _build 2> /dev/null
+	rm -f *.ic
 		
 zip: clean 
 	zip -r $(zipname) .

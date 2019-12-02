@@ -575,6 +575,16 @@ void populate_symboltables ( tTree * node , int depth) {
 		case ND_PSEUDOCALL:
 			compareTypes( node );
 			break;
+		case 0:
+			// for Literal values
+			//printf("Found Literal, making address\n");
+			node->address = balloc( sizeof( addr ) );
+			if( strcmp(globals->scope->name, "global") == 0 )
+			node->address->region = R_GLOBAL;
+			else
+			node->address->region = R_LOCAL;
+			node->address->offset = 8;
+			break;
 	}
 }
 

@@ -112,6 +112,8 @@ tTree * token_as_tree(int category){
 	tTree * tree = malloc(sizeof(tTree));
 	tree->nbranches = 0;
 	tree->prodrule = 0;
+	tree->code = NULL;
+	tree->address = NULL;
 	tree->leaf = quick_token(category);
 	return tree;
 }
@@ -122,6 +124,9 @@ tTree * create_tree(int prodrule, int nbranches, ...){
 	tTree * tree = malloc(sizeof(tTree));
 	tree->nbranches = nbranches;
 	tree->prodrule = prodrule;
+	tree->code = NULL;
+	tree->address = NULL;
+	
 
 	// referenced https://www.thegeekstuff.com/2017/05/c-variadic-functions/
 	// for variadic function layout
@@ -144,6 +149,8 @@ tTree * push_to_tree(token * leaf){
 	tTree * t = malloc(sizeof(tTree));
 	t->nbranches = 0;
 	t->prodrule = 0;
+	t->code = NULL;
+	t->address = NULL;
 	// set the token to be the leaf of the branch
 	t->leaf = leaf;
 	return t;

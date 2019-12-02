@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include "tokenTree.h"
 #include "symtab.h"
+#include "tac.h"
+#include "codegen.h"
 
 // flex global vars
 extern FILE *yyin;
@@ -33,6 +36,7 @@ int show_symtab_tree_verbose = 0;
 int show_parse_tree_verbose = 0;
 
 int errors;
+char * outfilename;
 FILE *outfile;
 
 FILE * open_file( char * filen ) {
@@ -40,18 +44,24 @@ FILE * open_file( char * filen ) {
     char *filename = malloc( strlen( filen ) + 4 );
 	strcpy( filename, filen );
 	if ( ( file = fopen( filename, "r" ) ) == NULL ) {
-		if ( ( file = fopen( strcat( filename, ".g0" ), "r" ) ) == NULL ) {
-			strcpy( filename, filen );
-			if ( ( file = fopen( strcat( filename, ".go" ), "r" ) ) == NULL ) {
-				strcpy( filename, filen );
-				if ( ( file = fopen( strcat( filename, ".vgo" ), "r" ) ) == NULL ) {				
-					printf( "ERROR(vgo): can't open %s\n", filen );
-					exit( 1 );
-				}
-			} 
+		if ( ( file = fopen( strcat( filename, ".go" ), "r" ) ) == NULL ) {
+			printf( "ERROR(vgo): can't open %s\n", filen );
+			exit( 1 );
 		}
 	}
 	strcpy( yyfilename, filename );
+
+	int len = strlen(basename(filename));
+	outfilename = malloc( len+1 );
+	strncpy( outfilename,  basename(filename), len-3 );
+	outfilename[len] = '\0';
+	outfilename[len-1] = 'c';
+	outfilename[len-2] = 'i';
+	outfilename[len-3] = '.';
+	if ( ( outfile = fopen( outfilename, "w+" ) ) == NULL ) {
+		printf( "ERROR(vgo): can't open output file for writing: %s\n", outfilename );
+		exit(1);
+	}
 	free( filename );
 	return file;
 }
@@ -119,6 +129,14 @@ int main ( int argc, char **argv ){
 						if ( show_parse_tree )					
 							print_tree( gtree );
 						populate_symboltables ( gtree , 0);
+						// fill in the static starting assembly information
+						fprintf(outfile, ".file \"%s\"\n", outfilename);
+						fprintf(outfile, "section .text\n");
+						fprintf(outfile, "global main\n");
+						fprintf(outfile, "main:\n");
+						// flush buffer to file
+						fflush(outfile);
+						codegen ( gtree );
 						delete_tree( gtree );
 					}
 					// make some padding at bottom
